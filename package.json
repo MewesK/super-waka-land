@@ -1,0 +1,32 @@
+{
+  "name": "super-waka-land",
+  "version": "1.0.0",
+  "description": "Super Waka Land",
+  "source": "src/index.html",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "start": "npx parcel",
+    "build": "npx parcel build"
+  },
+  "keywords": [
+    "waka",
+    "wakaland",
+    "rat",
+    "pixi",
+    "pixijs",
+    "infinite",
+    "runner",
+    "2d",
+    "retro"
+  ],
+  "author": "MewK",
+  "dependencies": {
+    "@picocss/pico": "^1.5.2",
+    "pixi.js": "^6.3.2"
+  },
+  "devDependencies": {
+    "gh-pages": "^4.0.0",
+    "parcel": "latest",
+    "querystring-es3": "^0.2.1"
+  }
+}

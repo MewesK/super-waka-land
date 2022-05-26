@@ -1,0 +1,24 @@
+@import "npm:@picocss/pico/css/pico.min.css";
+
+:root {
+  --border-radius: 0.1rem;
+  --font-size: 10px;
+}
+
+main {
+  text-align: center;
+}
+
+canvas {
+  box-shadow: var(--card-box-shadow);
+}
+
+footer {
+  color: var(--muted-color);
+  font-size: xx-small;
+  text-align: center;
+}
+
+footer a {
+  color: var(--muted-color);
+}
