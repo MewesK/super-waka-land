@@ -519,7 +519,7 @@ const app = new _pixiJs.Application({
     width: 256,
     height: 224,
     antialias: false,
-    resolution: 2
+    resolution: 3
 });
 app.renderer.backgroundColor = 0x061639;
 // Mount application
@@ -565,7 +565,7 @@ function setup() {
     });
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images/atlas/rat.json":"4BNUT","./images/atlas/rat.png":"kOnmi"}],"dsYej":[function(require,module,exports) {
+},{"pixi.js":"dsYej","./images/atlas/rat.json":"4BNUT","./images/atlas/rat.png":"kOnmi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dsYej":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "utils", ()=>_utils);

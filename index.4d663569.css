@@ -2382,7 +2382,7 @@ a[aria-busy="true"], button[aria-busy="true"], input[type="button"][aria-busy="t
 
 :root {
   --border-radius: .1rem;
-  --font-size: 10px;
+  --font-size: 16px;
 }
 
 main {
@@ -2396,7 +2396,7 @@ canvas {
 footer {
   color: var(--muted-color);
   text-align: center;
-  font-size: xx-small;
+  font-size: small;
 }
 
 footer a {
