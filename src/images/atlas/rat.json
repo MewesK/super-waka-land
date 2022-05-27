@@ -2,15 +2,55 @@
 
 "bg_wakaland.png":
 {
-	"frame": {"x":0,"y":0,"w":256,"h":224},
+	"frame": {"x":0,"y":32,"w":256,"h":224},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":256,"h":224},
 	"sourceSize": {"w":256,"h":224}
 },
+"block.png":
+{
+	"frame": {"x":15,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+"coin1.png":
+{
+	"frame": {"x":31,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+"coin2.png":
+{
+	"frame": {"x":47,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+"coin3.png":
+{
+	"frame": {"x":63,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+"coin4.png":
+{
+	"frame": {"x":0,"y":0,"w":15,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":15,"h":16},
+	"sourceSize": {"w":15,"h":16}
+},
 "rat_back.png":
 {
-	"frame": {"x":0,"y":224,"w":32,"h":32},
+	"frame": {"x":79,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -18,7 +58,7 @@
 },
 "rat_blink.png":
 {
-	"frame": {"x":32,"y":224,"w":32,"h":32},
+	"frame": {"x":111,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -26,7 +66,7 @@
 },
 "rat_idle.png":
 {
-	"frame": {"x":64,"y":224,"w":32,"h":32},
+	"frame": {"x":143,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -34,7 +74,7 @@
 },
 "rat_jump.png":
 {
-	"frame": {"x":96,"y":224,"w":32,"h":32},
+	"frame": {"x":175,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -42,7 +82,7 @@
 },
 "rat_run.png":
 {
-	"frame": {"x":128,"y":224,"w":32,"h":32},
+	"frame": {"x":207,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -50,19 +90,22 @@
 },
 "rat_walk.png":
 {
-	"frame": {"x":160,"y":224,"w":32,"h":32},
+	"frame": {"x":239,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32}
 }},
+"animations": {
+	"coin": ["coin1.png","coin2.png","coin3.png","coin4.png"]
+},
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "rat.png",
 	"format": "RGBA8888",
-	"size": {"w":256,"h":256},
+	"size": {"w":271,"h":256},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:53e65d40c9e24e707072edcc71a63f16:c1fdc2f36b51bceb9b03c1692db65255:897eb3d5a631cb8958a6b43d97451b25$"
+	"smartupdate": "$TexturePacker:SmartUpdate:11705cf2073d9551e4add8a2f4ccd205:6f7287b5e92d483afc4135d55f3bce98:897eb3d5a631cb8958a6b43d97451b25$"
 }
 }

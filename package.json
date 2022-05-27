@@ -6,7 +6,8 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "start": "npx parcel",
-    "build": "npx parcel build"
+    "build": "npx parcel build --public-url '.'",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [
     "waka",
@@ -22,6 +23,7 @@
   "author": "MewK",
   "dependencies": {
     "@picocss/pico": "^1.5.2",
+    "@pixi/tilemap": "^3.2.2",
     "pixi.js": "^6.3.2"
   },
   "devDependencies": {
