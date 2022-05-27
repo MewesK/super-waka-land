@@ -28,16 +28,16 @@ const numberOfTiles = parseInt(resolutionX / tileSizeX) * 2;
 // Variables
 const world = {
   elapsed: 0.0,
-  gravity: 1,
+  gravity: 0.2,
   startFloorY: 12,
 };
 
 const player = {
-  power: 1.0,
+  power: 5.0,
   mass: 1.0,
-  force: new Point(2, 0),
-  velocity: new Point(0, 0),
-  position: new Point(2 * tileSizeX, world.startFloorY * tileSizeY - 32),
+  force: new Point(0, world.gravity),
+  velocity: new Point(3, 0),
+  position: new Point(0, 0),
 };
 
 // Sprites
@@ -144,17 +144,20 @@ function drawTiles() {
   groundTiles.position.set(player.position.x, groundTiles.position.y);
 }
 
-function gameLoop(delta) {
+function gameLoop(dt) {
   if (Math.floor(player.position.x % resolutionX) === 0) {
     drawTiles();
   }
-  player.velocity.x += (player.force.x / player.mass) * delta;
-  player.velocity.y += (player.force.y / player.mass) * delta;
-  player.position.x += player.velocity.x * delta;
-  player.position.y += player.velocity.y * delta;
-  world.elapsed += delta;
-  ratRunSprite.position.set(ratRunSprite.x, player.position.y);
-  groundTiles.pivot.set(player.position.x, groundTiles.position.y);
+
+  world.elapsed += dt;
+
+  player.velocity.x += (player.force.x / player.mass) * dt;
+  player.velocity.y += (player.force.y / player.mass) * dt;
+  player.position.x += player.velocity.x * dt;
+  player.position.y += player.velocity.y * dt;
+
+  ratRunSprite.position.set(ratRunSprite.position.x, player.position.y);
+  groundTiles.pivot.set(player.position.x, groundTiles.pivot.y);
 }
 
 function jump() {
