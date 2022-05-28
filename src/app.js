@@ -10,6 +10,7 @@ import {
   Rectangle,
 } from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
+import { hitTestRectangle, getRandomInt } from "./utilities";
 
 // Import ressources
 import ratAtlas from "./images/atlas/rat.json";
@@ -35,9 +36,10 @@ const world = {
 };
 
 const player = {
+  dead: false,
   power: -7.0,
   mass: 1.0,
-  force: new Point(0.0001, world.gravity),
+  force: new Point(0.001, world.gravity),
   velocity: new Point(2, 0),
   position: new Point(tileSizeX * 2, 0),
 };
@@ -146,7 +148,7 @@ function setup() {
 
 let plattformY = 0;
 let plattformLength = 0;
-function drawTiles() {
+function createTiles() {
   for (var y = 0; y <= numberOfTiles / 2; y++) {
     // Move second half to the first
     for (var x = numberOfTiles / 2; x <= numberOfTiles; x++) {
@@ -179,30 +181,45 @@ function drawTiles() {
 
 let oldX = player.position.x % resolutionX;
 function gameLoop(dt) {
+  if (player.dead) {
+    return;
+  }
+
   const newX = player.position.x % resolutionX;
   if (newX < oldX) {
-    drawTiles();
+    createTiles();
   }
   oldX = newX;
 
   // Check for collisions
+  const playerRectangle = new Rectangle(
+    ratRunSprite.position.x,
+    ratRunSprite.position.y + 24,
+    16,
+    8
+  );
   for (var y = 0; y <= numberOfTiles / 2; y++) {
     for (var x = 0; x <= numberOfTiles; x++) {
       if (world.map[y][x] !== null) {
-        const rectangle = new Rectangle(
-          x * tileSizeX,
-          y * tileSizeY,
+        const tileRectangle = new Rectangle(
+          x * tileSizeX - (groundTiles.pivot.x % resolutionX),
+          y * tileSizeY - (groundTiles.pivot.y % resolutionY),
           tileSizeX,
-          tileSizeY
+          tileSizeY / 2
         );
-        if (hitTestRectangle(ratRunSprite, rectangle)) {
-          player.position.y = rectangle.y - 32;
+        if (hitTestRectangle(playerRectangle, tileRectangle)) {
+          player.position.y = tileRectangle.y - 32;
           if (player.velocity.y > 0) {
             player.velocity.y = 0;
           }
         }
       }
     }
+  }
+
+  // Check for death
+  if (player.position.y > resolutionY) {
+    player.dead = true;
   }
 
   world.elapsed += dt;
@@ -224,38 +241,5 @@ function gameLoop(dt) {
 
 function jump() {
   player.velocity.y = player.power;
-}
-
-function hitTestRectangle(r1, r2) {
-  // Define the variables we'll need to calculate
-  let combinedHalfWidths, combinedHalfHeights, vx, vy;
-
-  // Find the center points of each sprite
-  r1.centerX = r1.x + r1.width / 2;
-  r1.centerY = r1.y + r1.height / 2;
-  r2.centerX = r2.x + r2.width / 2;
-  r2.centerY = r2.y + r2.height / 2;
-
-  // Find the half-widths and half-heights of each sprite
-  r1.halfWidth = r1.width / 2;
-  r1.halfHeight = r1.height / 2;
-  r2.halfWidth = r2.width / 2;
-  r2.halfHeight = r2.height / 2;
-
-  // Calculate the distance vector between the sprites
-  vx = r1.centerX - r2.centerX;
-  vy = r1.centerY - r2.centerY;
-
-  // Figure out the combined half-widths and half-heights
-  combinedHalfWidths = r1.halfWidth + r2.halfWidth;
-  combinedHalfHeights = r1.halfHeight + r2.halfHeight;
-
-  // Check for a collision on the x axis and y axis
-  return (
-    Math.abs(vx) < combinedHalfWidths && Math.abs(vy) < combinedHalfHeights
-  );
-}
-
-function getRandomInt(min = 0, max = 1) {
-  return min + Math.floor(Math.random() * (max - min));
+  player.position.y += player.power * 2;
 }
