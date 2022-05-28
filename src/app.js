@@ -2,11 +2,9 @@ import {
   AnimatedSprite,
   Application,
   Loader,
-  ObservablePoint,
   Point,
   Sprite,
   Spritesheet,
-  Ticker,
   settings,
   SCALE_MODES,
   Rectangle,
@@ -29,15 +27,15 @@ const numberOfTiles = parseInt(resolutionX / tileSizeX) * 2;
 // Variables
 const world = {
   elapsed: 0.0,
-  gravity: 0.2,
+  gravity: 0.3,
   startFloorY: 12,
 };
 
 const player = {
-  power: -5.0,
+  power: -7.0,
   mass: 1.0,
-  force: new Point(0, world.gravity),
-  velocity: new Point(3, 0),
+  force: new Point(0.001, world.gravity),
+  velocity: new Point(2 , 0),
   position: new Point(tileSizeX * 2, 0),
 };
 
@@ -141,10 +139,13 @@ function drawTiles() {
   groundTiles.position.set(player.position.x, groundTiles.position.y);
 }
 
+let oldX = player.position.x % resolutionX;
 function gameLoop(dt) {
-  if (Math.floor(player.position.x % resolutionX) === 0) {
+  const newX = player.position.x % resolutionX;
+  if (newX < oldX) {
     drawTiles();
   }
+  oldX = newX;
 
   // Check for collisions
   const buffer = groundTiles.children[0].pointsBuf;
