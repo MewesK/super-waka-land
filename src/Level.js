@@ -14,7 +14,7 @@ export default class Level {
 
   // Constants
   startFloorY = 12;
-  minFloorY = 8;
+  minFloorY = 5;
   maxFloorY = 13;
 
   // Sprites
@@ -48,6 +48,7 @@ export default class Level {
   }
 
   click() {
+    // TODO: Add adjustable strength
     if (this.player.dead) {
       this.reset();
     } else {
@@ -73,8 +74,8 @@ export default class Level {
   }
 
   createMap() {
-    this.mapWidth = parseInt(this.app.screen.width / this.tileWidth) * 2;
-    this.mapHeight = parseInt(this.app.screen.height / this.tileHeight);
+    this.mapWidth = Math.ceil(this.app.screen.width / this.tileWidth) * 2;
+    this.mapHeight = Math.ceil(this.app.screen.height / this.tileHeight);
 
     for (let y = 0; y <= this.mapHeight; y++) {
       this.map[y] = [];
@@ -97,22 +98,23 @@ export default class Level {
       }
     }
 
-    // Generate new plattforms for the second half
+    // Generate new tiles for the second half
     for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
-      // Generate new section
+      // Generate new section if necessary
       if (this.plattformLength === 0) {
-        this.abyssLength = random(2, 6);
+        this.abyssLength = 0; //random(3, 7);
         this.plattformY = random(
-          this.minFloorY,
-          this.plattformY + 4 - this.abyssLength
+          Math.max(this.minFloorY, this.plattformY - 4 + this.abyssLength),
+          this.maxFloorY
         );
         this.plattformLength = random(2, 8);
       }
+      // Fill current section
       if (this.abyssLength > 0) {
-        // Abyss tile
+        // Fill abyss
         this.abyssLength--;
       } else {
-        // Plattform tile
+        // Fill plattform
         this.map[this.plattformY][x] = "block.png";
         this.plattformLength--;
       }
@@ -148,9 +150,12 @@ export default class Level {
     }
 
     this.elapsed += dt;
+    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+    const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
+    const lastPlayerX = this.player.position.x;
+    const lastPlayerY = this.player.position.y;
 
     // Check if we need to create new tiles
-    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
     if (tilemapX < this.lastTilemapX) {
       this.createNewTiles();
     }
@@ -158,18 +163,47 @@ export default class Level {
 
     // Move player
     this.player.move(dt);
+    /*console.log(
+      lastPlayerX === this.player.x
+        ? "none"
+        : lastPlayerX < this.player.x
+        ? "left"
+        : "right",
+      lastPlayerY === this.player.y
+        ? "none"
+        : lastPlayerY <= this.player.y
+        ? "up"
+        : "down"
+    );*/
+
+    // Calculate the tile indieces around the player
+    const mapTileXMin = Math.max(
+      0,
+      Math.floor(
+        (tilemapX + this.player.container.position.x) / this.tileWidth
+      ) - 1
+    );
+    const mapTileXMax = Math.min(mapTileXMin + 2, this.mapWidth);
+    const mapTileYMin = Math.max(
+      0,
+      Math.floor(
+        (tilemapY + this.player.container.position.y) / this.tileHeight
+      ) - 1
+    );
+    const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
 
     // Check for collisions
+    // TODO: Improve collision detection (with direction)
     let intersecting = false;
-    for (var y = 0; y <= this.mapHeight; y++) {
-      for (var x = 0; x <= this.mapWidth; x++) {
+    for (var y = mapTileYMin; y <= mapTileYMax; y++) {
+      for (var x = mapTileXMin; x <= mapTileXMax; x++) {
         if (this.map[y][x] !== null) {
           const tileRectangle = new Rectangle(
             x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
             y * this.tileHeight -
               (this.tilemap.pivot.y % this.app.screen.height),
             this.tileWidth,
-            this.tileHeight / 2
+            this.tileHeight
           );
           if (intersect(this.player.containerRectangle, tileRectangle)) {
             intersecting = true;
@@ -193,6 +227,7 @@ export default class Level {
       this.player.dead = true;
     }
 
+    // TODO: Add paralax scrolling
     this.tilemap.pivot.set(this.player.position.x, this.tilemap.pivot.y);
   }
 

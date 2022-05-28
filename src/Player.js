@@ -35,9 +35,9 @@ export default class Player {
   get containerRectangle() {
     return new Rectangle(
       this.container.position.x,
-      this.container.position.y + 24,
+      this.container.position.y,
       16,
-      8
+      32
     );
   }
 
