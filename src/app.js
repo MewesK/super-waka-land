@@ -9,6 +9,7 @@ import {
   Ticker,
   settings,
   SCALE_MODES,
+  Rectangle,
 } from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
 
@@ -33,11 +34,11 @@ const world = {
 };
 
 const player = {
-  power: 5.0,
+  power: -5.0,
   mass: 1.0,
   force: new Point(0, world.gravity),
   velocity: new Point(3, 0),
-  position: new Point(0, 0),
+  position: new Point(tileSizeX * 2, 0),
 };
 
 // Sprites
@@ -135,11 +136,7 @@ function setup() {
 function drawTiles() {
   console.log("drawTiles");
   for (var x = 0; x <= numberOfTiles; x++) {
-    groundTiles.addFrame(
-      "block.png",
-      x * tileSizeX,
-      world.startFloorY * tileSizeY
-    );
+    groundTiles.tile("block.png", x * tileSizeX, world.startFloorY * tileSizeY);
   }
   groundTiles.position.set(player.position.x, groundTiles.position.y);
 }
@@ -149,10 +146,42 @@ function gameLoop(dt) {
     drawTiles();
   }
 
+  // Check for collisions
+  const buffer = groundTiles.children[0].pointsBuf;
+  for (let i = 0; i < buffer.length; i += 14) {
+    /*
+    pb.push(u);
+    pb.push(v);
+    pb.push(x);
+    pb.push(y);
+    pb.push(tileWidth);
+    pb.push(tileHeight);
+    pb.push(rotate);
+    pb.push(animX | 0);
+    pb.push(animY | 0);
+    pb.push(textureIndex);
+    pb.push(animCountX);
+    pb.push(animCountY);
+    pb.push(animDivisor);
+    pb.push(alpha);
+    */
+    const data = buffer.slice(i, i + 14);
+    const rectangle = new Rectangle(data[2], data[3], data[4], data[5]);
+    if (hitTestRectangle(ratRunSprite, rectangle)) {
+      player.position.y = rectangle.y - 32;
+      if (player.velocity.y > 0) {
+        player.velocity.y = 0;
+      }
+    }
+  }
+
   world.elapsed += dt;
 
+  // Calculate velocity
   player.velocity.x += (player.force.x / player.mass) * dt;
   player.velocity.y += (player.force.y / player.mass) * dt;
+
+  // Calculate position
   player.position.x += player.velocity.x * dt;
   player.position.y += player.velocity.y * dt;
 
@@ -161,5 +190,35 @@ function gameLoop(dt) {
 }
 
 function jump() {
-  player.velocity.y = -player.power;
+  player.velocity.y = player.power;
+}
+
+function hitTestRectangle(r1, r2) {
+  // Define the variables we'll need to calculate
+  let combinedHalfWidths, combinedHalfHeights, vx, vy;
+
+  // Find the center points of each sprite
+  r1.centerX = r1.x + r1.width / 2;
+  r1.centerY = r1.y + r1.height / 2;
+  r2.centerX = r2.x + r2.width / 2;
+  r2.centerY = r2.y + r2.height / 2;
+
+  // Find the half-widths and half-heights of each sprite
+  r1.halfWidth = r1.width / 2;
+  r1.halfHeight = r1.height / 2;
+  r2.halfWidth = r2.width / 2;
+  r2.halfHeight = r2.height / 2;
+
+  // Calculate the distance vector between the sprites
+  vx = r1.centerX - r2.centerX;
+  vy = r1.centerY - r2.centerY;
+
+  // Figure out the combined half-widths and half-heights
+  combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+  combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+  // Check for a collision on the x axis and y axis
+  return (
+    Math.abs(vx) < combinedHalfWidths && Math.abs(vy) < combinedHalfHeights
+  );
 }
