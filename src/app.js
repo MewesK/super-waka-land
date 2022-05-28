@@ -29,13 +29,16 @@ const world = {
   elapsed: 0.0,
   gravity: 0.3,
   startFloorY: 12,
+  minFloorY: 10,
+  maxFloorY: 14,
+  map: [[]],
 };
 
 const player = {
   power: -7.0,
   mass: 1.0,
-  force: new Point(0.001, world.gravity),
-  velocity: new Point(2 , 0),
+  force: new Point(0.0001, world.gravity),
+  velocity: new Point(2, 0),
   position: new Point(tileSizeX * 2, 0),
 };
 
@@ -113,9 +116,19 @@ function setup() {
     ratJumpSprite.x = player.position.x;
     ratJumpSprite.y = player.position.y;
 
-    // Create tilemap
+    // Create inital tilemap
     groundTiles = new CompositeTilemap(0, "block.png");
-    drawTiles();
+    for (var y = 0; y <= numberOfTiles / 2; y++) {
+      world.map[y] = [];
+      for (var x = 0; x <= numberOfTiles; x++) {
+        if (y === world.startFloorY) {
+          world.map[y][x] = "block.png";
+          groundTiles.tile("block.png", x * tileSizeX, y * tileSizeY);
+        } else {
+          world.map[y][x] = null;
+        }
+      }
+    }
 
     // Compose stage
     app.stage.addChild(backgroundSprite);
@@ -131,10 +144,35 @@ function setup() {
   });
 }
 
+let plattformY = 0;
+let plattformLength = 0;
 function drawTiles() {
-  console.log("drawTiles");
-  for (var x = 0; x <= numberOfTiles; x++) {
-    groundTiles.tile("block.png", x * tileSizeX, world.startFloorY * tileSizeY);
+  for (var y = 0; y <= numberOfTiles / 2; y++) {
+    // Move second half to the first
+    for (var x = numberOfTiles / 2; x <= numberOfTiles; x++) {
+      world.map[y][x - numberOfTiles / 2] = world.map[y][x];
+      world.map[y][x] = null;
+    }
+  }
+
+  // Generate new plattforms for the second half
+  for (var x = numberOfTiles / 2 + 1; x <= numberOfTiles; x++) {
+    if (plattformLength === 0) {
+      plattformY = getRandomInt(world.minFloorY, world.maxFloorY);
+      plattformLength = getRandomInt(2, 8);
+    }
+    world.map[plattformY][x] = "block.png";
+    plattformLength--;
+  }
+
+  // Clear and refill tilemap
+  groundTiles.clear();
+  for (var y = 0; y <= numberOfTiles / 2; y++) {
+    for (var x = 0; x <= numberOfTiles; x++) {
+      if (world.map[y][x] !== null) {
+        groundTiles.tile(world.map[y][x], x * tileSizeX, y * tileSizeY);
+      }
+    }
   }
   groundTiles.position.set(player.position.x, groundTiles.position.y);
 }
@@ -148,30 +186,21 @@ function gameLoop(dt) {
   oldX = newX;
 
   // Check for collisions
-  const buffer = groundTiles.children[0].pointsBuf;
-  for (let i = 0; i < buffer.length; i += 14) {
-    /*
-    pb.push(u);
-    pb.push(v);
-    pb.push(x);
-    pb.push(y);
-    pb.push(tileWidth);
-    pb.push(tileHeight);
-    pb.push(rotate);
-    pb.push(animX | 0);
-    pb.push(animY | 0);
-    pb.push(textureIndex);
-    pb.push(animCountX);
-    pb.push(animCountY);
-    pb.push(animDivisor);
-    pb.push(alpha);
-    */
-    const data = buffer.slice(i, i + 14);
-    const rectangle = new Rectangle(data[2], data[3], data[4], data[5]);
-    if (hitTestRectangle(ratRunSprite, rectangle)) {
-      player.position.y = rectangle.y - 32;
-      if (player.velocity.y > 0) {
-        player.velocity.y = 0;
+  for (var y = 0; y <= numberOfTiles / 2; y++) {
+    for (var x = 0; x <= numberOfTiles; x++) {
+      if (world.map[y][x] !== null) {
+        const rectangle = new Rectangle(
+          x * tileSizeX,
+          y * tileSizeY,
+          tileSizeX,
+          tileSizeY
+        );
+        if (hitTestRectangle(ratRunSprite, rectangle)) {
+          player.position.y = rectangle.y - 32;
+          if (player.velocity.y > 0) {
+            player.velocity.y = 0;
+          }
+        }
       }
     }
   }
@@ -181,6 +210,9 @@ function gameLoop(dt) {
   // Calculate velocity
   player.velocity.x += (player.force.x / player.mass) * dt;
   player.velocity.y += (player.force.y / player.mass) * dt;
+  if (player.velocity.x > 10) {
+    player.velocity.x = 10;
+  }
 
   // Calculate position
   player.position.x += player.velocity.x * dt;
@@ -222,4 +254,8 @@ function hitTestRectangle(r1, r2) {
   return (
     Math.abs(vx) < combinedHalfWidths && Math.abs(vy) < combinedHalfHeights
   );
+}
+
+function getRandomInt(min = 0, max = 1) {
+  return min + Math.floor(Math.random() * (max - min));
 }
