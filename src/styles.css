@@ -5,6 +5,10 @@
   --font-size: 16px;
 }
 
+nav {
+  background-color: var(--muted-border-color);
+}
+
 main {
   text-align: center;
 }

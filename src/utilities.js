@@ -1,4 +1,4 @@
-export function hitTestRectangle(r1, r2) {
+export function intersect(r1, r2) {
   // Define the variables we'll need to calculate
   let combinedHalfWidths, combinedHalfHeights, vx, vy;
 
@@ -24,10 +24,10 @@ export function hitTestRectangle(r1, r2) {
 
   // Check for a collision on the x axis and y axis
   return (
-    Math.abs(vx) < combinedHalfWidths && Math.abs(vy) < combinedHalfHeights
+    Math.abs(vx) <= combinedHalfWidths && Math.abs(vy) <= combinedHalfHeights
   );
 }
 
-export function getRandomInt(min = 0, max = 1) {
+export function random(min = 0, max = 1) {
   return min + Math.floor(Math.random() * (max - min));
 }
