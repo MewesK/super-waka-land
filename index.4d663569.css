@@ -2385,7 +2385,22 @@ a[aria-busy="true"], button[aria-busy="true"], input[type="button"][aria-busy="t
   --font-size: 16px;
 }
 
+nav {
+  background-color: var(--muted-border-color);
+}
+
 main {
+  text-align: center;
+}
+
+#score {
+  text-align: center;
+  font-size: large;
+  font-weight: bold;
+}
+
+#manual {
+  color: var(--muted-color);
   text-align: center;
 }
 
