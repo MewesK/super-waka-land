@@ -1,6 +1,6 @@
 import { AnimatedSprite, Point, Sprite, Container, Rectangle } from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
-import { intersect, random } from "./utilities";
+import { intersect, intersect, random } from "./utilities";
 
 export default class Level {
   app;
@@ -29,6 +29,7 @@ export default class Level {
   plattformY = this.startFloorY;
   plattformLength = 0;
   lastTilemapX = 0;
+  actionTimer = null;
 
   constructor(app, player) {
     this.app = app;
@@ -43,17 +44,41 @@ export default class Level {
     this.container.addChild(this.player.container);
 
     // Register event listeners
-    app.view.addEventListener("click", () => this.click());
-    app.view.addEventListener("touchend", () => this.click());
+    window.addEventListener("keydown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.code === "Space") {
+        this.startAction();
+      }
+    });
+    window.addEventListener("keyup", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.endAction();
+    });
+    app.stage.on("pointerdown", (event) => {
+      event.stopPropagation();
+      this.startAction();
+    });
+    app.stage.on("pointerup", (event) => {
+      event.stopPropagation();
+      this.endAction();
+    });
   }
 
-  click() {
-    // TODO: Add adjustable strength
+  startAction() {
     if (this.player.dead) {
       this.reset();
     } else {
-      this.player.jump();
+      if (!this.player.airborne) {
+        this.actionTimer = 0;
+        this.player.jump();
+      }
     }
+  }
+
+  endAction() {
+    this.actionTimer = null;
   }
 
   createSprites() {
@@ -102,9 +127,12 @@ export default class Level {
     for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
       // Generate new section if necessary
       if (this.plattformLength === 0) {
-        this.abyssLength = 0; //random(3, 7);
+        this.abyssLength = random(3, 6);
         this.plattformY = random(
-          Math.max(this.minFloorY, this.plattformY - 4 + this.abyssLength),
+          Math.min(
+            this.maxFloorY,
+            Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)
+          ),
           this.maxFloorY
         );
         this.plattformLength = random(2, 8);
@@ -150,9 +178,15 @@ export default class Level {
     }
 
     this.elapsed += dt;
+    if (this.actionTimer !== null) {
+      this.actionTimer += dt;
+      if (this.actionTimer >= 10) {
+        this.actionTimer = null;
+      }
+    }
+
     const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
     const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
-    const lastPlayerX = this.player.position.x;
     const lastPlayerY = this.player.position.y;
 
     // Check if we need to create new tiles
@@ -163,18 +197,16 @@ export default class Level {
 
     // Move player
     this.player.move(dt);
-    /*console.log(
-      lastPlayerX === this.player.x
-        ? "none"
-        : lastPlayerX < this.player.x
-        ? "left"
-        : "right",
-      lastPlayerY === this.player.y
-        ? "none"
-        : lastPlayerY <= this.player.y
-        ? "up"
-        : "down"
-    );*/
+    if (this.actionTimer > null) {
+      // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
+      this.player.velocity.y += (this.player.power + this.actionTimer / 4) / 6;
+      // TODO: start jumping if just landed
+    }
+
+    // Draw score (TODO)
+    document.getElementById("score-value").innerHTML = Math.floor(
+      this.player.position.x
+    );
 
     // Calculate the tile indieces around the player
     const mapTileXMin = Math.max(
@@ -193,11 +225,11 @@ export default class Level {
     const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
 
     // Check for collisions
-    // TODO: Improve collision detection (with direction)
     let intersecting = false;
     for (var y = mapTileYMin; y <= mapTileYMax; y++) {
       for (var x = mapTileXMin; x <= mapTileXMax; x++) {
         if (this.map[y][x] !== null) {
+          // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
             x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
             y * this.tileHeight -
@@ -205,18 +237,20 @@ export default class Level {
             this.tileWidth,
             this.tileHeight
           );
-          if (intersect(this.player.containerRectangle, tileRectangle)) {
+          // Is overlaping and player was previously above the tile?
+          if (
+            intersect(this.player.containerRectangle, tileRectangle) &&
+            lastPlayerY + 32 <= tileRectangle.y
+          ) {
             intersecting = true;
+            // Fix position
             this.player.position.y = tileRectangle.y - 32;
+            // Cancel falling
             if (this.player.velocity.y > 0) {
               this.player.velocity.y = 0;
             }
-            break;
           }
         }
-      }
-      if (intersecting) {
-        break;
       }
     }
     this.player.airborne = !intersecting;

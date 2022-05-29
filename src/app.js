@@ -60,12 +60,13 @@ function setup() {
     console.log("Spritesheet loaded");
 
     // Create player
-    player = new Player(-7.0, 1.0);
+    player = new Player(-3.0, 1.0);
 
     // Create level
     level = new Level(app, player);
 
     // Compose stage
+    app.stage.interactive = true;
     app.stage.addChild(level.container);
 
     // Render the stage

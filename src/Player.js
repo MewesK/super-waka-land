@@ -41,6 +41,10 @@ export default class Player {
     );
   }
 
+  get airborne() {
+    return this.#airborne;
+  }
+
   set airborne(value) {
     if (this.#airborne != value) {
       this.#airborne = value;
@@ -98,9 +102,13 @@ export default class Player {
 
     // Calculate velocity
     this.velocity.x += (this.force.x / this.mass) * dt;
-    this.velocity.y += (this.force.y / this.mass) * dt;
+    // Cap horizontal velocity
     if (this.velocity.x > 10) {
       this.velocity.x = 10;
+    }
+    // Calculate gravity only when airborne
+    if (this.#airborne) {
+      this.velocity.y += (this.force.y / this.mass) * dt;
     }
 
     // Calculate position
@@ -115,7 +123,6 @@ export default class Player {
     }
 
     this.velocity.y = this.power;
-    this.position.y += this.power * 2;
-    this.container.position.set(this.container.position.x, this.position.y);
+    this.airborne = true;
   }
 }
