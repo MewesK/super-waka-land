@@ -30,6 +30,7 @@ export default class Level {
   plattformLength = 0;
   lastTilemapX = 0;
   actionTimer = null;
+  jumpTimer = null;
 
   constructor(app, player) {
     this.app = app;
@@ -67,11 +68,12 @@ export default class Level {
   }
 
   startAction() {
+    this.actionTimer = 0;
     if (this.player.dead) {
       this.reset();
     } else {
       if (!this.player.airborne) {
-        this.actionTimer = 0;
+        this.jumpTimer = 0;
         this.player.jump();
       }
     }
@@ -180,9 +182,9 @@ export default class Level {
     this.elapsed += dt;
     if (this.actionTimer !== null) {
       this.actionTimer += dt;
-      if (this.actionTimer >= 10) {
-        this.actionTimer = null;
-      }
+    }
+    if (this.jumpTimer !== null) {
+      this.jumpTimer += dt;
     }
 
     const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
@@ -197,10 +199,10 @@ export default class Level {
 
     // Move player
     this.player.move(dt);
-    if (this.actionTimer > null) {
-      // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
-      this.player.velocity.y += (this.player.power + this.actionTimer / 4) / 6;
-      // TODO: start jumping if just landed
+
+    // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
+    if (this.actionTimer !== null && this.jumpTimer < 10) {
+      this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
     }
 
     // Draw score (TODO)
@@ -253,7 +255,20 @@ export default class Level {
         }
       }
     }
+
+    let landed = false;
+    if (this.player.airborne && intersecting) {
+      landed = true;
+      this.jumpTimer = null;
+    }
     this.player.airborne = !intersecting;
+
+    // Start jumping if just landed
+    if (landed && this.actionTimer !== null) {
+      console.log("Early jump");
+      this.jumpTimer = 0;
+      this.player.jump(this.actionTimer);
+    }
 
     // Check for death
     if (this.player.position.y > this.app.screen.height) {

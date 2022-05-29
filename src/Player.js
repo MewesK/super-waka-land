@@ -12,7 +12,7 @@ export default class Player {
 
   // State
   dead = false;
-  #airborne = null;
+  #airborne = true;
 
   // Sprites
   spriteWidth = 16;
@@ -117,7 +117,7 @@ export default class Player {
     this.container.position.set(this.container.position.x, this.position.y);
   }
 
-  jump() {
+  jump(actionTimer = 0) {
     if (this.dead || this.#airborne) {
       return;
     }
