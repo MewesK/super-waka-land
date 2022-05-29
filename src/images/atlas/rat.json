@@ -1,8 +1,24 @@
 {"frames": {
 
-"bg_wakaland.png":
+"bg_wakaland_1.png":
 {
-	"frame": {"x":0,"y":32,"w":256,"h":224},
+	"frame": {"x":0,"y":0,"w":256,"h":224},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":256,"h":224},
+	"sourceSize": {"w":256,"h":224}
+},
+"bg_wakaland_2.png":
+{
+	"frame": {"x":0,"y":224,"w":256,"h":224},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":256,"h":224},
+	"sourceSize": {"w":256,"h":224}
+},
+"bg_wakaland_3.png":
+{
+	"frame": {"x":0,"y":448,"w":256,"h":224},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":256,"h":224},
@@ -10,7 +26,7 @@
 },
 "block.png":
 {
-	"frame": {"x":15,"y":0,"w":16,"h":16},
+	"frame": {"x":0,"y":672,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -18,7 +34,7 @@
 },
 "coin1.png":
 {
-	"frame": {"x":31,"y":0,"w":16,"h":16},
+	"frame": {"x":16,"y":672,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -26,7 +42,7 @@
 },
 "coin2.png":
 {
-	"frame": {"x":47,"y":0,"w":16,"h":16},
+	"frame": {"x":32,"y":672,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -34,7 +50,7 @@
 },
 "coin3.png":
 {
-	"frame": {"x":63,"y":0,"w":16,"h":16},
+	"frame": {"x":48,"y":672,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -42,7 +58,7 @@
 },
 "coin4.png":
 {
-	"frame": {"x":0,"y":0,"w":15,"h":16},
+	"frame": {"x":64,"y":672,"w":15,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":15,"h":16},
@@ -50,7 +66,7 @@
 },
 "rat_back.png":
 {
-	"frame": {"x":79,"y":0,"w":32,"h":32},
+	"frame": {"x":79,"y":672,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -58,7 +74,7 @@
 },
 "rat_blink.png":
 {
-	"frame": {"x":111,"y":0,"w":32,"h":32},
+	"frame": {"x":111,"y":672,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -66,7 +82,7 @@
 },
 "rat_idle.png":
 {
-	"frame": {"x":143,"y":0,"w":32,"h":32},
+	"frame": {"x":143,"y":672,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -74,7 +90,7 @@
 },
 "rat_jump.png":
 {
-	"frame": {"x":175,"y":0,"w":32,"h":32},
+	"frame": {"x":175,"y":672,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -82,7 +98,7 @@
 },
 "rat_run.png":
 {
-	"frame": {"x":207,"y":0,"w":32,"h":32},
+	"frame": {"x":207,"y":672,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
@@ -90,13 +106,14 @@
 },
 "rat_walk.png":
 {
-	"frame": {"x":239,"y":0,"w":32,"h":32},
+	"frame": {"x":0,"y":704,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32}
 }},
 "animations": {
+	"bg_wakaland": ["bg_wakaland_1.png","bg_wakaland_2.png","bg_wakaland_3.png"],
 	"coin": ["coin1.png","coin2.png","coin3.png","coin4.png"]
 },
 "meta": {
@@ -104,8 +121,8 @@
 	"version": "1.0",
 	"image": "rat.png",
 	"format": "RGBA8888",
-	"size": {"w":271,"h":256},
+	"size": {"w":256,"h":736},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:11705cf2073d9551e4add8a2f4ccd205:6f7287b5e92d483afc4135d55f3bce98:897eb3d5a631cb8958a6b43d97451b25$"
+	"smartupdate": "$TexturePacker:SmartUpdate:f777948cf72c6f7b1b30c0144a7a2e1b:d50b9cf7a08b490be9eae8a4e42d779b:897eb3d5a631cb8958a6b43d97451b25$"
 }
 }

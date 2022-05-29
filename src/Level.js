@@ -20,7 +20,11 @@ export default class Level {
   // Sprites
   tileWidth = 16;
   tileHeight = 16;
-  backgroundSprite;
+  background1Sprite;
+  background2aSprite;
+  background2bSprite;
+  background3aSprite;
+  background3bSprite;
   coinSprite;
   tilemap;
 
@@ -40,7 +44,11 @@ export default class Level {
     this.reset();
 
     // Compose stage
-    this.container.addChild(this.backgroundSprite);
+    this.container.addChild(this.background1Sprite);
+    this.container.addChild(this.background2aSprite);
+    this.container.addChild(this.background3aSprite);
+    this.container.addChild(this.background2bSprite);
+    this.container.addChild(this.background3bSprite);
     this.container.addChild(this.tilemap);
     this.container.addChild(this.player.container);
 
@@ -84,7 +92,13 @@ export default class Level {
   }
 
   createSprites() {
-    this.backgroundSprite = Sprite.from("bg_wakaland.png");
+    this.background1Sprite = Sprite.from("bg_wakaland_1.png");
+    this.background2aSprite = Sprite.from("bg_wakaland_2.png");
+    this.background3aSprite = Sprite.from("bg_wakaland_3.png");
+    this.background2bSprite = Sprite.from("bg_wakaland_2.png");
+    this.background2bSprite.x = this.background2bSprite.width;
+    this.background3bSprite = Sprite.from("bg_wakaland_3.png");
+    this.background3bSprite.x = this.background3bSprite.width;
 
     this.coinSprite = AnimatedSprite.fromFrames([
       "coin1.png",
@@ -277,7 +291,23 @@ export default class Level {
     }
 
     // TODO: Add paralax scrolling
-    this.tilemap.pivot.set(this.player.position.x, this.tilemap.pivot.y);
+    this.background2aSprite.pivot.x += 0.1;
+    if (this.background2aSprite.pivot.x >= this.app.screen.width) {
+      this.background2aSprite.pivot.x = 0;
+    }
+    this.background2bSprite.pivot.x += 0.1;
+    if (this.background2aSprite.pivot.x >= this.app.screen.width) {
+      this.background2aSprite.pivot.x = 0;
+    }
+    this.background3aSprite.pivot.x += 0.15;
+    if (this.background3aSprite.pivot.x >= this.app.screen.width) {
+      this.background3aSprite.pivot.x = 0;
+    }
+    this.background3bSprite.pivot.x += 0.15;
+    if (this.background3bSprite.pivot.x >= this.app.screen.width) {
+      this.background3bSprite.pivot.x = 0;
+    }
+    this.tilemap.pivot.x = this.player.position.x;
   }
 
   reset() {
@@ -293,6 +323,11 @@ export default class Level {
     this.player.container.position.x = this.player.position.x;
     this.player.airborne = true;
     this.player.dead = false;
+
+    this.background2aSprite.pivot.x = 0;
+    this.background3aSprite.pivot.x = 0;
+    this.background2bSprite.pivot.x = 0;
+    this.background3bSprite.pivot.x = 0;
 
     this.createMap();
     this.createTilemap();
