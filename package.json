@@ -24,6 +24,7 @@
   "dependencies": {
     "@picocss/pico": "^1.5.2",
     "@pixi/tilemap": "^3.2.2",
+    "pixi-filters": "^4.1.6",
     "pixi.js": "^6.3.2"
   },
   "devDependencies": {

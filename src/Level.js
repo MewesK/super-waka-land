@@ -1,4 +1,4 @@
-import { AnimatedSprite, Point, Sprite, Container, Rectangle } from "pixi.js";
+import { AnimatedSprite, Point, Sprite, Container, Rectangle, filters } from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
 import { intersect, intersect, random } from "./utilities";
 
@@ -211,13 +211,13 @@ export default class Level {
     }
     this.lastTilemapX = tilemapX;
 
-    // Move player
-    this.player.move(dt);
-
     // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
     if (this.actionTimer !== null && this.jumpTimer < 10) {
       this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
     }
+
+    // Move player
+    this.player.move(dt);
 
     // Draw score (TODO)
     document.getElementById("score-value").innerHTML = Math.floor(
@@ -288,6 +288,15 @@ export default class Level {
     if (this.player.position.y > this.app.screen.height) {
       console.log("Player died");
       this.player.dead = true;
+
+      const filter1 = new filters.ColorMatrixFilter();
+      filter1.desaturate();
+      const filter2 = new filters.ColorMatrixFilter();
+      filter2.brightness(0.5);
+      this.container.filters = [
+        filter1,
+        filter2,
+      ];
     }
 
     // TODO: Add paralax scrolling
@@ -316,6 +325,8 @@ export default class Level {
     this.plattformY = this.startFloorY;
     this.plattformLength = 0;
     this.lastTilemapX = 0;
+    this.actionTimer = null;
+    this.jumpTimer = null;
 
     this.player.force = new Point(0.001, this.gravity);
     this.player.velocity = new Point(2, 0);
@@ -328,6 +339,8 @@ export default class Level {
     this.background3aSprite.pivot.x = 0;
     this.background2bSprite.pivot.x = 0;
     this.background3bSprite.pivot.x = 0;
+
+    this.container.filters = [];
 
     this.createMap();
     this.createTilemap();
