@@ -549,10 +549,11 @@ function setup() {
     sheet.parse(()=>{
         console.log("Spritesheet loaded");
         // Create player
-        player = new (0, _playerDefault.default)(-7, 1.0);
+        player = new (0, _playerDefault.default)(-3, 1.0);
         // Create level
         level = new (0, _levelDefault.default)(app, player);
         // Compose stage
+        app.stage.interactive = true;
         app.stage.addChild(level.container);
         // Render the stage
         app.renderer.render(app.stage);
@@ -36848,7 +36849,7 @@ function __extends(d, b) {
 }((0, _sprite.Sprite));
 
 },{"@pixi/core":"7PEF8","@pixi/sprite":"9mbxh","@pixi/ticker":"8ekG7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4BNUT":[function(require,module,exports) {
-module.exports = JSON.parse('{"frames":{"bg_wakaland.png":{"frame":{"x":0,"y":32,"w":256,"h":224},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":256,"h":224},"sourceSize":{"w":256,"h":224}},"block.png":{"frame":{"x":15,"y":0,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin1.png":{"frame":{"x":31,"y":0,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin2.png":{"frame":{"x":47,"y":0,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin3.png":{"frame":{"x":63,"y":0,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin4.png":{"frame":{"x":0,"y":0,"w":15,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":15,"h":16},"sourceSize":{"w":15,"h":16}},"rat_back.png":{"frame":{"x":79,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_blink.png":{"frame":{"x":111,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_idle.png":{"frame":{"x":143,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_jump.png":{"frame":{"x":175,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_run.png":{"frame":{"x":207,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_walk.png":{"frame":{"x":239,"y":0,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}}},"animations":{"coin":["coin1.png","coin2.png","coin3.png","coin4.png"]},"meta":{"app":"https://www.codeandweb.com/texturepacker","version":"1.0","image":"rat.png","format":"RGBA8888","size":{"w":271,"h":256},"scale":"1","smartupdate":"$TexturePacker:SmartUpdate:11705cf2073d9551e4add8a2f4ccd205:6f7287b5e92d483afc4135d55f3bce98:897eb3d5a631cb8958a6b43d97451b25$"}}');
+module.exports = JSON.parse('{"frames":{"bg_wakaland_1.png":{"frame":{"x":0,"y":0,"w":256,"h":224},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":256,"h":224},"sourceSize":{"w":256,"h":224}},"bg_wakaland_2.png":{"frame":{"x":0,"y":224,"w":256,"h":224},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":256,"h":224},"sourceSize":{"w":256,"h":224}},"bg_wakaland_3.png":{"frame":{"x":0,"y":448,"w":256,"h":224},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":256,"h":224},"sourceSize":{"w":256,"h":224}},"block.png":{"frame":{"x":0,"y":672,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin1.png":{"frame":{"x":16,"y":672,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin2.png":{"frame":{"x":32,"y":672,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin3.png":{"frame":{"x":48,"y":672,"w":16,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":16,"h":16},"sourceSize":{"w":16,"h":16}},"coin4.png":{"frame":{"x":64,"y":672,"w":15,"h":16},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":15,"h":16},"sourceSize":{"w":15,"h":16}},"rat_back.png":{"frame":{"x":79,"y":672,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_blink.png":{"frame":{"x":111,"y":672,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_idle.png":{"frame":{"x":143,"y":672,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_jump.png":{"frame":{"x":175,"y":672,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_run.png":{"frame":{"x":207,"y":672,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}},"rat_walk.png":{"frame":{"x":0,"y":704,"w":32,"h":32},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":32,"h":32},"sourceSize":{"w":32,"h":32}}},"animations":{"bg_wakaland":["bg_wakaland_1.png","bg_wakaland_2.png","bg_wakaland_3.png"],"coin":["coin1.png","coin2.png","coin3.png","coin4.png"]},"meta":{"app":"https://www.codeandweb.com/texturepacker","version":"1.0","image":"rat.png","format":"RGBA8888","size":{"w":256,"h":736},"scale":"1","smartupdate":"$TexturePacker:SmartUpdate:6ae783e63785d2c768c0f8996c295dd3:f628a070fc61ed56f3f8200d0be88f98:897eb3d5a631cb8958a6b43d97451b25$"}}');
 
 },{}],"kOnmi":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("lPpKD") + "rat.8f615ae6.png" + "?" + Date.now();
@@ -36910,7 +36911,11 @@ class Level {
     // Sprites
     tileWidth = 16;
     tileHeight = 16;
-    backgroundSprite;
+    background1Sprite;
+    background2aSprite;
+    background2bSprite;
+    background3aSprite;
+    background3bSprite;
     coinSprite;
     tilemap;
     // Temp
@@ -36918,26 +36923,60 @@ class Level {
     plattformY = this.startFloorY;
     plattformLength = 0;
     lastTilemapX = 0;
+    actionTimer = null;
+    jumpTimer = null;
     constructor(app, player){
         this.app = app;
         this.player = player;
         this.createSprites();
         this.reset();
         // Compose stage
-        this.container.addChild(this.backgroundSprite);
+        this.container.addChild(this.background1Sprite);
+        this.container.addChild(this.background2aSprite);
+        this.container.addChild(this.background3aSprite);
+        this.container.addChild(this.background2bSprite);
+        this.container.addChild(this.background3bSprite);
         this.container.addChild(this.tilemap);
         this.container.addChild(this.player.container);
         // Register event listeners
-        app.view.addEventListener("click", ()=>this.click());
-        app.view.addEventListener("touchend", ()=>this.click());
+        window.addEventListener("keydown", (event)=>{
+            event.preventDefault();
+            event.stopPropagation();
+            if (event.code === "Space") this.startAction();
+        });
+        window.addEventListener("keyup", (event)=>{
+            event.preventDefault();
+            event.stopPropagation();
+            this.endAction();
+        });
+        app.stage.on("pointerdown", (event)=>{
+            event.stopPropagation();
+            this.startAction();
+        });
+        app.stage.on("pointerup", (event)=>{
+            event.stopPropagation();
+            this.endAction();
+        });
     }
-    click() {
-        // TODO: Add adjustable strength
+    startAction() {
+        this.actionTimer = 0;
         if (this.player.dead) this.reset();
-        else this.player.jump();
+        else if (!this.player.airborne) {
+            this.jumpTimer = 0;
+            this.player.jump();
+        }
+    }
+    endAction() {
+        this.actionTimer = null;
     }
     createSprites() {
-        this.backgroundSprite = (0, _pixiJs.Sprite).from("bg_wakaland.png");
+        this.background1Sprite = (0, _pixiJs.Sprite).from("bg_wakaland_1.png");
+        this.background2aSprite = (0, _pixiJs.Sprite).from("bg_wakaland_2.png");
+        this.background3aSprite = (0, _pixiJs.Sprite).from("bg_wakaland_3.png");
+        this.background2bSprite = (0, _pixiJs.Sprite).from("bg_wakaland_2.png");
+        this.background2bSprite.x = this.background2bSprite.width;
+        this.background3bSprite = (0, _pixiJs.Sprite).from("bg_wakaland_3.png");
+        this.background3bSprite.x = this.background3bSprite.width;
         this.coinSprite = (0, _pixiJs.AnimatedSprite).fromFrames([
             "coin1.png",
             "coin2.png",
@@ -36970,7 +37009,7 @@ class Level {
             // Generate new section if necessary
             if (this.plattformLength === 0) {
                 this.abyssLength = (0, _utilities.random)(3, 6);
-                this.plattformY = (0, _utilities.random)(Math.max(this.minFloorY, this.plattformY - 4), this.maxFloorY);
+                this.plattformY = (0, _utilities.random)(Math.min(this.maxFloorY, Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)), this.maxFloorY);
                 this.plattformLength = (0, _utilities.random)(2, 8);
             }
             // Fill current section
@@ -36998,15 +37037,19 @@ class Level {
     tick(dt) {
         if (this.player.dead) return;
         this.elapsed += dt;
+        if (this.actionTimer !== null) this.actionTimer += dt;
+        if (this.jumpTimer !== null) this.jumpTimer += dt;
         const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
         const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
         const lastPlayerY = this.player.position.y;
         // Check if we need to create new tiles
         if (tilemapX < this.lastTilemapX) this.createNewTiles();
         this.lastTilemapX = tilemapX;
+        // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
+        if (this.actionTimer !== null && this.jumpTimer < 10) this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
         // Move player
         this.player.move(dt);
-        // Draw score (temp)
+        // Draw score (TODO)
         document.getElementById("score-value").innerHTML = Math.floor(this.player.position.x);
         // Calculate the tile indieces around the player
         const mapTileXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
@@ -37017,26 +37060,53 @@ class Level {
         let intersecting = false;
         for(var y = mapTileYMin; y <= mapTileYMax; y++){
             for(var x = mapTileXMin; x <= mapTileXMax; x++)if (this.map[y][x] !== null) {
+                // Create tile rectangle with screen coordinates
                 const tileRectangle = new (0, _pixiJs.Rectangle)(x * this.tileWidth - this.tilemap.pivot.x % this.app.screen.width, y * this.tileHeight - this.tilemap.pivot.y % this.app.screen.height, this.tileWidth, this.tileHeight);
-                const overlap = (0, _utilities.intersect2)(this.player.containerRectangle, tileRectangle);
                 // Is overlaping and player was previously above the tile?
-                if (overlap && lastPlayerY + 32 <= tileRectangle.y) {
+                if ((0, _utilities.intersect)(this.player.containerRectangle, tileRectangle) && lastPlayerY + 32 <= tileRectangle.y) {
                     intersecting = true;
                     // Fix position
-                    this.player.position.y = Math.round(this.player.position.y - overlap.height);
+                    this.player.position.y = tileRectangle.y - 32;
                     // Cancel falling
                     if (this.player.velocity.y > 0) this.player.velocity.y = 0;
                 }
             }
         }
+        let landed = false;
+        if (this.player.airborne && intersecting) {
+            landed = true;
+            this.jumpTimer = null;
+        }
         this.player.airborne = !intersecting;
+        // Start jumping if just landed
+        if (landed && this.actionTimer !== null) {
+            console.log("Early jump");
+            this.jumpTimer = 0;
+            this.player.jump(this.actionTimer);
+        }
         // Check for death
         if (this.player.position.y > this.app.screen.height) {
             console.log("Player died");
             this.player.dead = true;
+            const filter1 = new (0, _pixiJs.filters).ColorMatrixFilter();
+            filter1.desaturate();
+            const filter2 = new (0, _pixiJs.filters).ColorMatrixFilter();
+            filter2.brightness(0.5);
+            this.container.filters = [
+                filter1,
+                filter2, 
+            ];
         }
         // TODO: Add paralax scrolling
-        this.tilemap.pivot.set(this.player.position.x, this.tilemap.pivot.y);
+        this.background2aSprite.pivot.x += 0.1;
+        if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
+        this.background2bSprite.pivot.x += 0.1;
+        if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
+        this.background3aSprite.pivot.x += 0.15;
+        if (this.background3aSprite.pivot.x >= this.app.screen.width) this.background3aSprite.pivot.x = 0;
+        this.background3bSprite.pivot.x += 0.15;
+        if (this.background3bSprite.pivot.x >= this.app.screen.width) this.background3bSprite.pivot.x = 0;
+        this.tilemap.pivot.x = this.player.position.x;
     }
     reset() {
         this.elapsed = 0.0;
@@ -37044,12 +37114,19 @@ class Level {
         this.plattformY = this.startFloorY;
         this.plattformLength = 0;
         this.lastTilemapX = 0;
+        this.actionTimer = null;
+        this.jumpTimer = null;
         this.player.force = new (0, _pixiJs.Point)(0.001, this.gravity);
         this.player.velocity = new (0, _pixiJs.Point)(2, 0);
         this.player.position = new (0, _pixiJs.Point)(this.tileWidth * 2, 0);
         this.player.container.position.x = this.player.position.x;
         this.player.airborne = true;
         this.player.dead = false;
+        this.background2aSprite.pivot.x = 0;
+        this.background3aSprite.pivot.x = 0;
+        this.background2bSprite.pivot.x = 0;
+        this.background3bSprite.pivot.x = 0;
+        this.container.filters = [];
         this.createMap();
         this.createTilemap();
     }
@@ -38401,40 +38478,13 @@ const pixi_tilemap = {
 },{"@pixi/display":"b9G7r","@pixi/core":"7PEF8","@pixi/constants":"jYAj1","@pixi/math":"dbvNN","@pixi/utils":"2DWCn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h3TgK":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "intersect", ()=>intersect);
 parcelHelpers.export(exports, "random", ()=>random);
-parcelHelpers.export(exports, "intersect2", ()=>intersect2);
+parcelHelpers.export(exports, "intersect", ()=>intersect);
 var _pixiJs = require("pixi.js");
-function intersect(r1, r2) {
-    // Define the variables we'll need to calculate
-    let combinedHalfWidths, combinedHalfHeights, vx, vy;
-    // Find the center points of each sprite
-    r1.centerX = r1.x + r1.width / 2;
-    r1.centerY = r1.y + r1.height / 2;
-    r2.centerX = r2.x + r2.width / 2;
-    r2.centerY = r2.y + r2.height / 2;
-    // Find the half-widths and half-heights of each sprite
-    r1.halfWidth = r1.width / 2;
-    r1.halfHeight = r1.height / 2;
-    r2.halfWidth = r2.width / 2;
-    r2.halfHeight = r2.height / 2;
-    // Calculate the distance vector between the sprites
-    vx = r1.centerX - r2.centerX;
-    vy = r1.centerY - r2.centerY;
-    // Figure out the combined half-widths and half-heights
-    combinedHalfWidths = r1.halfWidth + r2.halfWidth;
-    combinedHalfHeights = r1.halfHeight + r2.halfHeight;
-    // Check for a collision on the x axis and y axis
-    if (Math.abs(vx) <= combinedHalfWidths && Math.abs(vy) <= combinedHalfHeights) return {
-        vx,
-        vy
-    };
-    return false;
-}
 function random(min = 0, max = 1) {
     return min + Math.floor(Math.random() * (max - min));
 }
-function intersect2(a, b) {
+function intersect(a, b) {
     const x = Math.max(a.x, b.x);
     const num1 = Math.min(a.x + a.width, b.x + b.width);
     const y = Math.max(a.y, b.y);
@@ -38457,7 +38507,7 @@ class Player {
     mass;
     // State
     dead = false;
-    #airborne = null;
+    #airborne = true;
     // Sprites
     spriteWidth = 16;
     spriteHight = 32;
@@ -38474,6 +38524,9 @@ class Player {
     }
     get containerRectangle() {
         return new (0, _pixiJs.Rectangle)(this.container.position.x, this.container.position.y, 16, 32);
+    }
+    get airborne() {
+        return this.#airborne;
     }
     set airborne(value) {
         if (this.#airborne != value) {
@@ -38523,16 +38576,19 @@ class Player {
         if (this.dead) return;
         // Calculate velocity
         this.velocity.x += this.force.x / this.mass * dt;
-        this.velocity.y += this.force.y / this.mass * dt;
+        // Cap horizontal velocity
         if (this.velocity.x > 10) this.velocity.x = 10;
+        // Calculate gravity only when airborne
+        if (this.#airborne) this.velocity.y += this.force.y / this.mass * dt;
         // Calculate position
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
         this.container.position.set(this.container.position.x, this.position.y);
     }
-    jump() {
+    jump(actionTimer = 0) {
         if (this.dead || this.#airborne) return;
         this.velocity.y = this.power;
+        this.airborne = true;
     }
 }
 exports.default = Player;
