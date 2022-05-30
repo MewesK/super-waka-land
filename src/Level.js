@@ -324,12 +324,11 @@ export default class Level {
       );
       gameOverText2.x = this.app.screen.width / 2 - gameOverText2.width / 2;
       gameOverText2.y = this.gameOver.getChildAt(0).y + 30;
-      this.gameOver.addChildAt(gameOverText2, 1);
+      this.gameOver.addChild(gameOverText2);
 
       this.app.stage.addChild(this.gameOver);
     }
 
-    // TODO: Add paralax scrolling
     this.background2aSprite.pivot.x += 0.1;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
@@ -372,6 +371,9 @@ export default class Level {
 
     this.container.filters = [];
     this.app.stage.removeChild(this.gameOver);
+    if (this.gameOver.children.length > 1) {
+      this.gameOver.removeChildAt(1);
+    }
 
     this.createMap();
     this.createTilemap();
