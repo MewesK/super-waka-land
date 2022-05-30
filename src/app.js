@@ -4,6 +4,7 @@ import {
   Spritesheet,
   settings,
   SCALE_MODES,
+  BitmapFont,
 } from "pixi.js";
 import Level from "./Level";
 import Player from "./Player";
@@ -11,6 +12,15 @@ import Player from "./Player";
 // Import ressources
 import ratAtlas from "./images/atlas/rat.json";
 import ratSprites from "./images/atlas/rat.png";
+
+import editUndoFontAtlas from "bundle-text:./fonts/edit-undo.fnt";
+import editUndoFontImage from "./fonts/edit-undo.png";
+
+import rainyHeartsFontAtlas from "bundle-text:./fonts/rainy-hearts.fnt";
+import rainyHeartsFontImage from "./fonts/rainy-hearts.png";
+
+import retroLandMayhemFontAtlas from "bundle-text:./fonts/retro-land-mayhem.fnt";
+import retroLandMayhemFontImage from "./fonts/retro-land-mayhem.png";
 
 // Settings
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
@@ -41,7 +51,12 @@ document.getElementById("app").appendChild(app.view);
 
 // Load ressources
 Loader.shared.onProgress.add(loadProgressHandler);
-Loader.shared.add(ratSprites).load(setup);
+Loader.shared
+  .add(ratSprites)
+  .add(editUndoFontImage)
+  .add(rainyHeartsFontImage)
+  .add(retroLandMayhemFontImage)
+  .load(setup);
 
 function loadProgressHandler(loader, resource) {
   console.log("Loading: " + resource.url);
@@ -50,6 +65,20 @@ function loadProgressHandler(loader, resource) {
 
 function setup() {
   console.log("All files loaded");
+
+  // Load fonts
+  BitmapFont.install(
+    editUndoFontAtlas,
+    Loader.shared.resources[editUndoFontImage].texture
+  );
+  BitmapFont.install(
+    rainyHeartsFontAtlas,
+    Loader.shared.resources[rainyHeartsFontImage].texture
+  );
+  BitmapFont.install(
+    retroLandMayhemFontAtlas,
+    Loader.shared.resources[retroLandMayhemFontImage].texture
+  );
 
   // Load spritesheet
   const sheet = new Spritesheet(

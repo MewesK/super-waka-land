@@ -1,4 +1,14 @@
-import { AnimatedSprite, Point, Sprite, Container, Rectangle, filters } from "pixi.js";
+import {
+  AnimatedSprite,
+  Point,
+  Sprite,
+  Container,
+  Rectangle,
+  filters,
+  BitmapText,
+  BitmapFont,
+  TextStyle,
+} from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
 import { intersect, intersect, random } from "./utilities";
 
@@ -27,6 +37,7 @@ export default class Level {
   background3bSprite;
   coinSprite;
   tilemap;
+  gameOver = new Container();
 
   // Temp
   abyssLength = 0;
@@ -112,6 +123,15 @@ export default class Level {
     this.coinSprite.play();
 
     this.tilemap = new CompositeTilemap(0, "block.png");
+
+    // Game over screen
+    const gameOverText1 = new BitmapText("Game Over", {
+      fontName: "Edit Undo",
+      fontSize: -30,
+    });
+    gameOverText1.x = this.app.screen.width / 2 - gameOverText1.width / 2;
+    gameOverText1.y = this.app.screen.height / 2 - gameOverText1.height / 2;
+    this.gameOver.addChild(gameOverText1);
   }
 
   createMap() {
@@ -293,10 +313,20 @@ export default class Level {
       filter1.desaturate();
       const filter2 = new filters.ColorMatrixFilter();
       filter2.brightness(0.5);
-      this.container.filters = [
-        filter1,
-        filter2,
-      ];
+      this.container.filters = [filter1, filter2];
+
+      const gameOverText2 = new BitmapText(
+        "Final Score: " + Math.floor(this.player.position.x),
+        {
+          fontName: "Edit Undo",
+          fontSize: -16,
+        }
+      );
+      gameOverText2.x = this.app.screen.width / 2 - gameOverText2.width / 2;
+      gameOverText2.y = this.gameOver.getChildAt(0).y + 30;
+      this.gameOver.addChildAt(gameOverText2, 1);
+
+      this.app.stage.addChild(this.gameOver);
     }
 
     // TODO: Add paralax scrolling
@@ -341,6 +371,7 @@ export default class Level {
     this.background3bSprite.pivot.x = 0;
 
     this.container.filters = [];
+    this.app.stage.removeChild(this.gameOver);
 
     this.createMap();
     this.createTilemap();
