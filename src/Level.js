@@ -6,11 +6,9 @@ import {
   Rectangle,
   filters,
   BitmapText,
-  BitmapFont,
-  TextStyle,
 } from "pixi.js";
 import { CompositeTilemap } from "@pixi/tilemap";
-import { intersect, intersect, random } from "./utilities";
+import { intersect, random } from "./utilities";
 
 export default class Level {
   app;
@@ -122,7 +120,7 @@ export default class Level {
     this.coinSprite.y = 127;
     this.coinSprite.play();
 
-    this.tilemap = new CompositeTilemap(0, "block.png");
+    this.tilemap = new CompositeTilemap();
 
     // Game over screen
     const gameOverText1 = new BitmapText("Game Over", {
@@ -153,7 +151,7 @@ export default class Level {
   createNewTiles() {
     for (let y = 0; y <= this.mapHeight; y++) {
       // Move second half to the first
-      for (var x = this.mapWidth / 2; x <= this.mapWidth; x++) {
+      for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
         this.map[y][x - this.mapWidth / 2] = this.map[y][x];
         this.map[y][x] = null;
       }
@@ -193,8 +191,8 @@ export default class Level {
 
   createTilemap() {
     this.tilemap.clear();
-    for (var y = 0; y <= this.mapHeight; y++) {
-      for (var x = 0; x <= this.mapWidth * 2; x++) {
+    for (let y = 0; y <= this.mapHeight; y++) {
+      for (let x = 0; x <= this.mapWidth * 2; x++) {
         if (this.map[y][x] !== null) {
           this.tilemap.tile(
             this.map[y][x],
@@ -242,7 +240,7 @@ export default class Level {
     // Draw score (TODO)
     document.getElementById("score-value").innerHTML = Math.floor(
       this.player.position.x
-    );
+    ).toFixed(0);
 
     // Calculate the tile indieces around the player
     const mapTileXMin = Math.max(
@@ -262,8 +260,8 @@ export default class Level {
 
     // Check for collisions
     let intersecting = false;
-    for (var y = mapTileYMin; y <= mapTileYMax; y++) {
-      for (var x = mapTileXMin; x <= mapTileXMax; x++) {
+    for (let y = mapTileYMin; y <= mapTileYMax; y++) {
+      for (let x = mapTileXMin; x <= mapTileXMax; x++) {
         if (this.map[y][x] !== null) {
           // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
@@ -312,7 +310,7 @@ export default class Level {
       const filter1 = new filters.ColorMatrixFilter();
       filter1.desaturate();
       const filter2 = new filters.ColorMatrixFilter();
-      filter2.brightness(0.5);
+      filter2.brightness(0.5, false);
       this.container.filters = [filter1, filter2];
 
       const gameOverText2 = new BitmapText(

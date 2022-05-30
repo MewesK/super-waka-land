@@ -6,6 +6,7 @@ export default class Player {
   // Properties
   force = new Point(0, 0);
   velocity = new Point(0, 0);
+  maxVelocity = new Point(10, -1);
   position = new Point(0, 0);
   power;
   mass;
@@ -15,8 +16,8 @@ export default class Player {
   #airborne = true;
 
   // Sprites
-  spriteWidth = 16;
-  spriteHight = 32;
+  width = 16;
+  height = 32;
   ratIdleSprite;
   ratWalkSprite;
   ratRunSprite;
@@ -36,8 +37,8 @@ export default class Player {
     return new Rectangle(
       this.container.position.x,
       this.container.position.y,
-      16,
-      32
+      this.width,
+      this.height
     );
   }
 
@@ -46,7 +47,7 @@ export default class Player {
   }
 
   set airborne(value) {
-    if (this.#airborne != value) {
+    if (this.#airborne !== value) {
       this.#airborne = value;
 
       if (value) {
@@ -103,12 +104,15 @@ export default class Player {
     // Calculate velocity
     this.velocity.x += (this.force.x / this.mass) * dt;
     // Cap horizontal velocity
-    if (this.velocity.x > 10) {
-      this.velocity.x = 10;
+    if (this.velocity.x > this.maxVelocity.x) {
+      this.velocity.x = this.maxVelocity.x;
     }
     // Calculate gravity only when airborne
     if (this.#airborne) {
       this.velocity.y += (this.force.y / this.mass) * dt;
+      if (this.maxVelocity.y > 0 && this.velocity.y > this.maxVelocity.y) {
+        this.velocity.y = this.maxVelocity.y;
+      }
     }
 
     // Calculate position
@@ -117,7 +121,7 @@ export default class Player {
     this.container.position.set(this.container.position.x, this.position.y);
   }
 
-  jump(actionTimer = 0) {
+  jump() {
     if (this.dead || this.#airborne) {
       return;
     }

@@ -9,7 +9,7 @@ import {
 import Level from "./Level";
 import Player from "./Player";
 
-// Import ressources
+// Import resources
 import ratAtlas from "./images/atlas/rat.json";
 import ratSprites from "./images/atlas/rat.png";
 
@@ -49,7 +49,7 @@ const app = new Application({
 // Mount application
 document.getElementById("app").appendChild(app.view);
 
-// Load ressources
+// Load resources
 Loader.shared.onProgress.add(loadProgressHandler);
 Loader.shared
   .add(ratSprites)
