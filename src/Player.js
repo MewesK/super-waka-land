@@ -101,24 +101,30 @@ export default class Player {
       return;
     }
 
-    // Calculate velocity
+    // Calculate horizontal velocity
     this.velocity.x += (this.force.x / this.mass) * dt;
+
     // Cap horizontal velocity
-    if (this.velocity.x > this.maxVelocity.x) {
-      this.velocity.x = this.maxVelocity.x;
+    if (this.maxVelocity.x > 0 && Math.abs(this.velocity.x) > this.maxVelocity.x) {
+      this.velocity.x = Math.sign(this.velocity.x) * this.maxVelocity.x;
     }
     // Calculate gravity only when airborne
     if (this.#airborne) {
+      // Calculate vertical velocity
       this.velocity.y += (this.force.y / this.mass) * dt;
-      if (this.maxVelocity.y > 0 && this.velocity.y > this.maxVelocity.y) {
-        this.velocity.y = this.maxVelocity.y;
+
+      // Cap vertical velocity
+      if (this.maxVelocity.y > 0 && Math.abs(this.velocity.x) > this.maxVelocity.y) {
+        this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
       }
     }
 
     // Calculate position
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
-    this.container.position.set(this.container.position.x, this.position.y);
+
+    // Set vertical position of the player container
+    this.container.position.y = this.position.y;
   }
 
   jump() {

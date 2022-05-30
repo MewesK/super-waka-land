@@ -37,6 +37,7 @@ export default class Level {
   background3bSprite;
   coinSprite;
   tilemap;
+  scoreText;
 
   gameOver = new Container();
   gameOverText1;
@@ -65,6 +66,7 @@ export default class Level {
     this.levelContainer.addChild(this.background3bSprite);
     this.levelContainer.addChild(this.tilemap);
     this.levelContainer.addChild(this.player.container);
+    this.levelContainer.addChild(this.scoreText);
     this.container.addChild(this.levelContainer);
 
     // Register event listeners
@@ -128,6 +130,14 @@ export default class Level {
 
     this.tilemap = new CompositeTilemap();
 
+    // Score text
+    this.scoreText = new BitmapText("Score: 0", {
+      fontName: "Edit Undo",
+      fontSize: 16,
+      tint: 0x935E53,
+    });
+    this.scoreText.x = 2;
+
     // Game over screen
     this.gameOverText1 = new BitmapText("Game Over", {
       fontName: "Edit Undo",
@@ -135,7 +145,6 @@ export default class Level {
     });
     this.gameOver.addChild(this.gameOverText1);
     this.gameOverText1.x = this.app.screen.width / 2 - this.gameOverText1.width / 2;
-    this.gameOverText1.y = 0;
 
     this.gameOverText2 = new BitmapText("Final Score: 0", {
       fontName: "Edit Undo",
@@ -253,12 +262,10 @@ export default class Level {
     // Move player
     this.player.move(dt);
 
-    // Draw score (TODO)
-    document.getElementById("score-value").innerHTML = Math.floor(
-      this.player.position.x
-    ).toFixed(0);
+    // Draw score
+    this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
 
-    // Calculate the tile indieces around the player
+    // Calculate the tile indices around the player
     const mapTileXMin = Math.max(
       0,
       Math.floor(
