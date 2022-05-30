@@ -15,6 +15,7 @@ export default class Level {
   player;
   map = [[]];
   container = new Container();
+  levelContainer = new Container();
 
   // Properties
   gravity = 0.3;
@@ -28,6 +29,7 @@ export default class Level {
   // Sprites
   tileWidth = 16;
   tileHeight = 16;
+
   background1Sprite;
   background2aSprite;
   background2bSprite;
@@ -35,7 +37,10 @@ export default class Level {
   background3bSprite;
   coinSprite;
   tilemap;
+
   gameOver = new Container();
+  gameOverText1;
+  gameOverText2;
 
   // Temp
   abyssLength = 0;
@@ -53,13 +58,14 @@ export default class Level {
     this.reset();
 
     // Compose stage
-    this.container.addChild(this.background1Sprite);
-    this.container.addChild(this.background2aSprite);
-    this.container.addChild(this.background3aSprite);
-    this.container.addChild(this.background2bSprite);
-    this.container.addChild(this.background3bSprite);
-    this.container.addChild(this.tilemap);
-    this.container.addChild(this.player.container);
+    this.levelContainer.addChild(this.background1Sprite);
+    this.levelContainer.addChild(this.background2aSprite);
+    this.levelContainer.addChild(this.background3aSprite);
+    this.levelContainer.addChild(this.background2bSprite);
+    this.levelContainer.addChild(this.background3bSprite);
+    this.levelContainer.addChild(this.tilemap);
+    this.levelContainer.addChild(this.player.container);
+    this.container.addChild(this.levelContainer);
 
     // Register event listeners
     window.addEventListener("keydown", (event) => {
@@ -123,13 +129,23 @@ export default class Level {
     this.tilemap = new CompositeTilemap();
 
     // Game over screen
-    const gameOverText1 = new BitmapText("Game Over", {
+    this.gameOverText1 = new BitmapText("Game Over", {
       fontName: "Edit Undo",
-      fontSize: -30,
+      fontSize: 30,
     });
-    gameOverText1.x = this.app.screen.width / 2 - gameOverText1.width / 2;
-    gameOverText1.y = this.app.screen.height / 2 - gameOverText1.height / 2;
-    this.gameOver.addChild(gameOverText1);
+    this.gameOver.addChild(this.gameOverText1);
+    this.gameOverText1.x = this.app.screen.width / 2 - this.gameOverText1.width / 2;
+    this.gameOverText1.y = 0;
+
+    this.gameOverText2 = new BitmapText("Final Score: 0", {
+      fontName: "Edit Undo",
+      fontSize: 16,
+    });
+    this.gameOver.addChild(this.gameOverText2);
+    this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
+    this.gameOverText2.y = 30;
+
+    this.gameOver.y = this.app.screen.height / 2 - this.gameOver.height / 2;
   }
 
   createMap() {
@@ -176,7 +192,7 @@ export default class Level {
         // Fill abyss
         this.abyssLength--;
       } else {
-        // Fill plattform
+        // Fill platform
         this.map[this.plattformY][x] = "block.png";
         this.plattformLength--;
       }
@@ -231,7 +247,8 @@ export default class Level {
 
     // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
     if (this.actionTimer !== null && this.jumpTimer < 10) {
-      this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
+      this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 3;
+      //this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
     }
 
     // Move player
@@ -271,7 +288,7 @@ export default class Level {
             this.tileWidth,
             this.tileHeight
           );
-          // Is overlaping and player was previously above the tile?
+          // Is overlapping and player was previously above the tile?
           if (
             intersect(this.player.containerRectangle, tileRectangle) &&
             lastPlayerY + 32 <= tileRectangle.y
@@ -311,35 +328,28 @@ export default class Level {
       filter1.desaturate();
       const filter2 = new filters.ColorMatrixFilter();
       filter2.brightness(0.5, false);
-      this.container.filters = [filter1, filter2];
+      this.levelContainer.filterArea = new Rectangle(0,0,this.levelContainer.width,this.levelContainer.height);
+      this.levelContainer.filters = [filter1, filter2];
 
-      const gameOverText2 = new BitmapText(
-        "Final Score: " + Math.floor(this.player.position.x),
-        {
-          fontName: "Edit Undo",
-          fontSize: -16,
-        }
-      );
-      gameOverText2.x = this.app.screen.width / 2 - gameOverText2.width / 2;
-      gameOverText2.y = this.gameOver.getChildAt(0).y + 30;
-      this.gameOver.addChild(gameOverText2);
+      this.gameOverText2.text = "Final Score: " + Math.floor(this.player.position.x);
+      this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
 
-      this.app.stage.addChild(this.gameOver);
+      this.container.addChild(this.gameOver);
     }
 
-    this.background2aSprite.pivot.x += 0.1;
+    this.background2aSprite.pivot.x += 0.1 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
     }
-    this.background2bSprite.pivot.x += 0.1;
+    this.background2bSprite.pivot.x += 0.1 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
     }
-    this.background3aSprite.pivot.x += 0.15;
+    this.background3aSprite.pivot.x += 0.15 * dt;
     if (this.background3aSprite.pivot.x >= this.app.screen.width) {
       this.background3aSprite.pivot.x = 0;
     }
-    this.background3bSprite.pivot.x += 0.15;
+    this.background3bSprite.pivot.x += 0.15 * dt;
     if (this.background3bSprite.pivot.x >= this.app.screen.width) {
       this.background3bSprite.pivot.x = 0;
     }
@@ -367,11 +377,8 @@ export default class Level {
     this.background2bSprite.pivot.x = 0;
     this.background3bSprite.pivot.x = 0;
 
-    this.container.filters = [];
-    this.app.stage.removeChild(this.gameOver);
-    if (this.gameOver.children.length > 1) {
-      this.gameOver.removeChildAt(1);
-    }
+    this.levelContainer.filters = null;
+    this.container.removeChild(this.gameOver);
 
     this.createMap();
     this.createTilemap();

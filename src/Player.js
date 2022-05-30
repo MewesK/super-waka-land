@@ -6,7 +6,7 @@ export default class Player {
   // Properties
   force = new Point(0, 0);
   velocity = new Point(0, 0);
-  maxVelocity = new Point(10, -1);
+  maxVelocity = new Point(8, 8);
   position = new Point(0, 0);
   power;
   mass;
