@@ -247,8 +247,7 @@ export default class Level {
 
     // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
     if (this.actionTimer !== null && this.jumpTimer < 10) {
-      this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 3;
-      //this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
+      this.player.velocity.y += (this.player.power / this.jumpTimer) / 2;
     }
 
     // Move player
