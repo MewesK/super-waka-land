@@ -36981,13 +36981,14 @@ class Level {
         });
     }
     startAction() {
+        if (this.actionTimer != null) return;
         console.debug("Start action");
         this.actionTimer = 0;
         if (this.player.dead) this.reset();
         else if (!this.player.airborne) this.player.jump();
     }
     endAction() {
-        console.debug("End action");
+        console.debug("End action: ", this.actionTimer);
         this.actionTimer = null;
     }
     createSprites() {
@@ -37088,11 +37089,8 @@ class Level {
         // Check if we need to create new tiles
         if (tilemapX < this.lastTilemapX) this.createNewTiles();
         this.lastTilemapX = tilemapX;
-        // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
-        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
-            console.log();
-            this.player.velocity.y += this.player.power / this.player.jumpTimer * 0.6;
-        }
+        // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
+        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) this.player.velocity.y += this.player.power / this.player.jumpTimer * dt * 1.2;
         // Move player
         this.player.move(dt);
         // Draw score
@@ -37122,7 +37120,7 @@ class Level {
         if (this.player.airborne && intersecting) {
             console.debug("Landed");
             landed = true;
-            this.jumpTimer = null;
+            this.player.jumpTimer = null;
         }
         this.player.airborne = !intersecting;
         // Start jumping if just landed
@@ -37147,6 +37145,7 @@ class Level {
             this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
             this.container.addChild(this.gameOver);
         }
+        // Paralax scolling
         this.background2aSprite.pivot.x += 0.1 * dt;
         if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
         this.background2bSprite.pivot.x += 0.1 * dt;
@@ -38567,6 +38566,8 @@ class Player {
     ratWalkSprite;
     ratRunSprite;
     ratJumpSprite;
+    // Debug
+    jumpHeight = 0;
     constructor(power, mass){
         this.power = power;
         this.mass = mass;
@@ -38582,6 +38583,7 @@ class Player {
     }
     set airborne(value) {
         if (this.#airborne !== value) {
+            // Debug
             console.debug("Aairborne: ", value);
             this.#airborne = value;
             if (value) {
@@ -38607,7 +38609,7 @@ class Player {
         this.ratIdleSprite.y = this.position.y;
         this.ratWalkSprite = (0, _pixiJs.AnimatedSprite).fromFrames([
             "rat_idle.png",
-            "rat_walk.png", 
+            "rat_walk.png"
         ]);
         this.ratWalkSprite.animationSpeed = 0.1;
         this.ratWalkSprite.x = this.position.x;
@@ -38615,7 +38617,7 @@ class Player {
         this.ratWalkSprite.play();
         this.ratRunSprite = (0, _pixiJs.AnimatedSprite).fromFrames([
             "rat_idle.png",
-            "rat_run.png", 
+            "rat_run.png"
         ]);
         this.ratRunSprite.animationSpeed = 0.15;
         this.ratRunSprite.x = this.position.x;
@@ -38632,12 +38634,16 @@ class Player {
         // Cap horizontal velocity
         if (this.maxVelocity.x > 0 && Math.abs(this.velocity.x) > this.maxVelocity.x) this.velocity.x = Math.sign(this.velocity.x) * this.maxVelocity.x;
         // Calculate gravity only when airborne
+        const lastVelocityY = this.velocity.y;
         if (this.#airborne) {
             // Calculate vertical velocity
             this.velocity.y += this.force.y / this.mass * dt;
             // Cap vertical velocity
             if (this.maxVelocity.y > 0 && Math.abs(this.velocity.x) > this.maxVelocity.y) this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
         }
+        // Debug
+        if (this.velocity.y < 0) this.jumpHeight += this.velocity.x * dt;
+        if (lastVelocityY < 0 && this.velocity.y >= 0) console.debug("Max jump height: ", this.jumpHeight, lastVelocityY);
         // Calculate position
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
@@ -38649,6 +38655,8 @@ class Player {
         this.jumpTimer = 0;
         this.velocity.y = this.power;
         this.airborne = true;
+        // Debug
+        this.jumpHeight = 0;
     }
 }
 exports.default = Player;
