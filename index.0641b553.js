@@ -509,7 +509,7 @@ var _level = require("./Level");
 var _levelDefault = parcelHelpers.interopDefault(_level);
 var _player = require("./Player");
 var _playerDefault = parcelHelpers.interopDefault(_player);
-// Import ressources
+// Import resources
 var _ratJson = require("./images/atlas/rat.json");
 var _ratJsonDefault = parcelHelpers.interopDefault(_ratJson);
 var _ratPng = require("./images/atlas/rat.png");
@@ -547,7 +547,7 @@ const app = new (0, _pixiJs.Application)({
 });
 // Mount application
 document.getElementById("app").appendChild(app.view);
-// Load ressources
+// Load resources
 (0, _pixiJs.Loader).shared.onProgress.add(loadProgressHandler);
 (0, _pixiJs.Loader).shared.add((0, _ratPngDefault.default)).add((0, _editUndoPngDefault.default)).add((0, _rainyHeartsPngDefault.default)).add((0, _retroLandMayhemPngDefault.default)).load(setup);
 function loadProgressHandler(loader, resource) {
@@ -565,7 +565,7 @@ function setup() {
     sheet.parse(()=>{
         console.log("Spritesheet loaded");
         // Create player
-        player = new (0, _playerDefault.default)(-3, 1.0);
+        player = new (0, _playerDefault.default)(-2, 1.0);
         // Create level
         level = new (0, _levelDefault.default)(app, player);
         // Compose stage
@@ -36917,6 +36917,7 @@ class Level {
         []
     ];
     container = new (0, _pixiJs.Container)();
+    levelContainer = new (0, _pixiJs.Container)();
     // Properties
     gravity = 0.3;
     elapsed = 0.0;
@@ -36934,27 +36935,31 @@ class Level {
     background3bSprite;
     coinSprite;
     tilemap;
+    scoreText;
     gameOver = new (0, _pixiJs.Container)();
+    gameOverText1;
+    gameOverText2;
     // Temp
     abyssLength = 0;
     plattformY = this.startFloorY;
     plattformLength = 0;
     lastTilemapX = 0;
     actionTimer = null;
-    jumpTimer = null;
     constructor(app, player){
         this.app = app;
         this.player = player;
         this.createSprites();
         this.reset();
         // Compose stage
-        this.container.addChild(this.background1Sprite);
-        this.container.addChild(this.background2aSprite);
-        this.container.addChild(this.background3aSprite);
-        this.container.addChild(this.background2bSprite);
-        this.container.addChild(this.background3bSprite);
-        this.container.addChild(this.tilemap);
-        this.container.addChild(this.player.container);
+        this.levelContainer.addChild(this.background1Sprite);
+        this.levelContainer.addChild(this.background2aSprite);
+        this.levelContainer.addChild(this.background3aSprite);
+        this.levelContainer.addChild(this.background2bSprite);
+        this.levelContainer.addChild(this.background3bSprite);
+        this.levelContainer.addChild(this.tilemap);
+        this.levelContainer.addChild(this.player.container);
+        this.levelContainer.addChild(this.scoreText);
+        this.container.addChild(this.levelContainer);
         // Register event listeners
         window.addEventListener("keydown", (event)=>{
             event.preventDefault();
@@ -36976,14 +36981,13 @@ class Level {
         });
     }
     startAction() {
+        console.debug("Start action");
         this.actionTimer = 0;
         if (this.player.dead) this.reset();
-        else if (!this.player.airborne) {
-            this.jumpTimer = 0;
-            this.player.jump();
-        }
+        else if (!this.player.airborne) this.player.jump();
     }
     endAction() {
+        console.debug("End action");
         this.actionTimer = null;
     }
     createSprites() {
@@ -37004,15 +37008,29 @@ class Level {
         this.coinSprite.x = 190;
         this.coinSprite.y = 127;
         this.coinSprite.play();
-        this.tilemap = new (0, _tilemap.CompositeTilemap)(0, "block.png");
-        // Game over screen
-        const gameOverText1 = new (0, _pixiJs.BitmapText)("Game Over", {
+        this.tilemap = new (0, _tilemap.CompositeTilemap)();
+        // Score text
+        this.scoreText = new (0, _pixiJs.BitmapText)("Score: 0", {
             fontName: "Edit Undo",
-            fontSize: -30
+            fontSize: 16,
+            tint: 0x935e53
         });
-        gameOverText1.x = this.app.screen.width / 2 - gameOverText1.width / 2;
-        gameOverText1.y = this.app.screen.height / 2 - gameOverText1.height / 2;
-        this.gameOver.addChild(gameOverText1);
+        this.scoreText.x = 2;
+        // Game over screen
+        this.gameOverText1 = new (0, _pixiJs.BitmapText)("Game Over", {
+            fontName: "Edit Undo",
+            fontSize: 30
+        });
+        this.gameOver.addChild(this.gameOverText1);
+        this.gameOverText1.x = this.app.screen.width / 2 - this.gameOverText1.width / 2;
+        this.gameOverText2 = new (0, _pixiJs.BitmapText)("Final Score: 0", {
+            fontName: "Edit Undo",
+            fontSize: 16
+        });
+        this.gameOver.addChild(this.gameOverText2);
+        this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
+        this.gameOverText2.y = 30;
+        this.gameOver.y = this.app.screen.height / 2 - this.gameOver.height / 2;
     }
     createMap() {
         this.mapWidth = Math.ceil(this.app.screen.width / this.tileWidth) * 2;
@@ -37025,7 +37043,7 @@ class Level {
     }
     createNewTiles() {
         for(let y = 0; y <= this.mapHeight; y++)// Move second half to the first
-        for(var x = this.mapWidth / 2; x <= this.mapWidth; x++){
+        for(let x = this.mapWidth / 2; x <= this.mapWidth; x++){
             this.map[y][x - this.mapWidth / 2] = this.map[y][x];
             this.map[y][x] = null;
         }
@@ -37041,7 +37059,7 @@ class Level {
             if (this.abyssLength > 0) // Fill abyss
             this.abyssLength--;
             else {
-                // Fill plattform
+                // Fill platform
                 this.map[this.plattformY][x1] = "block.png";
                 this.plattformLength--;
             }
@@ -37053,8 +37071,8 @@ class Level {
     }
     createTilemap() {
         this.tilemap.clear();
-        for(var y = 0; y <= this.mapHeight; y++){
-            for(var x = 0; x <= this.mapWidth * 2; x++)if (this.map[y][x] !== null) this.tilemap.tile(this.map[y][x], x * this.tileWidth, y * this.tileHeight);
+        for(let y = 0; y <= this.mapHeight; y++){
+            for(let x = 0; x <= this.mapWidth * 2; x++)if (this.map[y][x] !== null) this.tilemap.tile(this.map[y][x], x * this.tileWidth, y * this.tileHeight);
         }
         this.tilemap.position.set(0, 0);
         this.tilemap.pivot.set(0, 0);
@@ -37063,7 +37081,7 @@ class Level {
         if (this.player.dead) return;
         this.elapsed += dt;
         if (this.actionTimer !== null) this.actionTimer += dt;
-        if (this.jumpTimer !== null) this.jumpTimer += dt;
+        if (this.player.jumpTimer !== null) this.player.jumpTimer += dt;
         const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
         const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
         const lastPlayerY = this.player.position.y;
@@ -37071,23 +37089,26 @@ class Level {
         if (tilemapX < this.lastTilemapX) this.createNewTiles();
         this.lastTilemapX = tilemapX;
         // Add more jump velocity for the first 100ms after pressing jump (based on player power but decreasing over time)
-        if (this.actionTimer !== null && this.jumpTimer < 10) this.player.velocity.y += (this.player.power + this.jumpTimer / 4) / 6;
+        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
+            console.log();
+            this.player.velocity.y += this.player.power / this.player.jumpTimer * 0.6;
+        }
         // Move player
         this.player.move(dt);
-        // Draw score (TODO)
-        document.getElementById("score-value").innerHTML = Math.floor(this.player.position.x);
-        // Calculate the tile indieces around the player
+        // Draw score
+        this.scoreText.text = "Score: " + Math.floor(this.player.position.x).toFixed(0);
+        // Calculate the tile indices around the player
         const mapTileXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
         const mapTileXMax = Math.min(mapTileXMin + 2, this.mapWidth);
         const mapTileYMin = Math.max(0, Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1);
         const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
         // Check for collisions
         let intersecting = false;
-        for(var y = mapTileYMin; y <= mapTileYMax; y++){
-            for(var x = mapTileXMin; x <= mapTileXMax; x++)if (this.map[y][x] !== null) {
+        for(let y = mapTileYMin; y <= mapTileYMax; y++){
+            for(let x = mapTileXMin; x <= mapTileXMax; x++)if (this.map[y][x] !== null) {
                 // Create tile rectangle with screen coordinates
                 const tileRectangle = new (0, _pixiJs.Rectangle)(x * this.tileWidth - this.tilemap.pivot.x % this.app.screen.width, y * this.tileHeight - this.tilemap.pivot.y % this.app.screen.height, this.tileWidth, this.tileHeight);
-                // Is overlaping and player was previously above the tile?
+                // Is overlapping and player was previously above the tile?
                 if ((0, _utilities.intersect)(this.player.containerRectangle, tileRectangle) && lastPlayerY + 32 <= tileRectangle.y) {
                     intersecting = true;
                     // Fix position
@@ -37099,44 +37120,40 @@ class Level {
         }
         let landed = false;
         if (this.player.airborne && intersecting) {
+            console.debug("Landed");
             landed = true;
             this.jumpTimer = null;
         }
         this.player.airborne = !intersecting;
         // Start jumping if just landed
         if (landed && this.actionTimer !== null) {
-            console.log("Early jump");
-            this.jumpTimer = 0;
-            this.player.jump(this.actionTimer);
+            console.debug("Early jump");
+            this.player.jump();
         }
         // Check for death
         if (this.player.position.y > this.app.screen.height) {
-            console.log("Player died");
+            console.debug("Died");
             this.player.dead = true;
             const filter1 = new (0, _pixiJs.filters).ColorMatrixFilter();
             filter1.desaturate();
             const filter2 = new (0, _pixiJs.filters).ColorMatrixFilter();
-            filter2.brightness(0.5);
-            this.container.filters = [
+            filter2.brightness(0.5, false);
+            this.levelContainer.filterArea = new (0, _pixiJs.Rectangle)(0, 0, this.levelContainer.width, this.levelContainer.height);
+            this.levelContainer.filters = [
                 filter1,
                 filter2
             ];
-            const gameOverText2 = new (0, _pixiJs.BitmapText)("Final Score: " + Math.floor(this.player.position.x), {
-                fontName: "Edit Undo",
-                fontSize: -16
-            });
-            gameOverText2.x = this.app.screen.width / 2 - gameOverText2.width / 2;
-            gameOverText2.y = this.gameOver.getChildAt(0).y + 30;
-            this.gameOver.addChild(gameOverText2);
-            this.app.stage.addChild(this.gameOver);
+            this.gameOverText2.text = "Final Score: " + Math.floor(this.player.position.x);
+            this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
+            this.container.addChild(this.gameOver);
         }
-        this.background2aSprite.pivot.x += 0.1;
+        this.background2aSprite.pivot.x += 0.1 * dt;
         if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
-        this.background2bSprite.pivot.x += 0.1;
+        this.background2bSprite.pivot.x += 0.1 * dt;
         if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
-        this.background3aSprite.pivot.x += 0.15;
+        this.background3aSprite.pivot.x += 0.15 * dt;
         if (this.background3aSprite.pivot.x >= this.app.screen.width) this.background3aSprite.pivot.x = 0;
-        this.background3bSprite.pivot.x += 0.15;
+        this.background3bSprite.pivot.x += 0.15 * dt;
         if (this.background3bSprite.pivot.x >= this.app.screen.width) this.background3bSprite.pivot.x = 0;
         this.tilemap.pivot.x = this.player.position.x;
     }
@@ -37147,20 +37164,19 @@ class Level {
         this.plattformLength = 0;
         this.lastTilemapX = 0;
         this.actionTimer = null;
-        this.jumpTimer = null;
         this.player.force = new (0, _pixiJs.Point)(0.001, this.gravity);
         this.player.velocity = new (0, _pixiJs.Point)(2, 0);
         this.player.position = new (0, _pixiJs.Point)(this.tileWidth * 2, 0);
         this.player.container.position.x = this.player.position.x;
         this.player.airborne = true;
         this.player.dead = false;
+        this.player.jumpTimer = true;
         this.background2aSprite.pivot.x = 0;
         this.background3aSprite.pivot.x = 0;
         this.background2bSprite.pivot.x = 0;
         this.background3bSprite.pivot.x = 0;
-        this.container.filters = [];
-        this.app.stage.removeChild(this.gameOver);
-        if (this.gameOver.children.length > 1) this.gameOver.removeChildAt(1);
+        this.levelContainer.filters = null;
+        this.container.removeChild(this.gameOver);
         this.createMap();
         this.createTilemap();
     }
@@ -38536,15 +38552,17 @@ class Player {
     // Properties
     force = new (0, _pixiJs.Point)(0, 0);
     velocity = new (0, _pixiJs.Point)(0, 0);
+    maxVelocity = new (0, _pixiJs.Point)(8, 8);
     position = new (0, _pixiJs.Point)(0, 0);
     power;
     mass;
     // State
     dead = false;
+    jumpTimer = null;
     #airborne = true;
     // Sprites
-    spriteWidth = 16;
-    spriteHight = 32;
+    width = 16;
+    height = 32;
     ratIdleSprite;
     ratWalkSprite;
     ratRunSprite;
@@ -38557,13 +38575,14 @@ class Player {
         this.container.addChild(this.ratRunSprite);
     }
     get containerRectangle() {
-        return new (0, _pixiJs.Rectangle)(this.container.position.x, this.container.position.y, 16, 32);
+        return new (0, _pixiJs.Rectangle)(this.container.position.x, this.container.position.y, this.width, this.height);
     }
     get airborne() {
         return this.#airborne;
     }
     set airborne(value) {
-        if (this.#airborne != value) {
+        if (this.#airborne !== value) {
+            console.debug("Aairborne: ", value);
             this.#airborne = value;
             if (value) {
                 this.container.removeChildren();
@@ -38608,19 +38627,26 @@ class Player {
     }
     move(dt) {
         if (this.dead) return;
-        // Calculate velocity
+        // Calculate horizontal velocity
         this.velocity.x += this.force.x / this.mass * dt;
         // Cap horizontal velocity
-        if (this.velocity.x > 10) this.velocity.x = 10;
+        if (this.maxVelocity.x > 0 && Math.abs(this.velocity.x) > this.maxVelocity.x) this.velocity.x = Math.sign(this.velocity.x) * this.maxVelocity.x;
         // Calculate gravity only when airborne
-        if (this.#airborne) this.velocity.y += this.force.y / this.mass * dt;
+        if (this.#airborne) {
+            // Calculate vertical velocity
+            this.velocity.y += this.force.y / this.mass * dt;
+            // Cap vertical velocity
+            if (this.maxVelocity.y > 0 && Math.abs(this.velocity.x) > this.maxVelocity.y) this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
+        }
         // Calculate position
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
-        this.container.position.set(this.container.position.x, this.position.y);
+        // Set vertical position of the player container
+        this.container.position.y = this.position.y;
     }
-    jump(actionTimer = 0) {
+    jump() {
         if (this.dead || this.#airborne) return;
+        this.jumpTimer = 0;
         this.velocity.y = this.power;
         this.airborne = true;
     }
@@ -38631,7 +38657,7 @@ exports.default = Player;
 module.exports = require("./helpers/bundle-url").getBundleURL("lPpKD") + "edit-undo.96fa1127.png" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"6ZwY2":[function(require,module,exports) {
-module.exports = "<?xml version=\"1.0\"?>\n<font>\n  <info face=\"Edit Undo\" size=\"-14\" bold=\"0\" italic=\"0\" charset=\"\" unicode=\"1\" stretchH=\"100\" smooth=\"0\" aa=\"1\" padding=\"0,0,0,0\" spacing=\"1,1\" outline=\"0\"/>\n  <common lineHeight=\"12\" base=\"10\" scaleW=\"256\" scaleH=\"256\" pages=\"1\" packed=\"0\" alphaChnl=\"1\" redChnl=\"0\" greenChnl=\"0\" blueChnl=\"0\"/>\n  <pages>\n    <page id=\"0\" file=\"edit-undo.png\" />\n  </pages>\n  <chars count=\"113\">\n    <char id=\"32\" x=\"221\" y=\"18\" width=\"1\" height=\"1\" xoffset=\"0\" yoffset=\"0\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"33\" x=\"76\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"34\" x=\"201\" y=\"18\" width=\"5\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"35\" x=\"120\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"36\" x=\"20\" y=\"0\" width=\"6\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"37\" x=\"58\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"38\" x=\"27\" y=\"0\" width=\"6\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"39\" x=\"218\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"40\" x=\"64\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"41\" x=\"68\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"42\" x=\"95\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"43\" x=\"102\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"44\" x=\"166\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"45\" x=\"194\" y=\"18\" width=\"6\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"46\" x=\"215\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"47\" x=\"103\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"48\" x=\"185\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"49\" x=\"79\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"50\" x=\"192\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"51\" x=\"199\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"52\" x=\"206\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"53\" x=\"213\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"54\" x=\"136\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"55\" x=\"220\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"56\" x=\"227\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"57\" x=\"234\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"58\" x=\"82\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"59\" x=\"44\" y=\"0\" width=\"2\" height=\"9\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"60\" x=\"48\" y=\"19\" width=\"5\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"61\" x=\"88\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"62\" x=\"42\" y=\"19\" width=\"5\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"63\" x=\"248\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"64\" x=\"76\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"65\" x=\"0\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"66\" x=\"77\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"67\" x=\"7\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"68\" x=\"14\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"69\" x=\"21\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"70\" x=\"28\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"71\" x=\"35\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"72\" x=\"42\" y=\"10\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"73\" x=\"49\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"74\" x=\"56\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"75\" x=\"63\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"76\" x=\"70\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"77\" x=\"112\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"78\" x=\"84\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"79\" x=\"91\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"80\" x=\"98\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"81\" x=\"105\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"82\" x=\"112\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"83\" x=\"119\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"84\" x=\"126\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"85\" x=\"133\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"86\" x=\"140\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"87\" x=\"128\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"88\" x=\"178\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"89\" x=\"241\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"90\" x=\"171\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"91\" x=\"72\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"92\" x=\"67\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"93\" x=\"252\" y=\"9\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"94\" x=\"127\" y=\"18\" width=\"6\" height=\"4\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"95\" x=\"187\" y=\"18\" width=\"6\" height=\"2\" xoffset=\"0\" yoffset=\"9\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"96\" x=\"212\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"97\" x=\"147\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"98\" x=\"154\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"99\" x=\"161\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"100\" x=\"168\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"101\" x=\"175\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"102\" x=\"182\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"103\" x=\"189\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"104\" x=\"196\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"105\" x=\"85\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"106\" x=\"203\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"107\" x=\"210\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"108\" x=\"217\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"109\" x=\"85\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"110\" x=\"224\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"111\" x=\"231\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"112\" x=\"238\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"113\" x=\"37\" y=\"0\" width=\"6\" height=\"9\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"114\" x=\"245\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"115\" x=\"0\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"116\" x=\"7\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"117\" x=\"14\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"118\" x=\"21\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"119\" x=\"94\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"120\" x=\"164\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"121\" x=\"28\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"122\" x=\"35\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"123\" x=\"54\" y=\"18\" width=\"4\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"124\" x=\"34\" y=\"0\" width=\"2\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"125\" x=\"59\" y=\"18\" width=\"4\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"126\" x=\"119\" y=\"18\" width=\"7\" height=\"4\" xoffset=\"0\" yoffset=\"4\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"127\" x=\"143\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"169\" x=\"10\" y=\"0\" width=\"9\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"174\" x=\"0\" y=\"0\" width=\"9\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"8211\" x=\"207\" y=\"18\" width=\"4\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8212\" x=\"169\" y=\"18\" width=\"8\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"8216\" x=\"157\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"1\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8217\" x=\"160\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8218\" x=\"163\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8220\" x=\"139\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"1\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8221\" x=\"145\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8222\" x=\"151\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8224\" x=\"150\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"8225\" x=\"157\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"8226\" x=\"134\" y=\"18\" width=\"4\" height=\"4\" xoffset=\"0\" yoffset=\"4\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8230\" x=\"178\" y=\"18\" width=\"8\" height=\"2\" xoffset=\"0\" yoffset=\"8\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"8240\" x=\"47\" y=\"0\" width=\"10\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"11\" page=\"0\" chnl=\"15\" />\n    <char id=\"8249\" x=\"114\" y=\"18\" width=\"4\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8250\" x=\"109\" y=\"18\" width=\"4\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n  </chars>\n  <kernings count=\"49\">\n    <kerning first=\"47\" second=\"47\" amount=\"-4\" />\n    <kerning first=\"47\" second=\"74\" amount=\"-3\" />\n    <kerning first=\"47\" second=\"106\" amount=\"-3\" />\n    <kerning first=\"70\" second=\"47\" amount=\"-3\" />\n    <kerning first=\"70\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"70\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"52\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"57\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"121\" amount=\"-2\" />\n    <kerning first=\"121\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"121\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"80\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"80\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"80\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"84\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"84\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"84\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"89\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"89\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"92\" second=\"52\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"92\" second=\"57\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"92\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"121\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"112\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"112\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"112\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"102\" second=\"47\" amount=\"-3\" />\n    <kerning first=\"102\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"102\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"52\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"57\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"121\" amount=\"-2\" />\n  </kernings>\n</font>\n";
+module.exports = "<?xml version=\"1.0\"?>\n<font>\n  <info face=\"Edit Undo\" size=\"14\" bold=\"0\" italic=\"0\" charset=\"\" unicode=\"1\" stretchH=\"100\" smooth=\"0\" aa=\"1\" padding=\"0,0,0,0\" spacing=\"1,1\" outline=\"0\"/>\n  <common lineHeight=\"12\" base=\"10\" scaleW=\"256\" scaleH=\"256\" pages=\"1\" packed=\"0\" alphaChnl=\"1\" redChnl=\"0\" greenChnl=\"0\" blueChnl=\"0\"/>\n  <pages>\n    <page id=\"0\" file=\"edit-undo.png\" />\n  </pages>\n  <chars count=\"113\">\n    <char id=\"32\" x=\"221\" y=\"18\" width=\"1\" height=\"1\" xoffset=\"0\" yoffset=\"0\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"33\" x=\"76\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"34\" x=\"201\" y=\"18\" width=\"5\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"35\" x=\"120\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"36\" x=\"20\" y=\"0\" width=\"6\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"37\" x=\"58\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"38\" x=\"27\" y=\"0\" width=\"6\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"39\" x=\"218\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"40\" x=\"64\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"41\" x=\"68\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"42\" x=\"95\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"43\" x=\"102\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"44\" x=\"166\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"45\" x=\"194\" y=\"18\" width=\"6\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"46\" x=\"215\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"47\" x=\"103\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"48\" x=\"185\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"49\" x=\"79\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"50\" x=\"192\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"51\" x=\"199\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"52\" x=\"206\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"53\" x=\"213\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"54\" x=\"136\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"55\" x=\"220\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"56\" x=\"227\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"57\" x=\"234\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"58\" x=\"82\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"59\" x=\"44\" y=\"0\" width=\"2\" height=\"9\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"60\" x=\"48\" y=\"19\" width=\"5\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"61\" x=\"88\" y=\"18\" width=\"6\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"62\" x=\"42\" y=\"19\" width=\"5\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"63\" x=\"248\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"64\" x=\"76\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"65\" x=\"0\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"66\" x=\"77\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"67\" x=\"7\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"68\" x=\"14\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"69\" x=\"21\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"70\" x=\"28\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"71\" x=\"35\" y=\"11\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"72\" x=\"42\" y=\"10\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"73\" x=\"49\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"74\" x=\"56\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"75\" x=\"63\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"76\" x=\"70\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"77\" x=\"112\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"78\" x=\"84\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"79\" x=\"91\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"80\" x=\"98\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"81\" x=\"105\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"82\" x=\"112\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"83\" x=\"119\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"84\" x=\"126\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"85\" x=\"133\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"86\" x=\"140\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"87\" x=\"128\" y=\"0\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"88\" x=\"178\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"89\" x=\"241\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"90\" x=\"171\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"91\" x=\"72\" y=\"18\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"92\" x=\"67\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"93\" x=\"252\" y=\"9\" width=\"3\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"94\" x=\"127\" y=\"18\" width=\"6\" height=\"4\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"95\" x=\"187\" y=\"18\" width=\"6\" height=\"2\" xoffset=\"0\" yoffset=\"9\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"96\" x=\"212\" y=\"18\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"97\" x=\"147\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"98\" x=\"154\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"99\" x=\"161\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"100\" x=\"168\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"101\" x=\"175\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"102\" x=\"182\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"103\" x=\"189\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"104\" x=\"196\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"105\" x=\"85\" y=\"18\" width=\"2\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"106\" x=\"203\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"107\" x=\"210\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"108\" x=\"217\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"109\" x=\"85\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"110\" x=\"224\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"111\" x=\"231\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"112\" x=\"238\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"113\" x=\"37\" y=\"0\" width=\"6\" height=\"9\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"114\" x=\"245\" y=\"9\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"115\" x=\"0\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"116\" x=\"7\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"117\" x=\"14\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"118\" x=\"21\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"119\" x=\"94\" y=\"0\" width=\"8\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"120\" x=\"164\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"121\" x=\"28\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"122\" x=\"35\" y=\"20\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"123\" x=\"54\" y=\"18\" width=\"4\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"124\" x=\"34\" y=\"0\" width=\"2\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"125\" x=\"59\" y=\"18\" width=\"4\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"126\" x=\"119\" y=\"18\" width=\"7\" height=\"4\" xoffset=\"0\" yoffset=\"4\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"127\" x=\"143\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"169\" x=\"10\" y=\"0\" width=\"9\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"174\" x=\"0\" y=\"0\" width=\"9\" height=\"10\" xoffset=\"0\" yoffset=\"1\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"8211\" x=\"207\" y=\"18\" width=\"4\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8212\" x=\"169\" y=\"18\" width=\"8\" height=\"2\" xoffset=\"0\" yoffset=\"5\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"8216\" x=\"157\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"1\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8217\" x=\"160\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8218\" x=\"163\" y=\"18\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"8220\" x=\"139\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"1\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8221\" x=\"145\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8222\" x=\"151\" y=\"18\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"8\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"8224\" x=\"150\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"8225\" x=\"157\" y=\"0\" width=\"6\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"8226\" x=\"134\" y=\"18\" width=\"4\" height=\"4\" xoffset=\"0\" yoffset=\"4\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8230\" x=\"178\" y=\"18\" width=\"8\" height=\"2\" xoffset=\"0\" yoffset=\"8\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"8240\" x=\"47\" y=\"0\" width=\"10\" height=\"8\" xoffset=\"0\" yoffset=\"2\" xadvance=\"11\" page=\"0\" chnl=\"15\" />\n    <char id=\"8249\" x=\"114\" y=\"18\" width=\"4\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"8250\" x=\"109\" y=\"18\" width=\"4\" height=\"6\" xoffset=\"0\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n  </chars>\n  <kernings count=\"49\">\n    <kerning first=\"47\" second=\"47\" amount=\"-4\" />\n    <kerning first=\"47\" second=\"74\" amount=\"-3\" />\n    <kerning first=\"47\" second=\"106\" amount=\"-3\" />\n    <kerning first=\"70\" second=\"47\" amount=\"-3\" />\n    <kerning first=\"70\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"70\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"52\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"57\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"76\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"76\" second=\"121\" amount=\"-2\" />\n    <kerning first=\"121\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"121\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"80\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"80\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"80\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"84\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"84\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"84\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"89\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"89\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"92\" second=\"52\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"92\" second=\"57\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"92\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"92\" second=\"121\" amount=\"-2\" />\n    <kerning first=\"116\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"112\" second=\"106\" amount=\"-1\" />\n    <kerning first=\"112\" second=\"74\" amount=\"-1\" />\n    <kerning first=\"112\" second=\"47\" amount=\"-2\" />\n    <kerning first=\"102\" second=\"47\" amount=\"-3\" />\n    <kerning first=\"102\" second=\"74\" amount=\"-2\" />\n    <kerning first=\"102\" second=\"106\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"52\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"55\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"57\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"84\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"89\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"92\" amount=\"-4\" />\n    <kerning first=\"108\" second=\"116\" amount=\"-2\" />\n    <kerning first=\"108\" second=\"121\" amount=\"-2\" />\n  </kernings>\n</font>\n";
 
 },{}],"1NUpK":[function(require,module,exports) {
 module.exports = "<?xml version=\"1.0\"?>\n<font>\n  <info face=\"Rainy Hearts\" size=\"-16\" bold=\"0\" italic=\"0\" charset=\"\" unicode=\"1\" stretchH=\"100\" smooth=\"0\" aa=\"1\" padding=\"0,0,0,0\" spacing=\"1,1\" outline=\"0\"/>\n  <common lineHeight=\"15\" base=\"12\" scaleW=\"256\" scaleH=\"256\" pages=\"1\" packed=\"0\" alphaChnl=\"1\" redChnl=\"0\" greenChnl=\"0\" blueChnl=\"0\"/>\n  <pages>\n    <page id=\"0\" file=\"rainy-hearts.png\" />\n  </pages>\n  <chars count=\"97\">\n    <char id=\"32\" x=\"93\" y=\"20\" width=\"1\" height=\"1\" xoffset=\"0\" yoffset=\"0\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"33\" x=\"175\" y=\"10\" width=\"3\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"34\" x=\"59\" y=\"20\" width=\"4\" height=\"3\" xoffset=\"0\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"35\" x=\"179\" y=\"10\" width=\"7\" height=\"8\" xoffset=\"0\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"36\" x=\"7\" y=\"0\" width=\"6\" height=\"11\" xoffset=\"0\" yoffset=\"2\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"37\" x=\"79\" y=\"0\" width=\"10\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"11\" page=\"0\" chnl=\"15\" />\n    <char id=\"38\" x=\"192\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"39\" x=\"64\" y=\"20\" width=\"2\" height=\"3\" xoffset=\"0\" yoffset=\"3\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"40\" x=\"25\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"41\" x=\"29\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"42\" x=\"41\" y=\"22\" width=\"5\" height=\"5\" xoffset=\"0\" yoffset=\"2\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"43\" x=\"23\" y=\"22\" width=\"5\" height=\"5\" xoffset=\"1\" yoffset=\"5\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"44\" x=\"77\" y=\"20\" width=\"2\" height=\"2\" xoffset=\"0\" yoffset=\"11\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"45\" x=\"88\" y=\"20\" width=\"4\" height=\"1\" xoffset=\"0\" yoffset=\"8\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"46\" x=\"95\" y=\"20\" width=\"1\" height=\"1\" xoffset=\"0\" yoffset=\"11\" xadvance=\"2\" page=\"0\" chnl=\"15\" />\n    <char id=\"47\" x=\"148\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"48\" x=\"28\" y=\"12\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"49\" x=\"171\" y=\"10\" width=\"3\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"50\" x=\"34\" y=\"12\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"51\" x=\"40\" y=\"12\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"52\" x=\"154\" y=\"10\" width=\"4\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"53\" x=\"46\" y=\"11\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"54\" x=\"52\" y=\"11\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"55\" x=\"58\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"56\" x=\"142\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"57\" x=\"64\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"58\" x=\"253\" y=\"9\" width=\"1\" height=\"6\" xoffset=\"0\" yoffset=\"6\" xadvance=\"2\" page=\"0\" chnl=\"15\" />\n    <char id=\"59\" x=\"253\" y=\"0\" width=\"2\" height=\"8\" xoffset=\"-1\" yoffset=\"6\" xadvance=\"2\" page=\"0\" chnl=\"15\" />\n    <char id=\"60\" x=\"35\" y=\"22\" width=\"5\" height=\"5\" xoffset=\"0\" yoffset=\"5\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"61\" x=\"47\" y=\"21\" width=\"5\" height=\"4\" xoffset=\"0\" yoffset=\"5\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"62\" x=\"29\" y=\"22\" width=\"5\" height=\"5\" xoffset=\"0\" yoffset=\"5\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"63\" x=\"70\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"64\" x=\"45\" y=\"0\" width=\"9\" height=\"10\" xoffset=\"0\" yoffset=\"3\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"65\" x=\"246\" y=\"0\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"66\" x=\"0\" y=\"14\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"67\" x=\"208\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"68\" x=\"136\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"69\" x=\"7\" y=\"12\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"70\" x=\"239\" y=\"0\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"71\" x=\"216\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"72\" x=\"224\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"73\" x=\"159\" y=\"10\" width=\"3\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"74\" x=\"76\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"75\" x=\"152\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"76\" x=\"82\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"77\" x=\"127\" y=\"0\" width=\"8\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"78\" x=\"144\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"79\" x=\"109\" y=\"0\" width=\"8\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"80\" x=\"21\" y=\"12\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"81\" x=\"90\" y=\"0\" width=\"9\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"11\" page=\"0\" chnl=\"15\" />\n    <char id=\"82\" x=\"100\" y=\"0\" width=\"8\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"83\" x=\"184\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"84\" x=\"176\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"85\" x=\"168\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"86\" x=\"160\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"87\" x=\"118\" y=\"0\" width=\"8\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"88\" x=\"232\" y=\"0\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"89\" x=\"200\" y=\"0\" width=\"7\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"9\" page=\"0\" chnl=\"15\" />\n    <char id=\"90\" x=\"14\" y=\"12\" width=\"6\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"91\" x=\"37\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"92\" x=\"94\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"93\" x=\"33\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"94\" x=\"53\" y=\"21\" width=\"5\" height=\"3\" xoffset=\"0\" yoffset=\"3\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"95\" x=\"80\" y=\"20\" width=\"7\" height=\"1\" xoffset=\"0\" yoffset=\"13\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"96\" x=\"74\" y=\"20\" width=\"2\" height=\"2\" xoffset=\"1\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"97\" x=\"210\" y=\"10\" width=\"6\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"8\" page=\"0\" chnl=\"15\" />\n    <char id=\"98\" x=\"100\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"99\" x=\"247\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"100\" x=\"106\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"101\" x=\"0\" y=\"24\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"102\" x=\"14\" y=\"0\" width=\"6\" height=\"11\" xoffset=\"0\" yoffset=\"4\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"103\" x=\"112\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"104\" x=\"88\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"105\" x=\"163\" y=\"10\" width=\"3\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"106\" x=\"2\" y=\"0\" width=\"4\" height=\"12\" xoffset=\"-1\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"107\" x=\"118\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"108\" x=\"167\" y=\"10\" width=\"3\" height=\"9\" xoffset=\"1\" yoffset=\"3\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"109\" x=\"201\" y=\"10\" width=\"8\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"110\" x=\"6\" y=\"24\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"111\" x=\"12\" y=\"22\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"112\" x=\"124\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"113\" x=\"130\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"114\" x=\"18\" y=\"22\" width=\"4\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"6\" page=\"0\" chnl=\"15\" />\n    <char id=\"115\" x=\"217\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"116\" x=\"187\" y=\"10\" width=\"4\" height=\"8\" xoffset=\"0\" yoffset=\"4\" xadvance=\"5\" page=\"0\" chnl=\"15\" />\n    <char id=\"117\" x=\"223\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"118\" x=\"229\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"119\" x=\"192\" y=\"10\" width=\"8\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"10\" page=\"0\" chnl=\"15\" />\n    <char id=\"120\" x=\"235\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"121\" x=\"136\" y=\"10\" width=\"5\" height=\"9\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"122\" x=\"241\" y=\"10\" width=\"5\" height=\"6\" xoffset=\"1\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"123\" x=\"21\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"124\" x=\"0\" y=\"0\" width=\"1\" height=\"13\" xoffset=\"1\" yoffset=\"2\" xadvance=\"3\" page=\"0\" chnl=\"15\" />\n    <char id=\"125\" x=\"41\" y=\"0\" width=\"3\" height=\"11\" xoffset=\"0\" yoffset=\"3\" xadvance=\"4\" page=\"0\" chnl=\"15\" />\n    <char id=\"126\" x=\"67\" y=\"20\" width=\"6\" height=\"2\" xoffset=\"0\" yoffset=\"6\" xadvance=\"7\" page=\"0\" chnl=\"15\" />\n    <char id=\"313\" x=\"55\" y=\"0\" width=\"11\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"12\" page=\"0\" chnl=\"15\" />\n    <char id=\"314\" x=\"67\" y=\"0\" width=\"11\" height=\"9\" xoffset=\"0\" yoffset=\"3\" xadvance=\"12\" page=\"0\" chnl=\"15\" />\n  </chars>\n</font>\n";
