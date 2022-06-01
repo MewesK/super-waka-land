@@ -113,6 +113,84 @@ export default class Level {
     this.actionTimer = null;
   }
 
+  checkCollision() {
+    // Calculate the tile indices around the player
+    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+    const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
+    const tilemapXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
+    const tilemapXMax = Math.min(tilemapXMin + Math.ceil(this.player.width / this.tileWidth) + 1, this.mapWidth);
+    const tilemapYMin = Math.max(0, Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1);
+    const tilemapYMax = Math.min(tilemapYMin + Math.ceil(this.player.height / this.tileHeight) + 1, this.mapHeight);
+
+    // Check for collisions
+    let intersecting = false;
+    let landing = false;
+    for (let y = tilemapYMin; y <= tilemapYMax; y++) {
+      for (let x = tilemapXMin; x <= tilemapXMax; x++) {
+        if (this.map[y][x] !== null) {
+          // Create tile rectangle with screen coordinates
+          const tileRectangle = new Rectangle(
+            x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
+            y * this.tileHeight - (this.tilemap.pivot.y % this.app.screen.height),
+            this.tileWidth,
+            this.tileHeight
+          );
+
+          // Is overlapping and player was previously above the tile?
+          if (
+            intersect(this.player.containerRectangle, tileRectangle) &&
+            this.player.lastPosition.y + this.player.height <= tileRectangle.y
+          ) {
+            // Fix position and cancel falling
+            intersecting = true;
+            this.player.position.y = tileRectangle.y - this.player.height;
+            this.player.velocity.y = 0;
+
+            // Check for landing
+            if (this.player.airborne) {
+              console.debug('Landed');
+              landing = true;
+              this.player.jumpTimer = null;
+            }
+            break;
+          }
+        }
+      }
+    }
+    this.player.airborne = !intersecting;
+
+    // Start jumping if just landed
+    if (landing && this.actionTimer !== null) {
+      console.debug('Early jump');
+      this.player.jump();
+    }
+  }
+
+  checkGameOver() {
+    // Check for death
+    if (this.player.position.y > this.app.screen.height) {
+      console.debug('Died');
+      this.player.dead = true;
+
+      const filter1 = new filters.ColorMatrixFilter();
+      filter1.desaturate();
+      const filter2 = new filters.ColorMatrixFilter();
+      filter2.brightness(0.5, false);
+      this.levelContainer.filterArea = new Rectangle(
+        0,
+        0,
+        this.levelContainer.width,
+        this.levelContainer.height
+      );
+      this.levelContainer.filters = [filter1, filter2];
+
+      this.gameOverText2.text = 'Final Score: ' + Math.floor(this.player.position.x);
+      this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
+
+      this.container.addChild(this.gameOver);
+    }
+  }
+
   createSprites() {
     this.background1Sprite = Sprite.from('bg_wakaland_1.png');
     this.background2aSprite = Sprite.from('bg_wakaland_2.png');
@@ -179,44 +257,49 @@ export default class Level {
   }
 
   createNewTiles() {
-    for (let y = 0; y <= this.mapHeight; y++) {
+    // Check if we need to create new tiles
+    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+    if (tilemapX < this.lastTilemapX) {
       // Move second half to the first
-      for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
-        this.map[y][x - this.mapWidth / 2] = this.map[y][x];
-        this.map[y][x] = null;
+      for (let y = 0; y <= this.mapHeight; y++) {
+        for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
+          this.map[y][x - this.mapWidth / 2] = this.map[y][x];
+          this.map[y][x] = null;
+        }
       }
+
+      // Generate new tiles for the second half
+      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
+        // Generate new section if necessary
+        if (this.plattformLength === 0) {
+          this.abyssLength = 0; //random(3, 6);
+          this.plattformY = random(
+            Math.min(
+              this.maxFloorY,
+              Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)
+            ),
+            this.maxFloorY
+          );
+          this.plattformLength = random(2, 8);
+        }
+        // Fill current section
+        if (this.abyssLength > 0) {
+          // Fill abyss
+          this.abyssLength--;
+        } else {
+          // Fill platform
+          this.map[this.plattformY][x] = 'block.png';
+          this.plattformLength--;
+        }
+      }
+
+      // Redraw tilemap
+      this.createTilemap();
+
+      // Reset tilemap position
+      this.tilemap.position.set(this.player.position.x, this.tilemap.position.y);
     }
-
-    // Generate new tiles for the second half
-    for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
-      // Generate new section if necessary
-      if (this.plattformLength === 0) {
-        this.abyssLength = 0; //random(3, 6);
-        this.plattformY = random(
-          Math.min(
-            this.maxFloorY,
-            Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)
-          ),
-          this.maxFloorY
-        );
-        this.plattformLength = random(2, 8);
-      }
-      // Fill current section
-      if (this.abyssLength > 0) {
-        // Fill abyss
-        this.abyssLength--;
-      } else {
-        // Fill platform
-        this.map[this.plattformY][x] = 'block.png';
-        this.plattformLength--;
-      }
-    }
-
-    // Redraw tilemap
-    this.createTilemap();
-
-    // Reset tilemap position
-    this.tilemap.position.set(this.player.position.x, this.tilemap.position.y);
+    this.lastTilemapX = tilemapX;
   }
 
   createTilemap() {
@@ -232,122 +315,7 @@ export default class Level {
     this.tilemap.pivot.set(0, 0);
   }
 
-  updateScore() {
-    // Draw score
-    this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
-  }
-
-  tick(dt) {
-    this.app.stats.begin();
-
-    if (this.player.dead) {
-      return;
-    }
-
-    this.elapsed += dt;
-    if (this.actionTimer !== null) {
-      this.actionTimer += dt;
-    }
-    if (this.player.jumpTimer !== null) {
-      this.player.jumpTimer += dt;
-    }
-
-    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
-    const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
-    const lastPlayerY = this.player.position.y;
-
-    // Check if we need to create new tiles
-    if (tilemapX < this.lastTilemapX) {
-      this.createNewTiles();
-    }
-    this.lastTilemapX = tilemapX;
-
-    // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-    if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
-      //this.player.velocity.y += (this.player.power / this.player.jumpTimer) * dt * 1.2;
-      this.player.velocity.y += this.player.power * dt * 0.3;
-    }
-
-    // Move player
-    this.player.move(dt);
-
-    // Calculate the tile indices around the player
-    const mapTileXMin = Math.max(
-      0,
-      Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1
-    );
-    const mapTileXMax = Math.min(mapTileXMin + 2, this.mapWidth);
-    const mapTileYMin = Math.max(
-      0,
-      Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1
-    );
-    const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
-
-    // Check for collisions
-    let intersecting = false;
-    let landing = false;
-    for (let y = mapTileYMin; y <= mapTileYMax; y++) {
-      for (let x = mapTileXMin; x <= mapTileXMax; x++) {
-        if (this.map[y][x] !== null) {
-          // Create tile rectangle with screen coordinates
-          const tileRectangle = new Rectangle(
-            x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
-            y * this.tileHeight - (this.tilemap.pivot.y % this.app.screen.height),
-            this.tileWidth,
-            this.tileHeight
-          );
-          // Is overlapping and player was previously above the tile?
-          if (
-            intersect(this.player.containerRectangle, tileRectangle) &&
-            lastPlayerY + this.player.height <= tileRectangle.y
-          ) {
-            // Fix position and cancel falling
-            intersecting = true;
-            this.player.position.y = tileRectangle.y - this.player.height;
-            this.player.velocity.y = 0;
-
-            // Check for landing
-            if (this.player.airborne) {
-              console.debug('Landed');
-              landing = true;
-              this.player.jumpTimer = null;
-            }
-            break;
-          }
-        }
-      }
-    }
-    this.player.airborne = !intersecting;
-
-    // Start jumping if just landed
-    if (landing && this.actionTimer !== null) {
-      console.debug('Early jump');
-      this.player.jump();
-    }
-
-    // Check for death
-    if (this.player.position.y > this.app.screen.height) {
-      console.debug('Died');
-      this.player.dead = true;
-
-      const filter1 = new filters.ColorMatrixFilter();
-      filter1.desaturate();
-      const filter2 = new filters.ColorMatrixFilter();
-      filter2.brightness(0.5, false);
-      this.levelContainer.filterArea = new Rectangle(
-        0,
-        0,
-        this.levelContainer.width,
-        this.levelContainer.height
-      );
-      this.levelContainer.filters = [filter1, filter2];
-
-      this.gameOverText2.text = 'Final Score: ' + Math.floor(this.player.position.x);
-      this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
-
-      this.container.addChild(this.gameOver);
-    }
-
+  updateBackground(dt) {
     // Parallax scrolling
     this.background2aSprite.pivot.x += 0.1 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
@@ -366,7 +334,47 @@ export default class Level {
       this.background3bSprite.pivot.x = 0;
     }
     this.tilemap.pivot.x = this.player.position.x;
+  }
 
+  updatePlayer(dt) {
+    // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
+    if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
+      //this.player.velocity.y += (this.player.power / this.player.jumpTimer) * dt * 1.2;
+      this.player.velocity.y += this.player.power * dt * 0.3;
+    }
+    // Move player
+    this.player.move(dt);
+  }
+
+  updateScore() {
+    // Draw score
+    this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
+  }
+
+  tick(dt) {
+    if (this.player.dead) {
+      return;
+    }
+
+    // Start performance measurement
+    this.app.stats.begin();
+
+    // Update timers
+    this.elapsed += dt;
+    if (this.actionTimer !== null) {
+      this.actionTimer += dt;
+    }
+    if (this.player.jumpTimer !== null) {
+      this.player.jumpTimer += dt;
+    }
+
+    this.createNewTiles();
+    this.updatePlayer(dt);
+    this.checkCollision();
+    this.checkGameOver();
+    this.updateBackground(dt);
+
+    // End performance measurement
     this.app.stats.end();
   }
 
@@ -381,7 +389,8 @@ export default class Level {
     this.player.force = new Point(0.001, this.gravity);
     this.player.velocity = new Point(2, 0);
     this.player.position = new Point(this.tileWidth * 2, 0);
-    this.player.container.position.x = this.player.position.x;
+    this.player.lastPosition = this.player.position.clone();
+    this.player.container.position = this.player.position.clone();
     this.player.airborne = true;
     this.player.dead = false;
     this.player.jumpTimer = true;

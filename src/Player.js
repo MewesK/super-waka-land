@@ -8,6 +8,7 @@ export default class Player {
   velocity = new Point(0, 0);
   maxVelocity = new Point(8, 8);
   position = new Point(0, 0);
+  lastPosition = new Point(0, 0);
   power;
   mass;
 
@@ -130,7 +131,10 @@ export default class Player {
       }
     }
 
-    // Calculate position
+    // Backup current position
+    this.lastPosition = this.position.clone();
+
+    // Calculate new position
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
 
