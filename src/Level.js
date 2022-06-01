@@ -71,9 +71,9 @@ export default class Level {
 
     // Register event listeners
     window.addEventListener('keydown', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
       if (event.code === 'Space') {
+        event.preventDefault();
+        event.stopPropagation();
         this.startAction();
       }
     });
@@ -238,6 +238,8 @@ export default class Level {
   }
 
   tick(dt) {
+    this.app.stats.begin();
+
     if (this.player.dead) {
       return;
     }
@@ -363,6 +365,8 @@ export default class Level {
       this.background3bSprite.pivot.x = 0;
     }
     this.tilemap.pivot.x = this.player.position.x;
+
+    this.app.stats.end();
   }
 
   reset() {

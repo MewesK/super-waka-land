@@ -27,7 +27,8 @@
     "@pixi/sound": "^4.2.0",
     "@pixi/tilemap": "^3.2.2",
     "pixi-filters": "^4.1.6",
-    "pixi.js": "^6.3.2"
+    "pixi.js": "^6.3.2",
+    "stats.js": "^0.17.0"
   },
   "devDependencies": {
     "@parcel/optimizer-data-url": "^2.6.0",
