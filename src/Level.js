@@ -299,12 +299,13 @@ export default class Level {
           // Is overlapping and player was previously above the tile?
           if (
             intersect(this.player.containerRectangle, tileRectangle) &&
-            lastPlayerY + 32 <= tileRectangle.y
+            lastPlayerY + this.player.height <= tileRectangle.y
           ) {
             // Fix position and cancel falling
             intersecting = true;
-            this.player.position.y = tileRectangle.y - 32;
+            this.player.position.y = tileRectangle.y - this.player.height;
             this.player.velocity.y = 0;
+
             // Check for landing
             if (this.player.airborne) {
               console.debug('Landed');
@@ -347,7 +348,7 @@ export default class Level {
       this.container.addChild(this.gameOver);
     }
 
-    // Paralax scolling
+    // Parallax scrolling
     this.background2aSprite.pivot.x += 0.1 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
