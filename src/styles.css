@@ -9,7 +9,20 @@ nav {
 }
 
 main {
+  position: relative;
   text-align: center;
+}
+
+main canvas {
+  width: 100%;
+  height: 100%;
+}
+
+main div {
+  position: absolute !important;
+  display: inline-block;
+  left: inherit !important;
+  right: 0;
 }
 
 #score {
@@ -33,13 +46,8 @@ footer a {
   color: var(--muted-color);
 }
 
-canvas {
-  width: 100%;
-  height: 100%;
-}
-
 @media (min-width: 992px) {
-  canvas {
+  main canvas {
     width: auto;
     height: auto;
     box-shadow: var(--card-box-shadow);
