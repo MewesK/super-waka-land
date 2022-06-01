@@ -1,4 +1,4 @@
-import { AnimatedSprite, Point, Sprite, Rectangle, Container } from "pixi.js";
+import { AnimatedSprite, Point, Sprite, Rectangle, Container } from 'pixi.js';
 
 export default class Player {
   container = new Container();
@@ -13,6 +13,7 @@ export default class Player {
 
   // State
   dead = false;
+  jumpTimer = null;
   #airborne = true;
 
   // Sprites
@@ -22,6 +23,9 @@ export default class Player {
   ratWalkSprite;
   ratRunSprite;
   ratJumpSprite;
+
+  // Debug
+  jumpHeight = 0;
 
   constructor(power, mass) {
     this.power = power;
@@ -48,6 +52,9 @@ export default class Player {
 
   set airborne(value) {
     if (this.#airborne !== value) {
+      // Debug
+      console.debug('Aairborne: ', value);
+
       this.#airborne = value;
 
       if (value) {
@@ -69,29 +76,23 @@ export default class Player {
   }
 
   createSprites() {
-    this.ratIdleSprite = Sprite.from("rat_jump.png");
+    this.ratIdleSprite = Sprite.from('rat_jump.png');
     this.ratIdleSprite.x = this.position.x;
     this.ratIdleSprite.y = this.position.y;
 
-    this.ratWalkSprite = AnimatedSprite.fromFrames([
-      "rat_idle.png",
-      "rat_walk.png",
-    ]);
+    this.ratWalkSprite = AnimatedSprite.fromFrames(['rat_idle.png', 'rat_walk.png']);
     this.ratWalkSprite.animationSpeed = 0.1;
     this.ratWalkSprite.x = this.position.x;
     this.ratWalkSprite.y = this.position.y;
     this.ratWalkSprite.play();
 
-    this.ratRunSprite = AnimatedSprite.fromFrames([
-      "rat_idle.png",
-      "rat_run.png",
-    ]);
+    this.ratRunSprite = AnimatedSprite.fromFrames(['rat_idle.png', 'rat_run.png']);
     this.ratRunSprite.animationSpeed = 0.15;
     this.ratRunSprite.x = this.position.x;
     this.ratRunSprite.y = this.position.y;
     this.ratRunSprite.play();
 
-    this.ratJumpSprite = Sprite.from("rat_jump.png");
+    this.ratJumpSprite = Sprite.from('rat_jump.png');
     this.ratJumpSprite.x = this.position.x;
     this.ratJumpSprite.y = this.position.y;
   }
@@ -110,12 +111,22 @@ export default class Player {
     }
     // Calculate gravity only when airborne
     if (this.#airborne) {
+      const lastVelocityY = this.velocity.y;
+
       // Calculate vertical velocity
       this.velocity.y += (this.force.y / this.mass) * dt;
 
       // Cap vertical velocity
-      if (this.maxVelocity.y > 0 && Math.abs(this.velocity.x) > this.maxVelocity.y) {
+      if (this.maxVelocity.y > 0 && Math.abs(this.velocity.y) > this.maxVelocity.y) {
         this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
+      }
+
+      // Debug
+      if (this.velocity.y < 0) {
+        this.jumpHeight += this.velocity.y * dt;
+      }
+      if (lastVelocityY < 0 && this.velocity.y >= 0) {
+        console.debug('Max jump height: ', this.jumpHeight, lastVelocityY);
       }
     }
 
@@ -132,7 +143,11 @@ export default class Player {
       return;
     }
 
+    this.jumpTimer = 0;
     this.velocity.y = this.power;
     this.airborne = true;
+
+    // Debug
+    this.jumpHeight = 0;
   }
 }

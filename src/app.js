@@ -5,6 +5,7 @@ import {
   settings,
   SCALE_MODES,
   BitmapFont,
+  UPDATE_PRIORITY,
 } from "pixi.js";
 import Level from "./Level";
 import Player from "./Player";
@@ -89,7 +90,7 @@ function setup() {
     console.log("Spritesheet loaded");
 
     // Create player
-    player = new Player(-3.0, 1.0);
+    player = new Player(-2.0, 1.0);
 
     // Create level
     level = new Level(app, player);
@@ -103,6 +104,6 @@ function setup() {
 
     // Start game loop
     console.log("Starting game loop");
-    app.ticker.add((dt) => level.tick(dt));
+    app.ticker.add(level.tick, level, UPDATE_PRIORITY.HIGH);
   });
 }
