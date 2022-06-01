@@ -575,7 +575,7 @@ function setup() {
         app.renderer.render(app.stage);
         // Start game loop
         console.log("Starting game loop");
-        app.ticker.add((dt)=>level.tick(dt));
+        app.ticker.add(level.tick, level, (0, _pixiJs.UPDATE_PRIORITY).HIGH);
     });
 }
 
@@ -36979,6 +36979,8 @@ class Level {
             event.stopPropagation();
             this.endAction();
         });
+        // Add ticker
+        this.app.ticker.add(this.updateScore, this, (0, _pixiJs.UPDATE_PRIORITY).LOW);
     }
     startAction() {
         if (this.actionTimer != null) return;
@@ -37052,7 +37054,7 @@ class Level {
         for(let x1 = this.mapWidth / 2 + 1; x1 <= this.mapWidth; x1++){
             // Generate new section if necessary
             if (this.plattformLength === 0) {
-                this.abyssLength = (0, _utilities.random)(3, 6);
+                this.abyssLength = 0; //random(3, 6);
                 this.plattformY = (0, _utilities.random)(Math.min(this.maxFloorY, Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)), this.maxFloorY);
                 this.plattformLength = (0, _utilities.random)(2, 8);
             }
@@ -37078,6 +37080,10 @@ class Level {
         this.tilemap.position.set(0, 0);
         this.tilemap.pivot.set(0, 0);
     }
+    updateScore() {
+        // Draw score
+        this.scoreText.text = "Score: " + Math.floor(this.player.position.x).toFixed(0);
+    }
     tick(dt) {
         if (this.player.dead) return;
         this.elapsed += dt;
@@ -37090,11 +37096,10 @@ class Level {
         if (tilemapX < this.lastTilemapX) this.createNewTiles();
         this.lastTilemapX = tilemapX;
         // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) this.player.velocity.y += this.player.power / this.player.jumpTimer * dt * 1.2;
+        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) //this.player.velocity.y += (this.player.power / this.player.jumpTimer) * dt * 1.2;
+        this.player.velocity.y += this.player.power * dt * 0.3;
         // Move player
         this.player.move(dt);
-        // Draw score
-        this.scoreText.text = "Score: " + Math.floor(this.player.position.x).toFixed(0);
         // Calculate the tile indices around the player
         const mapTileXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
         const mapTileXMax = Math.min(mapTileXMin + 2, this.mapWidth);
@@ -37102,29 +37107,30 @@ class Level {
         const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
         // Check for collisions
         let intersecting = false;
+        let landing = false;
         for(let y = mapTileYMin; y <= mapTileYMax; y++){
             for(let x = mapTileXMin; x <= mapTileXMax; x++)if (this.map[y][x] !== null) {
                 // Create tile rectangle with screen coordinates
                 const tileRectangle = new (0, _pixiJs.Rectangle)(x * this.tileWidth - this.tilemap.pivot.x % this.app.screen.width, y * this.tileHeight - this.tilemap.pivot.y % this.app.screen.height, this.tileWidth, this.tileHeight);
                 // Is overlapping and player was previously above the tile?
                 if ((0, _utilities.intersect)(this.player.containerRectangle, tileRectangle) && lastPlayerY + 32 <= tileRectangle.y) {
+                    // Fix position and cancel falling
                     intersecting = true;
-                    // Fix position
                     this.player.position.y = tileRectangle.y - 32;
-                    // Cancel falling
-                    if (this.player.velocity.y > 0) this.player.velocity.y = 0;
+                    this.player.velocity.y = 0;
+                    // Check for landing
+                    if (this.player.airborne) {
+                        console.debug("Landed");
+                        landing = true;
+                        this.player.jumpTimer = null;
+                    }
+                    break;
                 }
             }
         }
-        let landed = false;
-        if (this.player.airborne && intersecting) {
-            console.debug("Landed");
-            landed = true;
-            this.player.jumpTimer = null;
-        }
         this.player.airborne = !intersecting;
         // Start jumping if just landed
-        if (landed && this.actionTimer !== null) {
+        if (landing && this.actionTimer !== null) {
             console.debug("Early jump");
             this.player.jump();
         }
@@ -38533,11 +38539,11 @@ var _pixiJs = require("pixi.js");
 function random(min = 0, max = 1) {
     return min + Math.floor(Math.random() * (max - min));
 }
-function intersect(a, b) {
-    const x = Math.max(a.x, b.x);
-    const num1 = Math.min(a.x + a.width, b.x + b.width);
-    const y = Math.max(a.y, b.y);
-    const num2 = Math.min(a.y + a.height, b.y + b.height);
+function intersect(rectangle1, rectangle2) {
+    const x = Math.max(rectangle1.x, rectangle2.x);
+    const num1 = Math.min(rectangle1.x + rectangle1.width, rectangle2.x + rectangle2.width);
+    const y = Math.max(rectangle1.y, rectangle2.y);
+    const num2 = Math.min(rectangle1.y + rectangle1.height, rectangle2.y + rectangle2.height);
     if (num1 >= x && num2 >= y) return new (0, _pixiJs.Rectangle)(x, y, num1 - x, num2 - y);
     else return false;
 }
@@ -38634,16 +38640,16 @@ class Player {
         // Cap horizontal velocity
         if (this.maxVelocity.x > 0 && Math.abs(this.velocity.x) > this.maxVelocity.x) this.velocity.x = Math.sign(this.velocity.x) * this.maxVelocity.x;
         // Calculate gravity only when airborne
-        const lastVelocityY = this.velocity.y;
         if (this.#airborne) {
+            const lastVelocityY = this.velocity.y;
             // Calculate vertical velocity
             this.velocity.y += this.force.y / this.mass * dt;
             // Cap vertical velocity
-            if (this.maxVelocity.y > 0 && Math.abs(this.velocity.x) > this.maxVelocity.y) this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
+            if (this.maxVelocity.y > 0 && Math.abs(this.velocity.y) > this.maxVelocity.y) this.velocity.y = Math.sign(this.velocity.x) * this.maxVelocity.y;
+            // Debug
+            if (this.velocity.y < 0) this.jumpHeight += this.velocity.y * dt;
+            if (lastVelocityY < 0 && this.velocity.y >= 0) console.debug("Max jump height: ", this.jumpHeight, lastVelocityY);
         }
-        // Debug
-        if (this.velocity.y < 0) this.jumpHeight += this.velocity.x * dt;
-        if (lastVelocityY < 0 && this.velocity.y >= 0) console.debug("Max jump height: ", this.jumpHeight, lastVelocityY);
         // Calculate position
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
