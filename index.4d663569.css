@@ -2382,7 +2382,6 @@ a[aria-busy="true"], button[aria-busy="true"], input[type="button"][aria-busy="t
 
 :root {
   --border-radius: .1rem;
-  --font-size: 16px;
 }
 
 nav {
@@ -2391,6 +2390,19 @@ nav {
 
 main {
   text-align: center;
+  position: relative;
+}
+
+main canvas {
+  width: 100%;
+  height: 100%;
+}
+
+main div {
+  display: inline-block;
+  right: 0;
+  left: inherit !important;
+  position: absolute !important;
 }
 
 #score {
@@ -2404,10 +2416,6 @@ main {
   text-align: center;
 }
 
-canvas {
-  box-shadow: var(--card-box-shadow);
-}
-
 footer {
   color: var(--muted-color);
   text-align: center;
@@ -2416,6 +2424,14 @@ footer {
 
 footer a {
   color: var(--muted-color);
+}
+
+@media (min-width: 992px) {
+  main canvas {
+    width: auto;
+    height: auto;
+    box-shadow: var(--card-box-shadow);
+  }
 }
 
 /*# sourceMappingURL=index.4d663569.css.map */

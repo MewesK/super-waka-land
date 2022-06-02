@@ -36874,6 +36874,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _pixiJs = require("pixi.js");
 var _tilemap = require("@pixi/tilemap");
+var _eventemitter3Timer = require("eventemitter3-timer");
 var _utilities = require("./utilities");
 class Level {
     app;
@@ -36885,8 +36886,6 @@ class Level {
     levelContainer = new (0, _pixiJs.Container)();
     // Properties
     gravity = 0.3;
-    elapsed = 0.0;
-    // Constants
     startFloorY = 12;
     minFloorY = 5;
     maxFloorY = 13;
@@ -36910,6 +36909,7 @@ class Level {
     plattformLength = 0;
     lastTilemapX = 0;
     actionTimer = null;
+    actionPressed = false;
     constructor(app, player){
         this.app = app;
         this.player = player;
@@ -36950,15 +36950,88 @@ class Level {
         this.app.ticker.add(this.updateScore, this, (0, _pixiJs.UPDATE_PRIORITY).LOW);
     }
     startAction() {
+        this.actionPressed = true;
         if (this.actionTimer != null) return;
-        console.debug("Start action");
-        this.actionTimer = 0;
         if (this.player.dead) this.reset();
-        else if (!this.player.airborne) this.player.jump();
+        else if (!this.player.airborne) {
+            console.debug("Start jump");
+            this.player.jump();
+            this.actionTimer = new (0, _eventemitter3Timer.Timer)(20);
+            this.actionTimer.repeat = 10;
+            this.actionTimer.on("repeat", (elapsedTime, repeat)=>{
+                // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
+                this.player.velocity.y += this.player.power / repeat * 1.1;
+            });
+            this.actionTimer.start();
+        }
     }
     endAction() {
-        console.debug("End action: ", this.actionTimer);
-        this.actionTimer = null;
+        this.actionPressed = false;
+        if (this.actionTimer != null) {
+            console.debug("End jump");
+            this.actionTimer.stop();
+            this.actionTimer = null;
+        }
+    }
+    checkCollision() {
+        // Calculate the tile indices around the player
+        const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+        const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
+        const tilemapXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
+        const tilemapXMax = Math.min(tilemapXMin + Math.ceil(this.player.width / this.tileWidth) + 1, this.mapWidth);
+        const tilemapYMin = Math.max(0, Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1);
+        const tilemapYMax = Math.min(tilemapYMin + Math.ceil(this.player.height / this.tileHeight) + 1, this.mapHeight);
+        // Check for collisions
+        let intersecting = false;
+        let landing = false;
+        for(let y = tilemapYMin; y <= tilemapYMax; y++){
+            for(let x = tilemapXMin; x <= tilemapXMax; x++)if (this.map[y][x] !== null) {
+                // Create tile rectangle with screen coordinates
+                const tileRectangle = new (0, _pixiJs.Rectangle)(x * this.tileWidth - this.tilemap.pivot.x % this.app.screen.width, y * this.tileHeight - this.tilemap.pivot.y % this.app.screen.height, this.tileWidth, this.tileHeight);
+                // Is overlapping and player was previously above the tile?
+                if ((0, _utilities.intersect)(this.player.containerRectangle, tileRectangle) && this.player.lastPosition.y + this.player.height <= tileRectangle.y) {
+                    // Fix position and cancel falling
+                    intersecting = true;
+                    this.player.position.y = tileRectangle.y - this.player.height;
+                    this.player.velocity.y = 0;
+                    // Set vertical position of the player container
+                    this.player.container.position.y = this.player.position.y;
+                    // Check for landing
+                    if (this.player.airborne) {
+                        console.debug("Landed");
+                        landing = true;
+                        this.player.jumpTimer = null;
+                    }
+                    break;
+                }
+            }
+        }
+        this.player.airborne = !intersecting;
+        // Start jumping if just landed
+        if (landing && this.actionPressed) {
+            console.debug("Early jump");
+            this.endAction();
+            this.startAction(true);
+        }
+    }
+    checkGameOver() {
+        // Check for death
+        if (this.player.position.y > this.app.screen.height) {
+            console.debug("Died");
+            this.player.dead = true;
+            const filter1 = new (0, _pixiJs.filters).ColorMatrixFilter();
+            filter1.desaturate();
+            const filter2 = new (0, _pixiJs.filters).ColorMatrixFilter();
+            filter2.brightness(0.5, false);
+            this.levelContainer.filterArea = new (0, _pixiJs.Rectangle)(0, 0, this.levelContainer.width, this.levelContainer.height);
+            this.levelContainer.filters = [
+                filter1,
+                filter2
+            ];
+            this.gameOverText2.text = "Final Score: " + Math.floor(this.player.position.x);
+            this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
+            this.container.addChild(this.gameOver);
+        }
     }
     createSprites() {
         this.background1Sprite = (0, _pixiJs.Sprite).from("bg_wakaland_1.png");
@@ -37012,32 +37085,37 @@ class Level {
         }
     }
     createNewTiles() {
-        for(let y = 0; y <= this.mapHeight; y++)// Move second half to the first
-        for(let x = this.mapWidth / 2; x <= this.mapWidth; x++){
-            this.map[y][x - this.mapWidth / 2] = this.map[y][x];
-            this.map[y][x] = null;
-        }
-        // Generate new tiles for the second half
-        for(let x1 = this.mapWidth / 2 + 1; x1 <= this.mapWidth; x1++){
-            // Generate new section if necessary
-            if (this.plattformLength === 0) {
-                this.abyssLength = 0; //random(3, 6);
-                this.plattformY = (0, _utilities.random)(Math.min(this.maxFloorY, Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)), this.maxFloorY);
-                this.plattformLength = (0, _utilities.random)(2, 8);
+        // Check if we need to create new tiles
+        const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+        if (tilemapX < this.lastTilemapX) {
+            // Move second half to the first
+            for(let y = 0; y <= this.mapHeight; y++)for(let x = this.mapWidth / 2; x <= this.mapWidth; x++){
+                this.map[y][x - this.mapWidth / 2] = this.map[y][x];
+                this.map[y][x] = null;
             }
-            // Fill current section
-            if (this.abyssLength > 0) // Fill abyss
-            this.abyssLength--;
-            else {
-                // Fill platform
-                this.map[this.plattformY][x1] = "block.png";
-                this.plattformLength--;
+            // Generate new tiles for the second half
+            for(let x1 = this.mapWidth / 2 + 1; x1 <= this.mapWidth; x1++){
+                // Generate new section if necessary
+                if (this.plattformLength === 0) {
+                    this.abyssLength = (0, _utilities.random)(3, 6);
+                    this.plattformY = (0, _utilities.random)(Math.min(this.maxFloorY, Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)), this.maxFloorY);
+                    this.plattformLength = (0, _utilities.random)(2, 8);
+                }
+                // Fill current section
+                if (this.abyssLength > 0) // Fill abyss
+                this.abyssLength--;
+                else {
+                    // Fill platform
+                    this.map[this.plattformY][x1] = "block.png";
+                    this.plattformLength--;
+                }
             }
+            // Redraw tilemap
+            this.createTilemap();
+            // Reset tilemap position
+            this.tilemap.position.set(this.player.position.x, this.tilemap.position.y);
         }
-        // Redraw tilemap
-        this.createTilemap();
-        // Reset tilemap position
-        this.tilemap.position.set(this.player.position.x, this.tilemap.position.y);
+        this.lastTilemapX = tilemapX;
     }
     createTilemap() {
         this.tilemap.clear();
@@ -37047,79 +37125,8 @@ class Level {
         this.tilemap.position.set(0, 0);
         this.tilemap.pivot.set(0, 0);
     }
-    updateScore() {
-        // Draw score
-        this.scoreText.text = "Score: " + Math.floor(this.player.position.x).toFixed(0);
-    }
-    tick(dt) {
-        this.app.stats.begin();
-        if (this.player.dead) return;
-        this.elapsed += dt;
-        if (this.actionTimer !== null) this.actionTimer += dt;
-        if (this.player.jumpTimer !== null) this.player.jumpTimer += dt;
-        const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
-        const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
-        const lastPlayerY = this.player.position.y;
-        // Check if we need to create new tiles
-        if (tilemapX < this.lastTilemapX) this.createNewTiles();
-        this.lastTilemapX = tilemapX;
-        // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-        if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) //this.player.velocity.y += (this.player.power / this.player.jumpTimer) * dt * 1.2;
-        this.player.velocity.y += this.player.power * dt * 0.3;
-        // Move player
-        this.player.move(dt);
-        // Calculate the tile indices around the player
-        const mapTileXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
-        const mapTileXMax = Math.min(mapTileXMin + 2, this.mapWidth);
-        const mapTileYMin = Math.max(0, Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1);
-        const mapTileYMax = Math.min(mapTileYMin + 3, this.mapHeight);
-        // Check for collisions
-        let intersecting = false;
-        let landing = false;
-        for(let y = mapTileYMin; y <= mapTileYMax; y++){
-            for(let x = mapTileXMin; x <= mapTileXMax; x++)if (this.map[y][x] !== null) {
-                // Create tile rectangle with screen coordinates
-                const tileRectangle = new (0, _pixiJs.Rectangle)(x * this.tileWidth - this.tilemap.pivot.x % this.app.screen.width, y * this.tileHeight - this.tilemap.pivot.y % this.app.screen.height, this.tileWidth, this.tileHeight);
-                // Is overlapping and player was previously above the tile?
-                if ((0, _utilities.intersect)(this.player.containerRectangle, tileRectangle) && lastPlayerY + 32 <= tileRectangle.y) {
-                    // Fix position and cancel falling
-                    intersecting = true;
-                    this.player.position.y = tileRectangle.y - 32;
-                    this.player.velocity.y = 0;
-                    // Check for landing
-                    if (this.player.airborne) {
-                        console.debug("Landed");
-                        landing = true;
-                        this.player.jumpTimer = null;
-                    }
-                    break;
-                }
-            }
-        }
-        this.player.airborne = !intersecting;
-        // Start jumping if just landed
-        if (landing && this.actionTimer !== null) {
-            console.debug("Early jump");
-            this.player.jump();
-        }
-        // Check for death
-        if (this.player.position.y > this.app.screen.height) {
-            console.debug("Died");
-            this.player.dead = true;
-            const filter1 = new (0, _pixiJs.filters).ColorMatrixFilter();
-            filter1.desaturate();
-            const filter2 = new (0, _pixiJs.filters).ColorMatrixFilter();
-            filter2.brightness(0.5, false);
-            this.levelContainer.filterArea = new (0, _pixiJs.Rectangle)(0, 0, this.levelContainer.width, this.levelContainer.height);
-            this.levelContainer.filters = [
-                filter1,
-                filter2
-            ];
-            this.gameOverText2.text = "Final Score: " + Math.floor(this.player.position.x);
-            this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
-            this.container.addChild(this.gameOver);
-        }
-        // Paralax scolling
+    updateBackground(dt) {
+        // Parallax scrolling
         this.background2aSprite.pivot.x += 0.1 * dt;
         if (this.background2aSprite.pivot.x >= this.app.screen.width) this.background2aSprite.pivot.x = 0;
         this.background2bSprite.pivot.x += 0.1 * dt;
@@ -37129,6 +37136,24 @@ class Level {
         this.background3bSprite.pivot.x += 0.15 * dt;
         if (this.background3bSprite.pivot.x >= this.app.screen.width) this.background3bSprite.pivot.x = 0;
         this.tilemap.pivot.x = this.player.position.x;
+    }
+    updateScore() {
+        // Draw score
+        this.scoreText.text = "Score: " + Math.floor(this.player.position.x).toFixed(0);
+    }
+    tick(dt) {
+        if (this.player.dead) return;
+        // Start performance measurement
+        this.app.stats.begin();
+        // Update timers
+        if (this.actionTimer) this.actionTimer.timerManager.update(this.app.ticker.elapsedMS);
+        if (this.player.jumpTimer !== null) this.player.jumpTimer += dt;
+        this.createNewTiles();
+        this.player.move(dt);
+        this.checkCollision();
+        this.checkGameOver();
+        this.updateBackground(dt);
+        // End performance measurement
         this.app.stats.end();
     }
     reset() {
@@ -37138,13 +37163,15 @@ class Level {
         this.plattformLength = 0;
         this.lastTilemapX = 0;
         this.actionTimer = null;
+        this.actionPressed = false;
         this.player.force = new (0, _pixiJs.Point)(0.001, this.gravity);
         this.player.velocity = new (0, _pixiJs.Point)(2, 0);
         this.player.position = new (0, _pixiJs.Point)(this.tileWidth * 2, 0);
-        this.player.container.position.x = this.player.position.x;
+        this.player.lastPosition = this.player.position.clone();
+        this.player.container.position = this.player.position.clone();
         this.player.airborne = true;
         this.player.dead = false;
-        this.player.jumpTimer = true;
+        this.player.jumpTimer = null;
         this.background2aSprite.pivot.x = 0;
         this.background3aSprite.pivot.x = 0;
         this.background2bSprite.pivot.x = 0;
@@ -37157,7 +37184,7 @@ class Level {
 }
 exports.default = Level;
 
-},{"pixi.js":"dsYej","@pixi/tilemap":"7d0g7","./utilities":"h3TgK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7d0g7":[function(require,module,exports) {
+},{"pixi.js":"dsYej","@pixi/tilemap":"7d0g7","./utilities":"h3TgK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","eventemitter3-timer":"9JR1X"}],"7d0g7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "CanvasTileRenderer", ()=>CanvasTileRenderer);
@@ -38513,11 +38540,347 @@ function intersect(rectangle1, rectangle2) {
     const num1 = Math.min(rectangle1.x + rectangle1.width, rectangle2.x + rectangle2.width);
     const y = Math.max(rectangle1.y, rectangle2.y);
     const num2 = Math.min(rectangle1.y + rectangle1.height, rectangle2.y + rectangle2.height);
-    if (num1 >= x && num2 >= y) return new (0, _pixiJs.Rectangle)(x, y, num1 - x, num2 - y);
-    else return false;
+    return num1 >= x && num2 >= y ? new (0, _pixiJs.Rectangle)(x, y, num1 - x, num2 - y) : false;
 }
 
-},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lmXUp":[function(require,module,exports) {
+},{"pixi.js":"dsYej","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9JR1X":[function(require,module,exports) {
+(function webpackUniversalModuleDefinition(root, factory) {
+    module.exports = factory();
+})(typeof self !== "undefined" ? self : this, function() {
+    return /******/ function(modules) {
+        /******/ // The module cache
+        /******/ var installedModules = {};
+        /******/ /******/ // The require function
+        /******/ function __webpack_require__(moduleId) {
+            /******/ /******/ // Check if module is in cache
+            /******/ if (installedModules[moduleId]) /******/ return installedModules[moduleId].exports;
+            /******/ // Create a new module (and put it into the cache)
+            /******/ var module = installedModules[moduleId] = {
+                /******/ i: moduleId,
+                /******/ l: false,
+                /******/ exports: {}
+            };
+            /******/ /******/ // Execute the module function
+            /******/ modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+            /******/ /******/ // Flag the module as loaded
+            /******/ module.l = true;
+            /******/ /******/ // Return the exports of the module
+            /******/ return module.exports;
+        /******/ }
+        /******/ /******/ /******/ // expose the modules object (__webpack_modules__)
+        /******/ __webpack_require__.m = modules;
+        /******/ /******/ // expose the module cache
+        /******/ __webpack_require__.c = installedModules;
+        /******/ /******/ // define getter function for harmony exports
+        /******/ __webpack_require__.d = function(exports, name, getter) {
+            /******/ if (!__webpack_require__.o(exports, name)) /******/ Object.defineProperty(exports, name, {
+                /******/ configurable: false,
+                /******/ enumerable: true,
+                /******/ get: getter
+            });
+        /******/ };
+        /******/ /******/ // getDefaultExport function for compatibility with non-harmony modules
+        /******/ __webpack_require__.n = function(module) {
+            /******/ var getter = module && module.__esModule ? /******/ function getDefault() {
+                return module["default"];
+            } : /******/ function getModuleExports() {
+                return module;
+            };
+            /******/ __webpack_require__.d(getter, "a", getter);
+            /******/ return getter;
+        /******/ };
+        /******/ /******/ // Object.prototype.hasOwnProperty.call
+        /******/ __webpack_require__.o = function(object, property) {
+            return Object.prototype.hasOwnProperty.call(object, property);
+        };
+        /******/ /******/ // __webpack_public_path__
+        /******/ __webpack_require__.p = "";
+        /******/ /******/ // Load entry module and return exports
+        /******/ return __webpack_require__(__webpack_require__.s = 2);
+    /******/ }([
+        /* 0 */ /***/ function(module, exports, __webpack_require__) {
+            "use strict";
+            var __extends = this && this.__extends || function() {
+                var extendStatics = Object.setPrototypeOf || ({
+                    __proto__: []
+                }) instanceof Array && function(d, b) {
+                    d.__proto__ = b;
+                } || function(d, b) {
+                    for(var p in b)if (b.hasOwnProperty(p)) d[p] = b[p];
+                };
+                return function(d, b) {
+                    extendStatics(d, b);
+                    function __() {
+                        this.constructor = d;
+                    }
+                    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+                };
+            }();
+            Object.defineProperty(exports, "__esModule", {
+                value: true
+            });
+            var TimerManager_1 = __webpack_require__(1);
+            var eventemitter3_1 = __webpack_require__(3);
+            /**
+ * A Simple Timer class extending [EventEmitter3](https://github.com/primus/eventemitter3)
+ *
+ * Auther: Shen Yiming(soimy@163.com)
+ *
+ * Repo: https://github.com/soimy/pixi-timer
+ *
+ * @export
+ * @class Timer
+ * @extends {EventEmitter}
+ */ var Timer1 = /** @class */ function(_super) {
+                __extends(Timer, _super);
+                /**
+     * Creates an instance of Timer.
+     *
+     * Newly created timers will be default to be added to the global timerManager.
+     * Can manually create TimerManager and assign timers.
+     *
+     * @param {number} [time=1] The time is ms before timer end or repedeated.
+     * @memberof Timer
+     */ function Timer(time) {
+                    if (time === void 0) time = 1;
+                    var _this = _super.call(this) || this;
+                    _this.time = time;
+                    if (!Timer._timerManager) Timer._timerManager = new TimerManager_1.TimerManager();
+                    Timer._timerManager.addTimer(_this);
+                    _this._timerManager = Timer._timerManager;
+                    _this.active = false;
+                    _this.isEnded = false;
+                    _this.isStarted = false;
+                    _this.expire = false;
+                    _this.delay = 0;
+                    _this.repeat = 0;
+                    _this.loop = false;
+                    _this._delayTime = 0;
+                    _this._elapsedTime = 0;
+                    _this._repeat = 0;
+                    return _this;
+                }
+                Object.defineProperty(Timer, "timerManager", {
+                    /**
+         * The global TimerManager which is default to all newly created timers.
+         *
+         * @static
+         * @type {TimerManager}
+         * @memberof Timer
+         */ get: function() {
+                        if (!Timer._timerManager) Timer._timerManager = new TimerManager_1.TimerManager();
+                        return Timer._timerManager;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(Timer.prototype, "timerManager", {
+                    /**
+         * The timerManager this timer is assigned to.
+         *
+         * @type {(TimerManager | null)}
+         * @memberof Timer
+         */ get: function() {
+                        return this._timerManager;
+                    },
+                    set: function(value) {
+                        this._timerManager = value;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                /**
+     * Remove this timer from it's timerManager.
+     *
+     * @returns {Timer} Return self for chainable method.
+     * @memberof Timer
+     */ Timer.prototype.remove = function() {
+                    // if (!this.manager) return this;
+                    Timer._timerManager.removeTimer(this);
+                    return this;
+                };
+                /**
+     * Start timer from it's current time.
+     *
+     * A `started` event will be emitted.
+     *
+     * @returns {Timer} Return self for chainable method.
+     * @memberof Timer
+     */ Timer.prototype.start = function() {
+                    this.active = true;
+                    return this;
+                };
+                /**
+     * Stop timer, current time stop updated.
+     *
+     * A `ended` event will be emitted.
+     *
+     * @returns {Timer} Return self for chainable method.
+     * @memberof Timer
+     */ Timer.prototype.stop = function() {
+                    this.active = false;
+                    this.emit("stop", this._elapsedTime);
+                    return this;
+                };
+                /**
+     * Rest timer to it's initial status.
+     *
+     * @returns {Timer} Return self for chainable method.
+     * @memberof Timer
+     */ Timer.prototype.reset = function() {
+                    this._elapsedTime = 0;
+                    this._repeat = 0;
+                    this._delayTime = 0;
+                    this.isStarted = false;
+                    this.isEnded = false;
+                    return this;
+                };
+                /**
+     * Increment timer's time. Should be put in main logic loop.
+     *
+     * Using `TimerManager.update()` method instead is recommended.
+     *
+     * @param {number} delta The amount of increment in ms.
+     * @returns {void}
+     * @memberof Timer
+     */ Timer.prototype.update = function(delta) {
+                    if (!this.active) return;
+                    if (this.delay > this._delayTime) {
+                        this._delayTime += delta;
+                        return;
+                    }
+                    if (!this.isStarted) {
+                        this.isStarted = true;
+                        this.emit("start", this._elapsedTime);
+                    }
+                    if (this.time > this._elapsedTime) {
+                        var t = this._elapsedTime + delta;
+                        var ended = t >= this.time;
+                        this._elapsedTime = ended ? this.time : t;
+                        this.emit("update", this._elapsedTime, delta);
+                        if (ended) {
+                            if (this.loop || this.repeat > this._repeat) {
+                                this._repeat++;
+                                this.emit("repeat", this._elapsedTime, this._repeat);
+                                this._elapsedTime = 0;
+                                return;
+                            }
+                            this.isEnded = true;
+                            this.active = false;
+                            this.emit("end", this._elapsedTime);
+                        }
+                    }
+                };
+                return Timer;
+            }(eventemitter3_1.EventEmitter);
+            exports.Timer = Timer1;
+        /***/ },
+        /* 1 */ /***/ function(module, exports, __webpack_require__) {
+            "use strict";
+            Object.defineProperty(exports, "__esModule", {
+                value: true
+            });
+            var Timer_1 = __webpack_require__(0);
+            /**
+ * Manager class for Timers
+ *
+ * @export
+ * @class TimerManager
+ */ var TimerManager1 = /** @class */ function() {
+                /**
+     * Creates an instance of TimerManager.
+     * @memberof TimerManager
+     */ function TimerManager() {
+                    this.timers = [];
+                    this._timersToDelete = [];
+                    this._last = 0;
+                }
+                /**
+     * Increment all managed timers' time.
+     *
+     * Better to use this method instead of `timers.update()` for centralized control.
+     *
+     * @param {number} [delta] The increment amount in ms. Omit to use internal deltams.
+     * @memberof TimerManager
+     */ TimerManager.prototype.update = function(delta) {
+                    if (!delta && delta !== 0) delta = this._getDeltaMS();
+                    if (this._timersToDelete.length) {
+                        for(var _i = 0, _a = this._timersToDelete; _i < _a.length; _i++){
+                            var timerToDel = _a[_i];
+                            this._remove(timerToDel);
+                        }
+                        this._timersToDelete.length = 0;
+                    }
+                    for(var _b = 0, _c = this.timers; _b < _c.length; _b++){
+                        var timer = _c[_b];
+                        if (timer.active) {
+                            timer.update(delta);
+                            if (timer.isEnded && timer.expire) this.removeTimer(timer);
+                        }
+                    }
+                };
+                /**
+     * Remove timer from this timerManager.
+     *
+     * @param {Timer} timer The timer to be removed.
+     * @memberof TimerManager
+     */ TimerManager.prototype.removeTimer = function(timer) {
+                    this._timersToDelete.push(timer);
+                    timer.timerManager = null;
+                };
+                /**
+     * Add timer to this timerManager, and remove timer from it's original timerManager.
+     *
+     * @param {Timer} timer The timer to be added.
+     * @memberof TimerManager
+     */ TimerManager.prototype.addTimer = function(timer) {
+                    this.timers.push(timer);
+                    if (timer.timerManager) timer.timerManager.removeTimer(timer);
+                    timer.timerManager = this;
+                };
+                /**
+     * Create a new timer under this timerManager.
+     *
+     * @param {number} time time of newly created timer.
+     * @returns {Timer} The newly created timer.
+     * @memberof TimerManager
+     */ TimerManager.prototype.createTimer = function(time) {
+                    var timer = new Timer_1.Timer(time);
+                    this.addTimer(timer);
+                    return timer;
+                };
+                TimerManager.prototype._remove = function(timer) {
+                    var index = this.timers.indexOf(timer);
+                    if (index > -1) this.timers.splice(index, 1);
+                };
+                TimerManager.prototype._getDeltaMS = function() {
+                    if (this._last === 0) this._last = Date.now();
+                    var now = Date.now();
+                    var deltaMS = now - this._last;
+                    this._last = now;
+                    return deltaMS;
+                };
+                return TimerManager;
+            }();
+            exports.TimerManager = TimerManager1;
+        /***/ },
+        /* 2 */ /***/ function(module, exports, __webpack_require__) {
+            "use strict";
+            Object.defineProperty(exports, "__esModule", {
+                value: true
+            });
+            var Timer_1 = __webpack_require__(0);
+            exports.Timer = Timer_1.Timer;
+            var TimerManager_1 = __webpack_require__(1);
+            exports.TimerManager = TimerManager_1.TimerManager;
+        /***/ },
+        /* 3 */ /***/ function(module, exports) {
+            module.exports = require("eventemitter3");
+        /***/ }
+    ]);
+});
+
+},{"eventemitter3":"3fnfh"}],"lmXUp":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _pixiJs = require("pixi.js");
@@ -38528,6 +38891,7 @@ class Player {
     velocity = new (0, _pixiJs.Point)(0, 0);
     maxVelocity = new (0, _pixiJs.Point)(8, 8);
     position = new (0, _pixiJs.Point)(0, 0);
+    lastPosition = new (0, _pixiJs.Point)(0, 0);
     power;
     mass;
     // State
@@ -38619,7 +38983,9 @@ class Player {
             if (this.velocity.y < 0) this.jumpHeight += this.velocity.y * dt;
             if (lastVelocityY < 0 && this.velocity.y >= 0) console.debug("Max jump height: ", this.jumpHeight, lastVelocityY);
         }
-        // Calculate position
+        // Backup current position
+        this.lastPosition = this.position.clone();
+        // Calculate new position
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
         // Set vertical position of the player container
