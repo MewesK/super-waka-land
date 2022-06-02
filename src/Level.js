@@ -105,14 +105,11 @@ export default class Level {
     } else if (!this.player.airborne) {
       this.player.jump();
 
-      this.actionTimer = new Timer(10);
+      this.actionTimer = new Timer(20);
       this.actionTimer.repeat = 10;
       this.actionTimer.on('repeat', (elapsedTime, repeat) => {
-        console.debug('Repeat action: ', elapsedTime, repeat);
         // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-        if (this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
-          this.player.velocity.y += this.player.power / repeat * 1.4;
-        }
+        this.player.velocity.y += (this.player.power / repeat) * 1.1;
       });
 
       this.actionTimer.start();
@@ -204,7 +201,7 @@ export default class Level {
     for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
       // Generate new section if necessary
       if (this.plattformLength === 0) {
-        this.abyssLength = 0; //random(3, 6);
+        this.abyssLength = random(3, 6);
         this.plattformY = random(
           Math.min(
             this.maxFloorY,
@@ -311,6 +308,10 @@ export default class Level {
             intersecting = true;
             this.player.position.y = tileRectangle.y - 32;
             this.player.velocity.y = 0;
+
+            // Set vertical position of the player container
+            this.player.container.position.y = this.player.position.y;
+
             // Check for landing
             if (this.player.airborne) {
               console.debug('Landed');
