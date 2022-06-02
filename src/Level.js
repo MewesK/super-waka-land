@@ -48,6 +48,7 @@ export default class Level {
   plattformLength = 0;
   lastTilemapX = 0;
   actionTimer = null;
+  actionPressed = false;
 
   constructor(app, player) {
     this.app = app;
@@ -94,15 +95,16 @@ export default class Level {
   }
 
   startAction() {
+    this.actionPressed = true;
+
     if (this.actionTimer != null) {
       return;
     }
 
-    console.debug('Start action');
-
     if (this.player.dead) {
       this.reset();
     } else if (!this.player.airborne) {
+      console.debug('Start jump');
       this.player.jump();
 
       this.actionTimer = new Timer(20);
@@ -117,7 +119,10 @@ export default class Level {
   }
 
   endAction() {
+    this.actionPressed = false;
+
     if (this.actionTimer != null) {
+      console.debug('End jump');
       this.actionTimer.stop();
       this.actionTimer = null;
     }
@@ -185,9 +190,10 @@ export default class Level {
     this.player.airborne = !intersecting;
 
     // Start jumping if just landed
-    if (landing && this.actionTimer !== null) {
+    if (landing && this.actionPressed) {
       console.debug('Early jump');
-      this.player.jump();
+      this.endAction();
+      this.startAction(true);
     }
   }
 
@@ -399,6 +405,7 @@ export default class Level {
     this.plattformLength = 0;
     this.lastTilemapX = 0;
     this.actionTimer = null;
+    this.actionPressed = false;
 
     this.player.force = new Point(0.001, this.gravity);
     this.player.velocity = new Point(2, 0);
