@@ -100,26 +100,28 @@ export default class Level {
 
     console.debug('Start action');
 
-    this.actionTimer = new Timer(10);
-    this.actionTimer.repeat = 10;
-    this.actionTimer.on('repeat', (elapsedTime, repeat) => {
-      console.debug('Repeat action: ', elapsedTime, repeat);
-      // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-      if (this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
-        this.player.velocity.y += (this.player.power / repeat);
-      }
-    });
-
-    this.actionTimer.start();
     if (this.player.dead) {
       this.reset();
     } else if (!this.player.airborne) {
       this.player.jump();
+
+      this.actionTimer = new Timer(10);
+      this.actionTimer.repeat = 10;
+      this.actionTimer.on('repeat', (elapsedTime, repeat) => {
+        console.debug('Repeat action: ', elapsedTime, repeat);
+        // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
+        if (this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
+          this.player.velocity.y += this.player.power / repeat * 1.4;
+        }
+      });
+
+      this.actionTimer.start();
     }
   }
 
   endAction() {
     if (this.actionTimer) {
+      this.actionTimer.stop();
       this.actionTimer = null;
     }
   }
