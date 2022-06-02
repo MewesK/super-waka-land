@@ -9,6 +9,7 @@ import {
   UPDATE_PRIORITY,
 } from 'pixi.js';
 import { CompositeTilemap } from '@pixi/tilemap';
+import { Timer, TimerManager } from 'eventemitter3-timer';
 import { intersect, random } from './utilities';
 
 export default class Level {
@@ -20,9 +21,6 @@ export default class Level {
 
   // Properties
   gravity = 0.3;
-  elapsed = 0.0;
-
-  // Constants
   startFloorY = 12;
   minFloorY = 5;
   maxFloorY = 13;
@@ -99,28 +97,52 @@ export default class Level {
     if (this.actionTimer != null) {
       return;
     }
+
     console.debug('Start action');
-    this.actionTimer = 0;
+
     if (this.player.dead) {
       this.reset();
     } else if (!this.player.airborne) {
       this.player.jump();
+
+      this.actionTimer = new Timer(20);
+      this.actionTimer.repeat = 10;
+      this.actionTimer.on('repeat', (elapsedTime, repeat) => {
+        // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
+        this.player.velocity.y += (this.player.power / repeat) * 1.1;
+      });
+
+      this.actionTimer.start();
     }
   }
 
   endAction() {
-    console.debug('End action: ', this.actionTimer);
-    this.actionTimer = null;
+    if (this.actionTimer != null) {
+      this.actionTimer.stop();
+      this.actionTimer = null;
+    }
   }
 
   checkCollision() {
     // Calculate the tile indices around the player
     const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
     const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
-    const tilemapXMin = Math.max(0, Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1);
-    const tilemapXMax = Math.min(tilemapXMin + Math.ceil(this.player.width / this.tileWidth) + 1, this.mapWidth);
-    const tilemapYMin = Math.max(0, Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1);
-    const tilemapYMax = Math.min(tilemapYMin + Math.ceil(this.player.height / this.tileHeight) + 1, this.mapHeight);
+    const tilemapXMin = Math.max(
+      0,
+      Math.floor((tilemapX + this.player.container.position.x) / this.tileWidth) - 1
+    );
+    const tilemapXMax = Math.min(
+      tilemapXMin + Math.ceil(this.player.width / this.tileWidth) + 1,
+      this.mapWidth
+    );
+    const tilemapYMin = Math.max(
+      0,
+      Math.floor((tilemapY + this.player.container.position.y) / this.tileHeight) - 1
+    );
+    const tilemapYMax = Math.min(
+      tilemapYMin + Math.ceil(this.player.height / this.tileHeight) + 1,
+      this.mapHeight
+    );
 
     // Check for collisions
     let intersecting = false;
@@ -145,6 +167,9 @@ export default class Level {
             intersecting = true;
             this.player.position.y = tileRectangle.y - this.player.height;
             this.player.velocity.y = 0;
+
+            // Set vertical position of the player container
+            this.player.container.position.y = this.player.position.y;
 
             // Check for landing
             if (this.player.airborne) {
@@ -272,7 +297,7 @@ export default class Level {
       for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
         // Generate new section if necessary
         if (this.plattformLength === 0) {
-          this.abyssLength = 0; //random(3, 6);
+          this.abyssLength = random(3, 6);
           this.plattformY = random(
             Math.min(
               this.maxFloorY,
@@ -336,16 +361,6 @@ export default class Level {
     this.tilemap.pivot.x = this.player.position.x;
   }
 
-  updatePlayer(dt) {
-    // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
-    if (this.actionTimer !== null && this.player.jumpTimer >= 1 && this.player.jumpTimer <= 12) {
-      //this.player.velocity.y += (this.player.power / this.player.jumpTimer) * dt * 1.2;
-      this.player.velocity.y += this.player.power * dt * 0.3;
-    }
-    // Move player
-    this.player.move(dt);
-  }
-
   updateScore() {
     // Draw score
     this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
@@ -360,16 +375,15 @@ export default class Level {
     this.app.stats.begin();
 
     // Update timers
-    this.elapsed += dt;
-    if (this.actionTimer !== null) {
-      this.actionTimer += dt;
+    if (this.actionTimer) {
+      this.actionTimer.timerManager.update(this.app.ticker.elapsedMS);
     }
     if (this.player.jumpTimer !== null) {
       this.player.jumpTimer += dt;
     }
 
     this.createNewTiles();
-    this.updatePlayer(dt);
+    this.player.move(dt);
     this.checkCollision();
     this.checkGameOver();
     this.updateBackground(dt);
@@ -393,7 +407,7 @@ export default class Level {
     this.player.container.position = this.player.position.clone();
     this.player.airborne = true;
     this.player.dead = false;
-    this.player.jumpTimer = true;
+    this.player.jumpTimer = null;
 
     this.background2aSprite.pivot.x = 0;
     this.background3aSprite.pivot.x = 0;
