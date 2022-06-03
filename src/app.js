@@ -24,6 +24,9 @@ import rainyHeartsFontImage from './fonts/rainy-hearts.png';
 import retroLandMayhemFontAtlas from 'bundle-text:./fonts/retro-land-mayhem.fnt';
 import retroLandMayhemFontImage from './fonts/retro-land-mayhem.png';
 
+import dotParticle from './images/dotParticle.png';
+import fireParticle from './images/fireParticle.png';
+
 // Settings
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -61,6 +64,8 @@ Loader.shared
   .add(editUndoFontImage)
   .add(rainyHeartsFontImage)
   .add(retroLandMayhemFontImage)
+  .add(dotParticle)
+  .add(fireParticle)
   .load(setup);
 
 function loadProgressHandler(loader, resource) {

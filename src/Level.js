@@ -1,5 +1,6 @@
 import {
   AnimatedSprite,
+  Loader,
   Point,
   Sprite,
   Container,
@@ -9,8 +10,14 @@ import {
   UPDATE_PRIORITY,
 } from 'pixi.js';
 import { CompositeTilemap } from '@pixi/tilemap';
-import { Timer, TimerManager } from 'eventemitter3-timer';
+import { Timer } from 'eventemitter3-timer';
+import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { intersect, random } from './utilities';
+
+import emitterConfig from './emitter.json';
+
+import dotParticle from './images/dotParticle.png';
+import fireParticle from './images/fireParticle.png';
 
 export default class Level {
   app;
@@ -42,12 +49,16 @@ export default class Level {
   gameOverText1;
   gameOverText2;
 
+  emitter;
+
   // Temp
   abyssLength = 0;
   plattformY = this.startFloorY;
   plattformLength = 0;
   lastTilemapX = 0;
-  actionTimer = null;
+
+  primaryActionTimer = null;
+  secondaryActionTimer = null;
   actionPressed = false;
 
   constructor(app, player) {
@@ -55,6 +66,12 @@ export default class Level {
     this.player = player;
 
     this.createSprites();
+    this.emitter = new Emitter(
+      this.app.stage,
+      upgradeConfig(emitterConfig, [
+        Loader.shared.resources[dotParticle].texture,
+      ])
+    );
     this.reset();
 
     // Compose stage
@@ -73,31 +90,38 @@ export default class Level {
       if (event.code === 'Space') {
         event.preventDefault();
         event.stopPropagation();
-        this.startAction();
+        this.startPrimaryAction();
+      }
+      if (event.code === 'AltLeft') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.startSecondaryAction();
       }
     });
     window.addEventListener('keyup', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      this.endAction();
+      if (event.code === 'Space') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.endPrimaryAction();
+      }
     });
     app.stage.on('pointerdown', (event) => {
       event.stopPropagation();
-      this.startAction();
+      this.startPrimaryAction();
     });
     app.stage.on('pointerup', (event) => {
       event.stopPropagation();
-      this.endAction();
+      this.endPrimaryAction();
     });
 
     // Add ticker
     this.app.ticker.add(this.updateScore, this, UPDATE_PRIORITY.LOW);
   }
 
-  startAction() {
+  startPrimaryAction() {
     this.actionPressed = true;
 
-    if (this.actionTimer != null) {
+    if (this.primaryActionTimer != null) {
       return;
     }
 
@@ -107,25 +131,44 @@ export default class Level {
       console.debug('Start jump');
       this.player.jump();
 
-      this.actionTimer = new Timer(20);
-      this.actionTimer.repeat = 10;
-      this.actionTimer.on('repeat', (elapsedTime, repeat) => {
+      this.primaryActionTimer = new Timer(20);
+      this.primaryActionTimer.repeat = 10;
+      this.primaryActionTimer.on('repeat', (elapsedTime, repeat) => {
         // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
         this.player.velocity.y += (this.player.power / repeat) * 1.1;
       });
 
-      this.actionTimer.start();
+      this.primaryActionTimer.start();
     }
   }
 
-  endAction() {
+  endPrimaryAction() {
     this.actionPressed = false;
 
-    if (this.actionTimer != null) {
+    if (this.primaryActionTimer != null) {
       console.debug('End jump');
-      this.actionTimer.stop();
-      this.actionTimer = null;
+      this.primaryActionTimer.stop();
+      this.primaryActionTimer = null;
     }
+  }
+
+  startSecondaryAction() {
+    if (this.secondaryActionTimer != null) {
+      return;
+    }
+
+    console.debug('Start boost');
+    this.player.boost();
+    this.emitter.emit = true;
+
+    this.secondaryActionTimer = new Timer(500);
+    this.secondaryActionTimer.on('end', () => {
+      console.debug('End boost');
+      this.emitter.emit = false;
+      this.player.velocity.x = this.player.lastVelocity.x;
+      this.secondaryActionTimer = null;
+    });
+    this.secondaryActionTimer.start();
   }
 
   checkCollision() {
@@ -192,8 +235,8 @@ export default class Level {
     // Start jumping if just landed
     if (landing && this.actionPressed) {
       console.debug('Early jump');
-      this.endAction();
-      this.startAction(true);
+      this.endPrimaryAction();
+      this.startPrimaryAction(true);
     }
   }
 
@@ -202,6 +245,7 @@ export default class Level {
     if (this.player.position.y > this.app.screen.height) {
       console.debug('Died');
       this.player.dead = true;
+      this.emitter.emit = false;
 
       const filter1 = new filters.ColorMatrixFilter();
       filter1.desaturate();
@@ -381,16 +425,24 @@ export default class Level {
     this.app.stats.begin();
 
     // Update timers
-    if (this.actionTimer) {
-      this.actionTimer.timerManager.update(this.app.ticker.elapsedMS);
+    if (this.primaryActionTimer) {
+      this.primaryActionTimer.timerManager.update(this.app.ticker.elapsedMS);
+    }
+    if (this.secondaryActionTimer) {
+      this.secondaryActionTimer.timerManager.update(this.app.ticker.elapsedMS);
     }
     if (this.player.jumpTimer !== null) {
       this.player.jumpTimer += dt;
+    }
+    if (this.player.boostTimer !== null) {
+      this.player.boostTimer += dt;
     }
 
     this.createNewTiles();
     this.player.move(dt);
     this.checkCollision();
+    this.emitter.spawnPos.x = this.player.container.position.x + this.player.width;
+    this.emitter.spawnPos.y = this.player.container.position.y + this.player.height;
     this.checkGameOver();
     this.updateBackground(dt);
 
@@ -404,11 +456,12 @@ export default class Level {
     this.plattformY = this.startFloorY;
     this.plattformLength = 0;
     this.lastTilemapX = 0;
-    this.actionTimer = null;
+    this.primaryActionTimer = null;
     this.actionPressed = false;
 
     this.player.force = new Point(0.001, this.gravity);
     this.player.velocity = new Point(2, 0);
+    this.player.lastVelocity = this.player.velocity.clone();
     this.player.position = new Point(this.tileWidth * 2, 0);
     this.player.lastPosition = this.player.position.clone();
     this.player.container.position = this.player.position.clone();
@@ -423,6 +476,7 @@ export default class Level {
 
     this.levelContainer.filters = null;
     this.container.removeChild(this.gameOver);
+    this.emitter.emit = false;
 
     this.createMap();
     this.createTilemap();

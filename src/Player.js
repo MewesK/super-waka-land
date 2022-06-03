@@ -6,6 +6,7 @@ export default class Player {
   // Properties
   force = new Point(0, 0);
   velocity = new Point(0, 0);
+  lastVelocity = new Point(0, 0);
   maxVelocity = new Point(8, 8);
   position = new Point(0, 0);
   lastPosition = new Point(0, 0);
@@ -15,6 +16,7 @@ export default class Player {
   // State
   dead = false;
   jumpTimer = null;
+  boostTimer = null;
   #airborne = true;
 
   // Sprites
@@ -148,10 +150,22 @@ export default class Player {
     }
 
     this.jumpTimer = 0;
+    this.lastVelocity = this.velocity.clone();
     this.velocity.y = this.power;
     this.airborne = true;
 
     // Debug
     this.jumpHeight = 0;
+  }
+
+  boost() {
+    if (this.dead) {
+      return;
+    }
+
+    this.boostTimer = 0;
+    this.lastVelocity = this.velocity.clone();
+    this.velocity.x = -this.power * 4;
+    this.velocity.y = this.power * 3;
   }
 }
