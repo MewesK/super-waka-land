@@ -392,19 +392,19 @@ export default class Level {
 
   updateBackground(dt) {
     // Parallax scrolling
-    this.background2aSprite.pivot.x += 0.1 * dt;
+    this.background2aSprite.pivot.x += 0.2 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
     }
-    this.background2bSprite.pivot.x += 0.1 * dt;
+    this.background2bSprite.pivot.x += 0.2 * dt;
     if (this.background2aSprite.pivot.x >= this.app.screen.width) {
       this.background2aSprite.pivot.x = 0;
     }
-    this.background3aSprite.pivot.x += 0.15 * dt;
+    this.background3aSprite.pivot.x += 0.25 * dt;
     if (this.background3aSprite.pivot.x >= this.app.screen.width) {
       this.background3aSprite.pivot.x = 0;
     }
-    this.background3bSprite.pivot.x += 0.15 * dt;
+    this.background3bSprite.pivot.x += 0.25 * dt;
     if (this.background3bSprite.pivot.x >= this.app.screen.width) {
       this.background3bSprite.pivot.x = 0;
     }
