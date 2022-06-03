@@ -16,9 +16,6 @@ import { intersect, random } from './utilities';
 
 import emitterConfig from './emitter.json';
 
-import dotParticle from './images/dotParticle.png';
-import fireParticle from './images/fireParticle.png';
-
 export default class Level {
   app;
   player;
@@ -42,6 +39,7 @@ export default class Level {
   background3aSprite;
   background3bSprite;
   coinSprite;
+  cokeSprite;
   tilemap;
   scoreText;
 
@@ -68,9 +66,7 @@ export default class Level {
     this.createSprites();
     this.emitter = new Emitter(
       this.app.stage,
-      upgradeConfig(emitterConfig, [
-        Loader.shared.resources[dotParticle].texture,
-      ])
+      upgradeConfig(emitterConfig, [Sprite.from('particle.png').texture])
     );
     this.reset();
 
@@ -87,25 +83,26 @@ export default class Level {
 
     // Register event listeners
     window.addEventListener('keydown', (event) => {
-      if (event.code === 'Space') {
+      if (event.code === 'KeyW') {
         event.preventDefault();
         event.stopPropagation();
         this.startPrimaryAction();
       }
-      if (event.code === 'AltLeft') {
+      if (event.code === 'KeyD') {
         event.preventDefault();
         event.stopPropagation();
         this.startSecondaryAction();
       }
     });
     window.addEventListener('keyup', (event) => {
-      if (event.code === 'Space') {
+      if (event.code === 'KeyW') {
         event.preventDefault();
         event.stopPropagation();
         this.endPrimaryAction();
       }
     });
     app.stage.on('pointerdown', (event) => {
+      console.debug('Key: ', event);
       event.stopPropagation();
       this.startPrimaryAction();
     });
@@ -268,21 +265,31 @@ export default class Level {
 
   createSprites() {
     this.background1Sprite = Sprite.from('bg_wakaland_1.png');
+
     this.background2aSprite = Sprite.from('bg_wakaland_2.png');
-    this.background3aSprite = Sprite.from('bg_wakaland_3.png');
+    this.background2aSprite.y = this.app.screen.height - 96;
+
     this.background2bSprite = Sprite.from('bg_wakaland_2.png');
     this.background2bSprite.x = this.background2bSprite.width;
+    this.background2bSprite.y = this.app.screen.height - 96;
+
+    this.background3aSprite = Sprite.from('bg_wakaland_3.png');
+    this.background3aSprite.y = this.app.screen.height - 32;
+
     this.background3bSprite = Sprite.from('bg_wakaland_3.png');
     this.background3bSprite.x = this.background3bSprite.width;
+    this.background3bSprite.y = this.app.screen.height - 32;
 
     this.coinSprite = AnimatedSprite.fromFrames([
       'coin1.png',
       'coin2.png',
       'coin3.png',
-      'coin4.png',
+      'coin2.png',
     ]);
     this.coinSprite.animationSpeed = 0.15;
-    this.coinSprite.x = 190;
+    this.coinSprite.play();
+
+    this.coinSprite = AnimatedSprite.fromFrames(['coke1.png', 'coke2.png']);
     this.coinSprite.y = 127;
     this.coinSprite.play();
 
@@ -322,11 +329,7 @@ export default class Level {
     for (let y = 0; y <= this.mapHeight; y++) {
       this.map[y] = [];
       for (let x = 0; x <= this.mapWidth * 2; x++) {
-        if (y === this.startFloorY) {
-          this.map[y][x] = 'block.png';
-        } else {
-          this.map[y][x] = null;
-        }
+        this.setTile(x, y, y === this.startFloorY, x === this.mapWidth);
       }
     }
   }
@@ -357,13 +360,15 @@ export default class Level {
           );
           this.plattformLength = random(2, 8);
         }
+
         // Fill current section
         if (this.abyssLength > 0) {
           // Fill abyss
+          this.setTile(x, this.plattformY, false);
           this.abyssLength--;
         } else {
           // Fill platform
-          this.map[this.plattformY][x] = 'block.png';
+          this.setTile(x, this.plattformY, true, this.plattformLength - 1 === 0);
           this.plattformLength--;
         }
       }
@@ -416,6 +421,41 @@ export default class Level {
     this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
   }
 
+  setTile(x, y, value = true, last = false) {
+    // Empty
+    if (!value) {
+      this.map[y][x] = null;
+    }
+
+    // Platform start
+    else if (x > 0 && this.map[y][x - 1] === null) {
+      this.map[y][x] = 'planks1.png';
+    }
+
+    // Platform end
+    else if (last) {
+      this.map[y][x] = 'planks5.png';
+    }
+
+    // Platform
+    else {
+      const randomTile = random(0, 3);
+      if (randomTile === 0) {
+        this.map[y][x] = 'planks2.png';
+        if (x > 0 && this.map[y][x - 1] !== 'planks3.png') {
+          this.map[y][x] = 'planks3.png';
+        }
+      } else if (randomTile === 1) {
+        this.map[y][x] = 'planks4.png';
+        if (x > 0 && this.map[y][x - 1] !== 'planks3.png') {
+          this.map[y][x] = 'planks3.png';
+        }
+      } else {
+        this.map[y][x] = 'planks3.png';
+      }
+    }
+  }
+
   tick(dt) {
     if (this.player.dead) {
       return;
@@ -441,7 +481,7 @@ export default class Level {
     this.createNewTiles();
     this.player.move(dt);
     this.checkCollision();
-    this.emitter.spawnPos.x = this.player.container.position.x + this.player.width;
+    this.emitter.spawnPos.x = this.player.container.position.x + this.player.width / 2;
     this.emitter.spawnPos.y = this.player.container.position.y + this.player.height;
     this.checkGameOver();
     this.updateBackground(dt);

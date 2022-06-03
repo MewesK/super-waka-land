@@ -20,7 +20,7 @@ export default class Player {
   #airborne = true;
 
   // Sprites
-  width = 16;
+  width = 25;
   height = 32;
   ratIdleSprite;
   ratWalkSprite;
