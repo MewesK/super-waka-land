@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npx parcel",
     "prebuild": "rm -rf dist",
-    "build": "npx parcel build --public-url '.'",
+    "build": "npx parcel build --public-url '.' --hmr-port 1236",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [

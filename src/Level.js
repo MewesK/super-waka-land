@@ -1,6 +1,5 @@
 import {
   AnimatedSprite,
-  Loader,
   Point,
   Sprite,
   Container,
@@ -51,6 +50,7 @@ export default class Level {
 
   // Temp
   abyssLength = 0;
+  plattformX = 0;
   plattformY = this.startFloorY;
   plattformLength = 0;
   lastTilemapX = 0;
@@ -164,7 +164,7 @@ export default class Level {
   }
 
   createCoin(x, y) {
-    const coinSprite = AnimatedSprite.fromFrames([
+    /*const coinSprite = AnimatedSprite.fromFrames([
       'coin1.png',
       'coin2.png',
       'coin3.png',
@@ -175,7 +175,9 @@ export default class Level {
     coinSprite.position.y = y * this.tileHeight;
     coinSprite.play();
     this.coins.push(coinSprite);
-    this.levelContainer.addChild(coinSprite);
+    this.levelContainer.addChild(coinSprite);*/
+
+    this.map[y][x] = 'coin1.png';
   }
 
   createCoke(x, y) {
@@ -364,7 +366,7 @@ export default class Level {
       let firstTile = false;
       for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
         // Generate new section if necessary
-        if (this.plattformLength === 0) {
+        if (this.plattformX === 0) {
           this.abyssLength = random(3, 6);
           this.plattformY = random(
             Math.min(
@@ -374,6 +376,7 @@ export default class Level {
             this.maxFloorY
           );
           this.plattformLength = random(2, 8);
+          this.plattformX = this.plattformLength;
           firstTile = true;
         }
 
@@ -383,14 +386,14 @@ export default class Level {
           this.setTile(x, this.plattformY, false);
           this.abyssLength--;
         } else {
-          if (!firstTile && this.plattformLength - 1 > 0) {
+          if (this.plattformLength >= 3 && !firstTile && this.plattformX - 1 > 0) {
             this.createCoin(x, this.plattformY - 3);
           }
           firstTile = false;
 
           // Fill platform
-          this.setTile(x, this.plattformY, true, this.plattformLength - 1 === 0);
-          this.plattformLength--;
+          this.setTile(x, this.plattformY, true, this.plattformX - 1 === 0);
+          this.plattformX--;
         }
       }
 
