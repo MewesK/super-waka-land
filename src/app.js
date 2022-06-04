@@ -12,8 +12,8 @@ import Level from './Level';
 import Player from './Player';
 
 // Import resources
-import ratAtlas from './images/atlas/rat.json';
-import ratSprites from './images/atlas/rat.png';
+import ratAtlas from './images/atlas.json';
+import ratSprites from './images/atlas.png';
 
 import editUndoFontAtlas from 'bundle-text:./fonts/edit-undo.fnt';
 import editUndoFontImage from './fonts/edit-undo.png';

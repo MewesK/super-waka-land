@@ -12,7 +12,7 @@ import { Timer } from 'eventemitter3-timer';
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { intersect, random } from './utilities';
 
-import boostEmitterConfig from './emitter.json';
+import boostEmitterConfig from './emitters/boostEmitterConfig.json';
 
 const Tile = {
   void: 0,
