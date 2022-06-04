@@ -5,9 +5,9 @@
   "source": "src/index.html",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
-    "start": "npx parcel",
+    "start": "npx parcel --hmr-port 1236",
     "prebuild": "rm -rf dist",
-    "build": "npx parcel build --public-url '.' --hmr-port 1236",
+    "build": "npx parcel build --public-url '.'",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [

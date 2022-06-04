@@ -120,6 +120,7 @@ export default class Level {
     this.coinAnimationTimer = new Timer(100);
     this.coinAnimationTimer.loop = true;
     this.coinAnimationTimer.on('repeat', (elapsedTime, repeat) => {
+      // Update tile animations
       this.app.renderer.plugins.tilemap.tileAnim[0] = repeat;
       this.app.renderer.plugins.tilemap.tileAnim[1] = repeat;
     });
@@ -514,15 +515,7 @@ export default class Level {
     this.app.stats.begin();
 
     // Update timers
-    if (this.coinAnimationTimer) {
-      this.coinAnimationTimer.timerManager.update(this.app.ticker.elapsedMS);
-    }
-    if (this.primaryActionTimer) {
-      this.primaryActionTimer.timerManager.update(this.app.ticker.elapsedMS);
-    }
-    if (this.secondaryActionTimer) {
-      this.secondaryActionTimer.timerManager.update(this.app.ticker.elapsedMS);
-    }
+    this.coinAnimationTimer.timerManager.update(this.app.ticker.elapsedMS);
     if (this.player.jumpTimer !== null) {
       this.player.jumpTimer += dt;
     }
