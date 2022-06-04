@@ -6,7 +6,6 @@ import {
   Rectangle,
   filters,
   BitmapText,
-  UPDATE_PRIORITY,
 } from 'pixi.js';
 import { CompositeTilemap } from '@pixi/tilemap';
 import { Timer } from 'eventemitter3-timer';
@@ -112,9 +111,6 @@ export default class Level {
       event.stopPropagation();
       this.endPrimaryAction();
     });
-
-    // Add ticker
-    this.app.ticker.add(this.updateScore, this, UPDATE_PRIORITY.LOW);
 
     // Add timer
     this.coinAnimationTimer = new Timer(100);
@@ -231,7 +227,7 @@ export default class Level {
             if (this.map[y][x].value === Tile.coin && intersectRect.height > 0) {
               collecting = true;
               this.setTile(x, y, Tile.void);
-              this.score += 10;
+              this.increaseScore(10);
             } else if (
               this.map[y][x].value === Tile.platform &&
               this.player.lastPosition.y + this.player.height <= tileRectangle.y
@@ -497,8 +493,8 @@ export default class Level {
     this.boostEmitter.spawnPos.y = this.player.container.position.y + this.player.height;
   }
 
-  updateScore() {
-    // Draw score
+  increaseScore(value) {
+    this.score += value;
     this.scoreText.text = 'Score: ' + this.score;
   }
 
