@@ -5,6 +5,8 @@ import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { intersect, random } from './utilities';
 
 import boostEmitterConfig from './emitters/boostEmitterConfig.json';
+import coinEmitterConfig from './emitters/coinEmitterConfig.json';
+import cokeEmitterConfig from './emitters/cokeEmitterConfig.json';
 
 const Tile = {
   void: 0,
@@ -46,6 +48,7 @@ export default class Level {
 
   // Particle emitters
   boostEmitter;
+  collectableEmitters = [];
 
   // Timers
   animationTimer = null;
@@ -218,12 +221,40 @@ export default class Level {
               collecting = true;
               this.setTile(x, y, Tile.void);
               this.increaseScore(10);
+              const emitter = new Emitter(
+                this.app.stage,
+                upgradeConfig(coinEmitterConfig, [Sprite.from('particle.png').texture])
+              );
+              emitter.updateSpawnPos(
+                tileRectangle.x - tileRectangle.width / 2,
+                tileRectangle.y + tileRectangle.height / 2
+              );
+              emitter.playOnceAndDestroy(() => {
+                this.collectableEmitters = this.collectableEmitters.filter(
+                  (collectableEmitter) => collectableEmitter != emitter
+                );
+              });
+              this.collectableEmitters.push(emitter);
             } else if (this.map[y][x].value === Tile.coke && intersectRect.height > 0) {
               // Collect coke
               collecting = true;
               this.setTile(x, y, Tile.void);
               this.increaseScore(50);
               this.increaseBoost(1);
+              const emitter = new Emitter(
+                this.app.stage,
+                upgradeConfig(cokeEmitterConfig, [Sprite.from('bubble.png').texture])
+              );
+              emitter.updateSpawnPos(
+                tileRectangle.x - tileRectangle.width / 2,
+                tileRectangle.y + tileRectangle.height / 2
+              );
+              emitter.playOnceAndDestroy(() => {
+                this.collectableEmitters = this.collectableEmitters.filter(
+                  (collectableEmitter) => collectableEmitter != emitter
+                );
+              });
+              this.collectableEmitters.push(emitter);
             } else if (
               this.map[y][x].value === Tile.platform &&
               this.player.lastPosition.y + this.player.height <= tileRectangle.y
@@ -491,8 +522,18 @@ export default class Level {
 
   updateEmitters() {
     // Update boost effect
-    this.boostEmitter.spawnPos.x = this.player.container.position.x + this.player.width / 2;
-    this.boostEmitter.spawnPos.y = this.player.container.position.y + this.player.height;
+    this.boostEmitter.updateSpawnPos(
+      this.player.container.position.x + this.player.width / 2,
+      this.player.container.position.y + this.player.height
+    );
+    // Update collecatble emitters
+    // TODO
+    this.collectableEmitters.forEach((collectableEmitter) => {
+      collectableEmitter.updateSpawnPos(
+        collectableEmitter.spawnPos.x - (this.player.position.x - this.player.lastPosition.x),
+        collectableEmitter.spawnPos.y
+      );
+    });
   }
 
   increaseScore(value) {
@@ -529,7 +570,7 @@ export default class Level {
     this.createNewTiles();
     this.player.move(dt);
     this.checkCollision();
-    this.updateEmitters();
+    this.updateEmitters(dt);
     this.updateBackground(dt);
     this.checkGameOver();
 
@@ -568,6 +609,8 @@ export default class Level {
     this.levelContainer.filters = null;
     this.container.removeChild(this.gameOver);
     this.boostEmitter.emit = false;
+    this.collectableEmitters.forEach((collectableEmitter) => collectableEmitter.destroy());
+    this.collectableEmitters = [];
 
     this.createMap();
     this.createTilemap();

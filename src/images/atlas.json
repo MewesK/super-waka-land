@@ -24,9 +24,17 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":256,"h":32},
 	"sourceSize": {"w":256,"h":32}
 },
+"bubble.png":
+{
+	"frame": {"x":0,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
 "coin1.png":
 {
-	"frame": {"x":0,"y":0,"w":12,"h":16},
+	"frame": {"x":16,"y":0,"w":12,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":12,"h":16},
@@ -34,7 +42,7 @@
 },
 "coin2.png":
 {
-	"frame": {"x":12,"y":0,"w":12,"h":16},
+	"frame": {"x":28,"y":0,"w":12,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":12,"h":16},
@@ -42,7 +50,7 @@
 },
 "coin3.png":
 {
-	"frame": {"x":24,"y":0,"w":12,"h":16},
+	"frame": {"x":40,"y":0,"w":12,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":12,"h":16},
@@ -50,7 +58,7 @@
 },
 "coin4.png":
 {
-	"frame": {"x":36,"y":0,"w":12,"h":16},
+	"frame": {"x":52,"y":0,"w":12,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":12,"h":16},
@@ -74,7 +82,7 @@
 },
 "particle.png":
 {
-	"frame": {"x":48,"y":0,"w":16,"h":16},
+	"frame": {"x":64,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -82,7 +90,7 @@
 },
 "planks1.png":
 {
-	"frame": {"x":64,"y":0,"w":16,"h":16},
+	"frame": {"x":80,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -90,7 +98,7 @@
 },
 "planks2.png":
 {
-	"frame": {"x":80,"y":0,"w":16,"h":16},
+	"frame": {"x":96,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -98,7 +106,7 @@
 },
 "planks3.png":
 {
-	"frame": {"x":96,"y":0,"w":16,"h":16},
+	"frame": {"x":112,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -106,7 +114,7 @@
 },
 "planks4.png":
 {
-	"frame": {"x":112,"y":0,"w":16,"h":16},
+	"frame": {"x":128,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -114,7 +122,7 @@
 },
 "planks5.png":
 {
-	"frame": {"x":128,"y":0,"w":16,"h":16},
+	"frame": {"x":144,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -177,10 +185,10 @@
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",
 	"version": "1.0",
-	"image": "rat.png",
+	"image": "atlas.png",
 	"format": "RGBA8888",
 	"size": {"w":256,"h":368},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:f22e8144f1780d668f755c4d1bd84d79:2a501a7c2c0104d8703e178f18873f6b:897eb3d5a631cb8958a6b43d97451b25$"
+	"smartupdate": "$TexturePacker:SmartUpdate:6ecf418aa957bddc4e96a869996fad75:b61a18c557d8deed356937d8424b66f9:cbce6b53f0f49e0bf15173c25c41f876$"
 }
 }
