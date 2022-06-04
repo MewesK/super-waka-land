@@ -15,10 +15,16 @@ import { intersect, random } from './utilities';
 
 import boostEmitterConfig from './emitter.json';
 
+const Tile = {
+  void: 0,
+  platform: 1,
+  coin: 2,
+};
+
 export default class Level {
   app;
   player;
-  coins = [];
+  score = 0;
   cokes = [];
   map = [[]];
   container = new Container();
@@ -50,11 +56,12 @@ export default class Level {
 
   // Temp
   abyssLength = 0;
-  plattformX = 0;
-  plattformY = this.startFloorY;
-  plattformLength = 0;
+  platformX = 0;
+  platformY = this.startFloorY;
+  platformLength = 0;
   lastTilemapX = 0;
 
+  coinAnimationTimer = null;
   primaryActionTimer = null;
   secondaryActionTimer = null;
   actionPressed = false;
@@ -108,6 +115,15 @@ export default class Level {
 
     // Add ticker
     this.app.ticker.add(this.updateScore, this, UPDATE_PRIORITY.LOW);
+
+    // Add timer
+    this.coinAnimationTimer = new Timer(100);
+    this.coinAnimationTimer.loop = true;
+    this.coinAnimationTimer.on('repeat', (elapsedTime, repeat) => {
+      this.app.renderer.plugins.tilemap.tileAnim[0] = repeat;
+      this.app.renderer.plugins.tilemap.tileAnim[1] = repeat;
+    });
+    this.coinAnimationTimer.start();
   }
 
   startPrimaryAction() {
@@ -129,7 +145,6 @@ export default class Level {
         // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
         this.player.velocity.y += (this.player.power / repeat) * 1.1;
       });
-
       this.primaryActionTimer.start();
     }
   }
@@ -161,23 +176,6 @@ export default class Level {
       this.secondaryActionTimer = null;
     });
     this.secondaryActionTimer.start();
-  }
-
-  createCoin(x, y) {
-    /*const coinSprite = AnimatedSprite.fromFrames([
-      'coin1.png',
-      'coin2.png',
-      'coin3.png',
-      'coin4.png',
-    ]);
-    coinSprite.animationSpeed = 0.15;
-    coinSprite.position.x = x * this.tileWidth;
-    coinSprite.position.y = y * this.tileHeight;
-    coinSprite.play();
-    this.coins.push(coinSprite);
-    this.levelContainer.addChild(coinSprite);*/
-
-    this.map[y][x] = 'coin1.png';
   }
 
   createCoke(x, y) {
@@ -214,9 +212,10 @@ export default class Level {
     // Check for collisions
     let intersecting = false;
     let landing = false;
+    let collecting = false;
     for (let y = tilemapYMin; y <= tilemapYMax; y++) {
       for (let x = tilemapXMin; x <= tilemapXMax; x++) {
-        if (this.map[y][x] !== null) {
+        if (this.map[y][x].value !== Tile.void) {
           // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
             x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
@@ -226,30 +225,42 @@ export default class Level {
           );
 
           // Is overlapping and player was previously above the tile?
-          if (
-            intersect(this.player.containerRectangle, tileRectangle) &&
-            this.player.lastPosition.y + this.player.height <= tileRectangle.y
-          ) {
-            // Fix position and cancel falling
-            intersecting = true;
-            this.player.position.y = tileRectangle.y - this.player.height;
-            this.player.velocity.y = 0;
+          let intersectRect;
+          if ((intersectRect = intersect(this.player.containerRectangle, tileRectangle))) {
+            if (this.map[y][x].value === Tile.coin && intersectRect.height > 0) {
+              collecting = true;
+              this.setTile(x, y, Tile.void);
+              this.score += 10;
+            } else if (
+              this.map[y][x].value === Tile.platform &&
+              this.player.lastPosition.y + this.player.height <= tileRectangle.y
+            ) {
+              // Fix position and cancel falling
+              intersecting = true;
+              this.player.position.y = tileRectangle.y - this.player.height;
+              this.player.velocity.y = 0;
 
-            // Set vertical position of the player container
-            this.player.container.position.y = this.player.position.y;
+              // Set vertical position of the player container
+              this.player.container.position.y = this.player.position.y;
 
-            // Check for landing
-            if (this.player.airborne) {
-              console.debug('Landed');
-              landing = true;
-              this.player.jumpTimer = null;
+              // Check for landing
+              if (this.player.airborne) {
+                console.debug('Landed');
+                landing = true;
+                this.player.jumpTimer = null;
+              }
+              break;
             }
-            break;
           }
         }
       }
     }
     this.player.airborne = !intersecting;
+
+    if (collecting) {
+      // Redraw tilemap
+      this.createTilemap(false);
+    }
 
     // Start jumping if just landed
     if (landing && this.actionPressed) {
@@ -278,7 +289,7 @@ export default class Level {
       );
       this.levelContainer.filters = [filter1, filter2];
 
-      this.gameOverText2.text = 'Final Score: ' + Math.floor(this.player.position.x);
+      this.gameOverText2.text = 'Final Score: ' + this.score;
       this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
 
       this.container.addChild(this.gameOver);
@@ -345,7 +356,7 @@ export default class Level {
     for (let y = 0; y <= this.mapHeight; y++) {
       this.map[y] = [];
       for (let x = 0; x <= this.mapWidth * 2; x++) {
-        this.setTile(x, y, y === this.startFloorY, x === this.mapWidth);
+        this.setTile(x, y, y === this.startFloorY ? Tile.platform : Tile.void, random(0, 3));
       }
     }
   }
@@ -357,43 +368,45 @@ export default class Level {
       // Move second half to the first
       for (let y = 0; y <= this.mapHeight; y++) {
         for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
-          this.map[y][x - this.mapWidth / 2] = this.map[y][x];
-          this.map[y][x] = null;
+          this.setTile(x - this.mapWidth / 2, y, this.map[y][x].value, this.map[y][x].random);
+          this.setTile(x, y, Tile.void);
         }
       }
 
       // Generate new tiles for the second half
-      let firstTile = false;
       for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
         // Generate new section if necessary
-        if (this.plattformX === 0) {
+        if (this.platformX === 0) {
           this.abyssLength = random(3, 6);
-          this.plattformY = random(
+          this.platformY = random(
             Math.min(
               this.maxFloorY,
-              Math.max(this.minFloorY, this.plattformY - 7 + this.abyssLength)
+              Math.max(this.minFloorY, this.platformY - 7 + this.abyssLength)
             ),
             this.maxFloorY
           );
-          this.plattformLength = random(2, 8);
-          this.plattformX = this.plattformLength;
-          firstTile = true;
+          this.platformLength = random(2, 8);
+          this.platformX = this.platformLength;
         }
 
         // Fill current section
         if (this.abyssLength > 0) {
           // Fill abyss
-          this.setTile(x, this.plattformY, false);
+          this.setTile(x, this.platformY, Tile.void);
           this.abyssLength--;
         } else {
-          if (this.plattformLength >= 3 && !firstTile && this.plattformX - 1 > 0) {
-            this.createCoin(x, this.plattformY - 3);
+          // Fill coin
+          if (
+            this.platformLength >= 3 &&
+            this.platformX < this.platformLength &&
+            this.platformX - 1 > 0
+          ) {
+            this.setTile(x, this.platformY - 3, Tile.coin);
           }
-          firstTile = false;
 
           // Fill platform
-          this.setTile(x, this.plattformY, true, this.plattformX - 1 === 0);
-          this.plattformX--;
+          this.setTile(x, this.platformY, Tile.platform, random(0, 3));
+          this.platformX--;
         }
       }
 
@@ -406,17 +419,44 @@ export default class Level {
     this.lastTilemapX = tilemapX;
   }
 
-  createTilemap() {
+  createTilemap(resetPosition = true) {
     this.tilemap.clear();
     for (let y = 0; y <= this.mapHeight; y++) {
       for (let x = 0; x <= this.mapWidth * 2; x++) {
-        if (this.map[y][x] !== null) {
-          this.tilemap.tile(this.map[y][x], x * this.tileWidth, y * this.tileHeight);
+        if (this.map[y][x].value === Tile.coin) {
+          this.tilemap.tile('coin1.png', x * this.tileWidth, y * this.tileHeight).tileAnimX(12, 4);
+        } else if (this.map[y][x].value === Tile.platform) {
+          let tile = null;
+
+          // Platform start
+          if (x > 0 && this.map[y][x - 1].value === Tile.void) {
+            tile = 'planks1.png';
+          }
+
+          // Platform end
+          else if (x + 1 < this.map[y].length && this.map[y][x + 1].value === Tile.void) {
+            tile = 'planks5.png';
+          }
+
+          // Platform
+          else {
+            if (this.map[y][x].random === 0) {
+              tile = 'planks2.png';
+            } else if (this.map[y][x].random === 1) {
+              tile = 'planks4.png';
+            } else {
+              tile = 'planks3.png';
+            }
+          }
+
+          this.tilemap.tile(tile, x * this.tileWidth, y * this.tileHeight);
         }
       }
     }
-    this.tilemap.position.set(0, 0);
-    this.tilemap.pivot.set(0, 0);
+    if (resetPosition) {
+      this.tilemap.position.set(0, 0);
+      this.tilemap.pivot.set(0, 0);
+    }
   }
 
   updateBackground(dt) {
@@ -441,16 +481,6 @@ export default class Level {
   }
 
   updateSprites(dt) {
-    // Update coins
-    this.coins = this.coins.filter((coin) => {
-      coin.position.x -= this.player.position.x - this.player.lastPosition.x;
-      if (coin.position.x + coin.width < 0) {
-        this.levelContainer.removeChild(coin);
-        return false;
-      }
-      return true;
-    });
-
     // Update cokes
     this.cokes = this.cokes.filter((coke) => {
       coke.position.x -= this.player.position.x - this.player.lastPosition.x;
@@ -468,42 +498,11 @@ export default class Level {
 
   updateScore() {
     // Draw score
-    this.scoreText.text = 'Score: ' + Math.floor(this.player.position.x).toFixed(0);
+    this.scoreText.text = 'Score: ' + this.score;
   }
 
-  setTile(x, y, value = true, last = false) {
-    // Empty
-    if (!value) {
-      this.map[y][x] = null;
-    }
-
-    // Platform start
-    else if (x > 0 && this.map[y][x - 1] === null) {
-      this.map[y][x] = 'planks1.png';
-    }
-
-    // Platform end
-    else if (last) {
-      this.map[y][x] = 'planks5.png';
-    }
-
-    // Platform
-    else {
-      const randomTile = random(0, 3);
-      if (randomTile === 0) {
-        this.map[y][x] = 'planks2.png';
-        if (x > 0 && this.map[y][x - 1] !== 'planks3.png') {
-          this.map[y][x] = 'planks3.png';
-        }
-      } else if (randomTile === 1) {
-        this.map[y][x] = 'planks4.png';
-        if (x > 0 && this.map[y][x - 1] !== 'planks3.png') {
-          this.map[y][x] = 'planks3.png';
-        }
-      } else {
-        this.map[y][x] = 'planks3.png';
-      }
-    }
+  setTile(x, y, value = Tile.void, random = null) {
+    this.map[y][x] = { value, random };
   }
 
   tick(dt) {
@@ -515,6 +514,9 @@ export default class Level {
     this.app.stats.begin();
 
     // Update timers
+    if (this.coinAnimationTimer) {
+      this.coinAnimationTimer.timerManager.update(this.app.ticker.elapsedMS);
+    }
     if (this.primaryActionTimer) {
       this.primaryActionTimer.timerManager.update(this.app.ticker.elapsedMS);
     }
@@ -540,15 +542,14 @@ export default class Level {
   }
 
   reset() {
-    this.coins.forEach((coin) => this.levelContainer.removeChild(coin));
-    this.coins = [];
     this.cokes.forEach((coke) => this.levelContainer.removeChild(coke));
     this.cokes = [];
 
+    this.score = 0;
     this.elapsed = 0.0;
     this.abyssLength = 0;
-    this.plattformY = this.startFloorY;
-    this.plattformLength = 0;
+    this.platformY = this.startFloorY;
+    this.platformLength = 0;
     this.lastTilemapX = 0;
     this.primaryActionTimer = null;
     this.actionPressed = false;
