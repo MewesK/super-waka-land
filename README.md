@@ -6,7 +6,6 @@ All graphics are based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
-- Coke collectables to limit boost
 - Sound
   - Effects
   - Background music

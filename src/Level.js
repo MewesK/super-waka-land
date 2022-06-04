@@ -1,12 +1,4 @@
-import {
-  AnimatedSprite,
-  Point,
-  Sprite,
-  Container,
-  Rectangle,
-  filters,
-  BitmapText,
-} from 'pixi.js';
+import { AnimatedSprite, Point, Sprite, Container, Rectangle, filters, BitmapText } from 'pixi.js';
 import { CompositeTilemap } from '@pixi/tilemap';
 import { Timer } from 'eventemitter3-timer';
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
@@ -18,13 +10,14 @@ const Tile = {
   void: 0,
   platform: 1,
   coin: 2,
+  coke: 3,
 };
 
 export default class Level {
   app;
   player;
   score = 0;
-  cokes = [];
+  boosts = 0;
   map = [[]];
   container = new Container();
   levelContainer = new Container();
@@ -45,6 +38,7 @@ export default class Level {
   background3bSprite;
   tilemap;
   scoreText;
+  boostText;
 
   gameOver = new Container();
   gameOverText1;
@@ -53,16 +47,18 @@ export default class Level {
   // Particle emitters
   boostEmitter;
 
+  // Timers
+  animationTimer = null;
+  primaryActionTimer = null;
+  secondaryActionTimer = null;
+
   // Temp
+  abyssX = 0;
   abyssLength = 0;
   platformX = 0;
   platformY = this.startFloorY;
   platformLength = 0;
   lastTilemapX = 0;
-
-  coinAnimationTimer = null;
-  primaryActionTimer = null;
-  secondaryActionTimer = null;
   actionPressed = false;
 
   constructor(app, player) {
@@ -81,6 +77,7 @@ export default class Level {
     this.levelContainer.addChild(this.tilemap);
     this.levelContainer.addChild(this.player.container);
     this.levelContainer.addChild(this.scoreText);
+    this.levelContainer.addChild(this.boostText);
     this.container.addChild(this.levelContainer);
 
     // Register event listeners
@@ -113,14 +110,14 @@ export default class Level {
     });
 
     // Add timer
-    this.coinAnimationTimer = new Timer(100);
-    this.coinAnimationTimer.loop = true;
-    this.coinAnimationTimer.on('repeat', (elapsedTime, repeat) => {
+    this.animationTimer = new Timer(100);
+    this.animationTimer.loop = true;
+    this.animationTimer.on('repeat', (elapsedTime, repeat) => {
       // Update tile animations
       this.app.renderer.plugins.tilemap.tileAnim[0] = repeat;
       this.app.renderer.plugins.tilemap.tileAnim[1] = repeat;
     });
-    this.coinAnimationTimer.start();
+    this.animationTimer.start();
   }
 
   startPrimaryAction() {
@@ -157,9 +154,11 @@ export default class Level {
   }
 
   startSecondaryAction() {
-    if (this.secondaryActionTimer != null) {
+    if (this.secondaryActionTimer != null || this.boosts === 0) {
       return;
     }
+
+    this.increaseBoost(-1);
 
     console.debug('Start boost');
     this.player.boost();
@@ -173,16 +172,6 @@ export default class Level {
       this.secondaryActionTimer = null;
     });
     this.secondaryActionTimer.start();
-  }
-
-  createCoke(x, y) {
-    const cokeSprite = AnimatedSprite.fromFrames(['coke1.png', 'coke2.png']);
-    cokeSprite.animationSpeed = 0.15;
-    cokeSprite.position.x = x * this.tileWidth;
-    cokeSprite.position.y = y * this.tileHeight;
-    cokeSprite.play();
-    this.cokes.push(cokeSprite);
-    this.levelContainer.addChild(cokeSprite);
   }
 
   checkCollision() {
@@ -218,16 +207,23 @@ export default class Level {
             x * this.tileWidth - (this.tilemap.pivot.x % this.app.screen.width),
             y * this.tileHeight - (this.tilemap.pivot.y % this.app.screen.height),
             this.tileWidth,
-            this.tileHeight
+            this.tileHeight + (this.map[y][x].value === Tile.coke ? this.tileHeight : 0)
           );
 
           // Is overlapping and player was previously above the tile?
           let intersectRect;
           if ((intersectRect = intersect(this.player.containerRectangle, tileRectangle))) {
             if (this.map[y][x].value === Tile.coin && intersectRect.height > 0) {
+              // Collect coin
               collecting = true;
               this.setTile(x, y, Tile.void);
               this.increaseScore(10);
+            } else if (this.map[y][x].value === Tile.coke && intersectRect.height > 0) {
+              // Collect coke
+              collecting = true;
+              this.setTile(x, y, Tile.void);
+              this.increaseScore(50);
+              this.increaseBoost(1);
             } else if (
               this.map[y][x].value === Tile.platform &&
               this.player.lastPosition.y + this.player.height <= tileRectangle.y
@@ -327,6 +323,15 @@ export default class Level {
     });
     this.scoreText.x = 2;
 
+    // Boost text
+    this.boostText = new BitmapText('Boost: ', {
+      fontName: 'Edit Undo',
+      fontSize: 16,
+      tint: 0x935e53,
+    });
+    this.boostText.x = 2;
+    this.boostText.y = 10;
+
     // Game over screen
     this.gameOverText1 = new BitmapText('Game Over', {
       fontName: 'Edit Undo',
@@ -375,6 +380,7 @@ export default class Level {
         // Generate new section if necessary
         if (this.platformX === 0) {
           this.abyssLength = random(3, 6);
+          this.abyssX = this.abyssLength;
           this.platformY = random(
             Math.min(
               this.maxFloorY,
@@ -387,10 +393,14 @@ export default class Level {
         }
 
         // Fill current section
-        if (this.abyssLength > 0) {
+        if (this.abyssX > 0) {
+          // Fill coke
+          if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
+            this.setTile(x, this.platformY - 4, Tile.coke);
+          }
+
           // Fill abyss
-          this.setTile(x, this.platformY, Tile.void);
-          this.abyssLength--;
+          this.abyssX--;
         } else {
           // Fill coin
           if (
@@ -422,6 +432,8 @@ export default class Level {
       for (let x = 0; x <= this.mapWidth * 2; x++) {
         if (this.map[y][x].value === Tile.coin) {
           this.tilemap.tile('coin1.png', x * this.tileWidth, y * this.tileHeight).tileAnimX(12, 4);
+        } else if (this.map[y][x].value === Tile.coke) {
+          this.tilemap.tile('coke1.png', x * this.tileWidth, y * this.tileHeight).tileAnimX(13, 2);
         } else if (this.map[y][x].value === Tile.platform) {
           let tile = null;
 
@@ -477,17 +489,7 @@ export default class Level {
     this.tilemap.pivot.x = this.player.position.x;
   }
 
-  updateSprites(dt) {
-    // Update cokes
-    this.cokes = this.cokes.filter((coke) => {
-      coke.position.x -= this.player.position.x - this.player.lastPosition.x;
-      if (coke.position.x + coke.width < 0) {
-        this.levelContainer.removeChild(coke);
-        return false;
-      }
-      return true;
-    });
-
+  updateEmitters() {
     // Update boost effect
     this.boostEmitter.spawnPos.x = this.player.container.position.x + this.player.width / 2;
     this.boostEmitter.spawnPos.y = this.player.container.position.y + this.player.height;
@@ -496,6 +498,11 @@ export default class Level {
   increaseScore(value) {
     this.score += value;
     this.scoreText.text = 'Score: ' + this.score;
+  }
+
+  increaseBoost(value) {
+    this.boosts += value;
+    this.boostText.text = 'Boost: ' + this.boosts;
   }
 
   setTile(x, y, value = Tile.void, random = null) {
@@ -511,7 +518,7 @@ export default class Level {
     this.app.stats.begin();
 
     // Update timers
-    this.coinAnimationTimer.timerManager.update(this.app.ticker.elapsedMS);
+    this.animationTimer.timerManager.update(this.app.ticker.elapsedMS);
     if (this.player.jumpTimer !== null) {
       this.player.jumpTimer += dt;
     }
@@ -522,7 +529,7 @@ export default class Level {
     this.createNewTiles();
     this.player.move(dt);
     this.checkCollision();
-    this.updateSprites(dt);
+    this.updateEmitters();
     this.updateBackground(dt);
     this.checkGameOver();
 
@@ -531,12 +538,12 @@ export default class Level {
   }
 
   reset() {
-    this.cokes.forEach((coke) => this.levelContainer.removeChild(coke));
-    this.cokes = [];
-
     this.score = 0;
+    this.boosts = 0;
     this.elapsed = 0.0;
+    this.abyssX = 0;
     this.abyssLength = 0;
+    this.platformX = 0;
     this.platformY = this.startFloorY;
     this.platformLength = 0;
     this.lastTilemapX = 0;
@@ -564,5 +571,7 @@ export default class Level {
 
     this.createMap();
     this.createTilemap();
+    this.increaseScore(0);
+    this.increaseBoost(0);
   }
 }
