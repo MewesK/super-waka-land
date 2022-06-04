@@ -24,6 +24,11 @@ import rainyHeartsFontImage from './fonts/rainy-hearts.png';
 import retroLandMayhemFontAtlas from 'bundle-text:./fonts/retro-land-mayhem.fnt';
 import retroLandMayhemFontImage from './fonts/retro-land-mayhem.png';
 
+// DEBUG
+//console.log = () => {};
+//console.debug = () => {};
+// DEBUG
+
 // Settings
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 
@@ -64,12 +69,12 @@ Loader.shared
   .load(setup);
 
 function loadProgressHandler(loader, resource) {
-  console.log('Loading: ' + resource.url);
-  console.log('Progress: ' + loader.progress + '%');
+  console.debug('Loading: ' + resource.url);
+  console.debug('Progress: ' + loader.progress + '%');
 }
 
 function setup() {
-  console.log('All files loaded');
+  console.debug('All files loaded');
 
   // Load fonts
   BitmapFont.install(editUndoFontAtlas, Loader.shared.resources[editUndoFontImage].texture);
@@ -82,7 +87,7 @@ function setup() {
   // Load spritesheet
   const sheet = new Spritesheet(Loader.shared.resources[ratSprites].texture.baseTexture, ratAtlas);
   sheet.parse(() => {
-    console.log('Spritesheet loaded');
+    console.debug('Spritesheet loaded');
 
     // Create player
     player = new Player(-2.0, 1.0);
@@ -98,7 +103,7 @@ function setup() {
     app.renderer.render(app.stage);
 
     // Start game loop
-    console.log('Starting game loop');
+    console.debug('Starting game loop');
     app.ticker.add(level.tick, level, UPDATE_PRIORITY.HIGH);
   });
 }

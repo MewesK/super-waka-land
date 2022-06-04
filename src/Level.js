@@ -14,11 +14,13 @@ import { Timer } from 'eventemitter3-timer';
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { intersect, random } from './utilities';
 
-import emitterConfig from './emitter.json';
+import boostEmitterConfig from './emitter.json';
 
 export default class Level {
   app;
   player;
+  coins = [];
+  cokes = [];
   map = [[]];
   container = new Container();
   levelContainer = new Container();
@@ -28,18 +30,15 @@ export default class Level {
   startFloorY = 12;
   minFloorY = 5;
   maxFloorY = 13;
-
-  // Sprites
   tileWidth = 16;
   tileHeight = 16;
 
+  // Sprites
   background1Sprite;
   background2aSprite;
   background2bSprite;
   background3aSprite;
   background3bSprite;
-  coinSprite;
-  cokeSprite;
   tilemap;
   scoreText;
 
@@ -47,7 +46,8 @@ export default class Level {
   gameOverText1;
   gameOverText2;
 
-  emitter;
+  // Particle emitters
+  boostEmitter;
 
   // Temp
   abyssLength = 0;
@@ -64,10 +64,6 @@ export default class Level {
     this.player = player;
 
     this.createSprites();
-    this.emitter = new Emitter(
-      this.app.stage,
-      upgradeConfig(emitterConfig, [Sprite.from('particle.png').texture])
-    );
     this.reset();
 
     // Compose stage
@@ -102,7 +98,6 @@ export default class Level {
       }
     });
     app.stage.on('pointerdown', (event) => {
-      console.debug('Key: ', event);
       event.stopPropagation();
       this.startPrimaryAction();
     });
@@ -156,16 +151,41 @@ export default class Level {
 
     console.debug('Start boost');
     this.player.boost();
-    this.emitter.emit = true;
+    this.boostEmitter.emit = true;
 
     this.secondaryActionTimer = new Timer(500);
     this.secondaryActionTimer.on('end', () => {
       console.debug('End boost');
-      this.emitter.emit = false;
+      this.boostEmitter.emit = false;
       this.player.velocity.x = this.player.lastVelocity.x;
       this.secondaryActionTimer = null;
     });
     this.secondaryActionTimer.start();
+  }
+
+  createCoin(x, y) {
+    const coinSprite = AnimatedSprite.fromFrames([
+      'coin1.png',
+      'coin2.png',
+      'coin3.png',
+      'coin4.png',
+    ]);
+    coinSprite.animationSpeed = 0.15;
+    coinSprite.position.x = x * this.tileWidth;
+    coinSprite.position.y = y * this.tileHeight;
+    coinSprite.play();
+    this.coins.push(coinSprite);
+    this.levelContainer.addChild(coinSprite);
+  }
+
+  createCoke(x, y) {
+    const cokeSprite = AnimatedSprite.fromFrames(['coke1.png', 'coke2.png']);
+    cokeSprite.animationSpeed = 0.15;
+    cokeSprite.position.x = x * this.tileWidth;
+    cokeSprite.position.y = y * this.tileHeight;
+    cokeSprite.play();
+    this.cokes.push(cokeSprite);
+    this.levelContainer.addChild(cokeSprite);
   }
 
   checkCollision() {
@@ -242,7 +262,7 @@ export default class Level {
     if (this.player.position.y > this.app.screen.height) {
       console.debug('Died');
       this.player.dead = true;
-      this.emitter.emit = false;
+      this.boostEmitter.emit = false;
 
       const filter1 = new filters.ColorMatrixFilter();
       filter1.desaturate();
@@ -264,6 +284,7 @@ export default class Level {
   }
 
   createSprites() {
+    // Background sprites
     this.background1Sprite = Sprite.from('bg_wakaland_1.png');
 
     this.background2aSprite = Sprite.from('bg_wakaland_2.png');
@@ -280,20 +301,13 @@ export default class Level {
     this.background3bSprite.x = this.background3bSprite.width;
     this.background3bSprite.y = this.app.screen.height - 32;
 
-    this.coinSprite = AnimatedSprite.fromFrames([
-      'coin1.png',
-      'coin2.png',
-      'coin3.png',
-      'coin2.png',
-    ]);
-    this.coinSprite.animationSpeed = 0.15;
-    this.coinSprite.play();
-
-    this.coinSprite = AnimatedSprite.fromFrames(['coke1.png', 'coke2.png']);
-    this.coinSprite.y = 127;
-    this.coinSprite.play();
-
     this.tilemap = new CompositeTilemap();
+
+    // Particle emitters
+    this.boostEmitter = new Emitter(
+      this.app.stage,
+      upgradeConfig(boostEmitterConfig, [Sprite.from('particle.png').texture])
+    );
 
     // Score text
     this.scoreText = new BitmapText('Score: 0', {
@@ -347,6 +361,7 @@ export default class Level {
       }
 
       // Generate new tiles for the second half
+      let firstTile = false;
       for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
         // Generate new section if necessary
         if (this.plattformLength === 0) {
@@ -359,6 +374,7 @@ export default class Level {
             this.maxFloorY
           );
           this.plattformLength = random(2, 8);
+          firstTile = true;
         }
 
         // Fill current section
@@ -367,6 +383,11 @@ export default class Level {
           this.setTile(x, this.plattformY, false);
           this.abyssLength--;
         } else {
+          if (!firstTile && this.plattformLength - 1 > 0) {
+            this.createCoin(x, this.plattformY - 3);
+          }
+          firstTile = false;
+
           // Fill platform
           this.setTile(x, this.plattformY, true, this.plattformLength - 1 === 0);
           this.plattformLength--;
@@ -414,6 +435,32 @@ export default class Level {
       this.background3bSprite.pivot.x = 0;
     }
     this.tilemap.pivot.x = this.player.position.x;
+  }
+
+  updateSprites(dt) {
+    // Update coins
+    this.coins = this.coins.filter((coin) => {
+      coin.position.x -= this.player.position.x - this.player.lastPosition.x;
+      if (coin.position.x + coin.width < 0) {
+        this.levelContainer.removeChild(coin);
+        return false;
+      }
+      return true;
+    });
+
+    // Update cokes
+    this.cokes = this.cokes.filter((coke) => {
+      coke.position.x -= this.player.position.x - this.player.lastPosition.x;
+      if (coke.position.x + coke.width < 0) {
+        this.levelContainer.removeChild(coke);
+        return false;
+      }
+      return true;
+    });
+
+    // Update boost effect
+    this.boostEmitter.spawnPos.x = this.player.container.position.x + this.player.width / 2;
+    this.boostEmitter.spawnPos.y = this.player.container.position.y + this.player.height;
   }
 
   updateScore() {
@@ -481,16 +528,20 @@ export default class Level {
     this.createNewTiles();
     this.player.move(dt);
     this.checkCollision();
-    this.emitter.spawnPos.x = this.player.container.position.x + this.player.width / 2;
-    this.emitter.spawnPos.y = this.player.container.position.y + this.player.height;
-    this.checkGameOver();
+    this.updateSprites(dt);
     this.updateBackground(dt);
+    this.checkGameOver();
 
     // End performance measurement
     this.app.stats.end();
   }
 
   reset() {
+    this.coins.forEach((coin) => this.levelContainer.removeChild(coin));
+    this.coins = [];
+    this.cokes.forEach((coke) => this.levelContainer.removeChild(coke));
+    this.cokes = [];
+
     this.elapsed = 0.0;
     this.abyssLength = 0;
     this.plattformY = this.startFloorY;
@@ -516,7 +567,7 @@ export default class Level {
 
     this.levelContainer.filters = null;
     this.container.removeChild(this.gameOver);
-    this.emitter.emit = false;
+    this.boostEmitter.emit = false;
 
     this.createMap();
     this.createTilemap();

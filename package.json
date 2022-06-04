@@ -6,6 +6,7 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "start": "npx parcel",
+    "prebuild": "rm -rf dist",
     "build": "npx parcel build --public-url '.'",
     "deploy": "npm run build && gh-pages -d dist"
   },
