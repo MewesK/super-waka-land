@@ -219,77 +219,79 @@ export default class Map {
   }
 
   generateMap() {
-    // Check if we need to create new tiles
-    const tilemapX = this.tilemap.pivot.x % this.game.app.screen.width;
-    if (tilemapX < this.lastTilemapX) {
-      // Move second half to the first
-      for (let y = 0; y <= this.mapHeight; y++) {
-        for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
-          this.setTile(x - this.mapWidth / 2, y, this.map[y][x].value, this.map[y][x].random);
-          this.setTile(x, y, TileType.Void);
-        }
+    // Move second half to the first
+    for (let y = 0; y <= this.mapHeight; y++) {
+      for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
+        this.setTile(x - this.mapWidth / 2, y, this.map[y][x].value, this.map[y][x].random);
+        this.setTile(x, y, TileType.Void);
       }
-
-      // Generate new tiles for the second half
-      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
-        // Generate new section if necessary
-        if (this.platformX === 0) {
-          this.abyssLength = random(3, 6);
-          this.abyssX = this.abyssLength;
-          this.platformY = random(
-            Math.min(
-              this.FLOOR_Y_MAX,
-              Math.max(this.FLOOR_Y_MIN, this.platformY - 7 + this.abyssLength)
-            ),
-            this.FLOOR_Y_MAX
-          );
-          this.platformLength = random(2, 8);
-          this.platformX = this.platformLength;
-        }
-
-        // Fill current section
-        if (this.abyssX > 0) {
-          // Fill coke
-          if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
-            this.setTile(x, this.platformY - 4, TileType.Coke);
-          }
-
-          // Fill abyss
-          this.abyssX--;
-        } else {
-          // Fill coin
-          if (
-            this.platformLength >= 3 &&
-            this.platformX < this.platformLength &&
-            this.platformX - 1 > 0
-          ) {
-            this.setTile(x, this.platformY - 3, TileType.Coin);
-          }
-
-          // Fill platform
-          this.setTile(x, this.platformY, TileType.Platform, random(0, 3));
-          this.platformX--;
-        }
-      }
-
-      // Create tilemap
-      this.createTilemap();
-
-      // Reset tilemap position
-      this.tilemap.position.set(this.game.player.position.x, this.tilemap.position.y);
     }
-    this.lastTilemapX = tilemapX;
+
+    // Generate new tiles for the second half
+    for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
+      // Generate new section if necessary
+      if (this.platformX === 0) {
+        this.abyssLength = random(3, 6);
+        this.abyssX = this.abyssLength;
+        this.platformY = random(
+          Math.min(
+            this.FLOOR_Y_MAX,
+            Math.max(this.FLOOR_Y_MIN, this.platformY - 7 + this.abyssLength)
+          ),
+          this.FLOOR_Y_MAX
+        );
+        this.platformLength = random(2, 8);
+        this.platformX = this.platformLength;
+      }
+
+      // Fill current section
+      if (this.abyssX > 0) {
+        // Fill coke
+        if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
+          this.setTile(x, this.platformY - 4, TileType.Coke);
+        }
+
+        // Fill abyss
+        this.abyssX--;
+      } else {
+        // Fill coin
+        if (
+          this.platformLength >= 3 &&
+          this.platformX < this.platformLength &&
+          this.platformX - 1 > 0
+        ) {
+          this.setTile(x, this.platformY - 3, TileType.Coin);
+        }
+
+        // Fill platform
+        this.setTile(x, this.platformY, TileType.Platform, random(0, 3));
+        this.platformX--;
+      }
+    }
+
+    // Create tilemap
+    this.createTilemap();
+
+    // Reset tilemap position
+    this.tilemap.position.set(this.game.player.position.x, this.tilemap.position.y);
   }
 
   update(dt) {
     // Update timers
     this.animationTimer.update(this.game.app.ticker.elapsedMS);
 
-    // Update tilemap position
-    this.tilemap.pivot.x = this.game.player.position.x;
-
     // Update effects
     this.itemEffects.forEach((itemEffect) => itemEffect.update(dt));
+
+    // Check if we need to create new tiles
+    const tilemapX = this.tilemap.pivot.x % this.game.app.screen.width;
+    if (tilemapX < this.lastTilemapX) {
+      this.generateMap();
+    }
+    this.lastTilemapX = tilemapX;
+
+    // Update tilemap position
+    this.tilemap.pivot.x = this.game.player.position.x;
   }
 
   reset() {

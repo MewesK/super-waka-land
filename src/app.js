@@ -1,4 +1,4 @@
-import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont } from 'pixi.js';
+import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont, Buffer } from 'pixi.js';
 import Stats from 'stats.js';
 import Game from './game/Game';
 
@@ -72,11 +72,19 @@ function setup() {
   );
 
   // Load spritesheet
-  const sheet = new Spritesheet(Loader.shared.resources[spritesImage].texture.baseTexture, spritesAtlas);
+  const sheet = new Spritesheet(
+    Loader.shared.resources[spritesImage].texture.baseTexture,
+    spritesAtlas
+  );
   sheet.parse(() => {
     console.debug('Spritesheet loaded');
 
     // Create new game
     const game = new Game(app);
+    const buffer = new Buffer();
+
+    app.stage.interactive = true;
+    app.stage.addChild(game.container);
+    app.renderer.render(app.stage);
   });
 }

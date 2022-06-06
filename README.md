@@ -6,8 +6,7 @@ All graphics are based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
-- Nice death screen
-  - Retry button
+- Retry button
 - Sound
   - Effects
     - "Okay", character select, https://www.twitch.tv/wakalaka4eva/clip/RealCarelessDragonfruitDoggo-YxThimicA17PxuUj

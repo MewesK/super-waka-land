@@ -3,27 +3,25 @@ import { Container, Rectangle, filters, BitmapText, UPDATE_PRIORITY } from 'pixi
 import Background from './Background';
 import Player from './Player';
 import Map from './Map';
+import HUD from './HUD';
+import GameOverOverlay from './overlays/GameOverOverlay';
 
 export default class Game {
   app;
   container = new Container();
-  levelContainer = new Container();
-
-  background;
-  map;
-  player;
 
   // Properties
   score = 0;
-  scoreText;
-
   boosts = 0;
-  boostText;
 
-  // Game over
-  gameOver = new Container();
-  gameOverText1;
-  gameOverText2;
+  // Objects
+  background;
+  map;
+  player;
+  hud;
+
+  // Overlays
+  gameOverOverlay;
 
   primaryActionPressed = false;
   secondaryActionPressed = false;
@@ -34,38 +32,16 @@ export default class Game {
     this.background = new Background(this);
     this.map = new Map(this);
     this.player = new Player(this);
+    this.hud = new HUD(this);
+    this.gameOverOverlay = new GameOverOverlay(this);
 
-    // Score text
-    this.scoreText = new BitmapText('Score: 0', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      tint: 0x935e53,
-    });
-    this.scoreText.x = 2;
-
-    // Boost text
-    this.boostText = new BitmapText('Boost: ', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      tint: 0x935e53,
-    });
-    this.boostText.x = 2;
-    this.boostText.y = 10;
-
-    this.createSprites();
     this.reset();
 
     // Compose stage
-    this.levelContainer.addChild(this.background.container);
-    this.levelContainer.addChild(this.map.container);
-    this.levelContainer.addChild(this.player.container);
-    this.levelContainer.addChild(this.scoreText);
-    this.levelContainer.addChild(this.boostText);
-    this.container.addChild(this.levelContainer);
-
-    this.app.stage.interactive = true;
-    this.app.stage.addChild(this.container);
-    this.app.renderer.render(this.app.stage);
+    this.container.addChild(this.background.container);
+    this.container.addChild(this.map.container);
+    this.container.addChild(this.player.container);
+    this.container.addChild(this.hud.container);
 
     // Register event listeners
     window.addEventListener('keydown', (event) => {
@@ -151,54 +127,18 @@ export default class Game {
     if (this.player.position.y > this.app.screen.height) {
       this.player.dead = true;
       this.map.itemEffects.forEach((itemEffect) => itemEffect.destroy());
-
-      const filter1 = new filters.ColorMatrixFilter();
-      filter1.desaturate();
-      const filter2 = new filters.ColorMatrixFilter();
-      filter2.brightness(0.5, false);
-      this.levelContainer.filterArea = new Rectangle(
-        0,
-        0,
-        this.levelContainer.width,
-        this.levelContainer.height
-      );
-      this.levelContainer.filters = [filter1, filter2];
-
-      this.gameOverText2.text = 'Final Score: ' + this.score;
-      this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
-
-      this.container.addChild(this.gameOver);
+      this.gameOverOverlay.show();
     }
-  }
-
-  createSprites() {
-    // Game over screen
-    this.gameOverText1 = new BitmapText('Game Over', {
-      fontName: 'Edit Undo',
-      fontSize: 30,
-    });
-    this.gameOver.addChild(this.gameOverText1);
-    this.gameOverText1.x = this.app.screen.width / 2 - this.gameOverText1.width / 2;
-
-    this.gameOverText2 = new BitmapText('Final Score: 0', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-    });
-    this.gameOver.addChild(this.gameOverText2);
-    this.gameOverText2.x = this.app.screen.width / 2 - this.gameOverText2.width / 2;
-    this.gameOverText2.y = 30;
-
-    this.gameOver.y = this.app.screen.height / 2 - this.gameOver.height / 2;
-  }
-
-  increaseScore(value) {
-    this.score += value;
-    this.scoreText.text = 'Score: ' + this.score;
   }
 
   increaseBoost(value) {
     this.boosts += value;
-    this.boostText.text = 'Boost: ' + this.boosts;
+    this.hud.updateBoost();
+  }
+
+  increaseScore(value) {
+    this.score += value;
+    this.hud.updateScore();
   }
 
   update(dt) {
@@ -209,7 +149,6 @@ export default class Game {
     // Start performance measurement
     this.app.stats.begin();
 
-    this.map.generateMap();
 
     this.player.update(dt);
 
@@ -250,6 +189,7 @@ export default class Game {
 
     this.background.update(dt);
     this.map.update(dt);
+
     this.checkGameOver();
 
     // End performance measurement
@@ -257,19 +197,18 @@ export default class Game {
   }
 
   reset() {
+    // Properties
+    this.score = 0;
+    this.boosts = 0;
+
+    // Objects
     this.background.reset();
     this.map.reset();
     this.player.reset();
+    this.hud.reset();
 
-    // Properties
-    this.score = 0;
-    this.increaseScore(0);
-    this.boosts = 0;
-    this.increaseBoost(0);
-
-    // Game over
-    this.container.removeChild(this.gameOver);
-    this.levelContainer.filters = null;
+    // Overlays
+    this.gameOverOverlay.hide();
 
     // Temp
     this.primaryActionPressed = false;
