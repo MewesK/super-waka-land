@@ -15,6 +15,15 @@ import rainyHeartsFontImage from './assets/fonts/rainy-hearts.png';
 import retroLandMayhemFontAtlas from 'bundle-text:./assets/fonts/retro-land-mayhem.fnt';
 import retroLandMayhemFontImage from './assets/fonts/retro-land-mayhem.png';
 
+import glutenFontAtlas from 'bundle-text:./assets/fonts/gluten.fnt';
+import glutenFontImage from './assets/fonts/gluten.png';
+
+import omBotakFontAtlas from 'bundle-text:./assets/fonts/om-botak.fnt';
+import omBotakFontImage from './assets/fonts/om-botak.png';
+
+import stopBullyingFontAtlas from 'bundle-text:./assets/fonts/stop-bullying.fnt';
+import stopBullyingFontImage from './assets/fonts/stop-bullying.png';
+
 // DEBUG
 if (process.env.NODE_ENV === 'production') {
   console.log = () => {};
@@ -54,6 +63,9 @@ Loader.shared
   .add(editUndoFontImage)
   .add(rainyHeartsFontImage)
   .add(retroLandMayhemFontImage)
+  .add(glutenFontImage)
+  .add(omBotakFontImage)
+  .add(stopBullyingFontImage)
   .load(setup);
 
 function loadProgressHandler(loader, resource) {
@@ -71,6 +83,9 @@ function setup() {
     retroLandMayhemFontAtlas,
     Loader.shared.resources[retroLandMayhemFontImage].texture
   );
+  BitmapFont.install(glutenFontAtlas, Loader.shared.resources[glutenFontImage].texture);
+  BitmapFont.install(omBotakFontAtlas, Loader.shared.resources[omBotakFontImage].texture);
+  BitmapFont.install(stopBullyingFontAtlas, Loader.shared.resources[stopBullyingFontImage].texture);
 
   // Load spritesheet
   const sheet = new Spritesheet(

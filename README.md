@@ -6,9 +6,10 @@ Based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
+- Bug: jumping background
 - Better input handling
   - Swipe up to boost
-- Retry button
+- Death screen: Retry button
 - Sound
   - Effects
     - "Okay", character select, https://www.twitch.tv/wakalaka4eva/clip/RealCarelessDragonfruitDoggo-YxThimicA17PxuUj
