@@ -1,6 +1,7 @@
 import { CompositeTilemap } from '@pixi/tilemap';
 import { Timer } from 'eventemitter3-timer';
 import { Sprite, Container, Rectangle, filters, BitmapText, UPDATE_PRIORITY } from 'pixi.js';
+import Background from './Background';
 
 import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
 import Player from './Player';
@@ -24,8 +25,10 @@ export default class Game {
   container = new Container();
   levelContainer = new Container();
 
-  // Properties
   player;
+  background;
+
+  // Properties
   score = 0;
   boosts = 0;
   map = [[]];
@@ -37,11 +40,6 @@ export default class Game {
   itemEffects = [];
 
   // Sprites
-  background1Sprite;
-  background2aSprite;
-  background2bSprite;
-  background3aSprite;
-  background3bSprite;
   tilemap;
   scoreText;
   boostText;
@@ -64,6 +62,7 @@ export default class Game {
   constructor(app) {
     this.app = app;
     this.player = new Player(this);
+    this.background = new Background(this);
 
     this.createSprites();
 
@@ -80,11 +79,7 @@ export default class Game {
     this.reset();
 
     // Compose stage
-    this.levelContainer.addChild(this.background1Sprite);
-    this.levelContainer.addChild(this.background2aSprite);
-    this.levelContainer.addChild(this.background3aSprite);
-    this.levelContainer.addChild(this.background2bSprite);
-    this.levelContainer.addChild(this.background3bSprite);
+    this.levelContainer.addChild(this.background.container);
     this.levelContainer.addChild(this.tilemap);
     this.levelContainer.addChild(this.player.container);
     this.levelContainer.addChild(this.scoreText);
@@ -306,23 +301,7 @@ export default class Game {
   }
 
   createSprites() {
-    // Background sprites
-    this.background1Sprite = Sprite.from('bg_wakaland_1');
-
-    this.background2aSprite = Sprite.from('bg_wakaland_2');
-    this.background2aSprite.y = this.app.screen.height - 96;
-
-    this.background2bSprite = Sprite.from('bg_wakaland_2');
-    this.background2bSprite.x = this.background2bSprite.width;
-    this.background2bSprite.y = this.app.screen.height - 96;
-
-    this.background3aSprite = Sprite.from('bg_wakaland_3');
-    this.background3aSprite.y = this.app.screen.height - 32;
-
-    this.background3bSprite = Sprite.from('bg_wakaland_3');
-    this.background3bSprite.x = this.background3bSprite.width;
-    this.background3bSprite.y = this.app.screen.height - 32;
-
+    // Tilemap
     this.tilemap = new CompositeTilemap();
 
     // Score text
@@ -483,27 +462,6 @@ export default class Game {
     }
   }
 
-  updateBackground(dt) {
-    // Parallax scrolling
-    this.background2aSprite.pivot.x += 0.2 * dt;
-    if (this.background2aSprite.pivot.x >= this.app.screen.width) {
-      this.background2aSprite.pivot.x = 0;
-    }
-    this.background2bSprite.pivot.x += 0.2 * dt;
-    if (this.background2aSprite.pivot.x >= this.app.screen.width) {
-      this.background2aSprite.pivot.x = 0;
-    }
-    this.background3aSprite.pivot.x += 0.25 * dt;
-    if (this.background3aSprite.pivot.x >= this.app.screen.width) {
-      this.background3aSprite.pivot.x = 0;
-    }
-    this.background3bSprite.pivot.x += 0.25 * dt;
-    if (this.background3bSprite.pivot.x >= this.app.screen.width) {
-      this.background3bSprite.pivot.x = 0;
-    }
-    this.tilemap.pivot.x = this.player.position.x;
-  }
-
   increaseScore(value) {
     this.score += value;
     this.scoreText.text = 'Score: ' + this.score;
@@ -532,8 +490,9 @@ export default class Game {
     this.createNewTiles();
     this.player.update(dt);
     this.checkCollision();
+    this.background.update(dt);
+    this.tilemap.pivot.x = this.player.position.x;
     this.itemEffects.forEach((itemEffect) => itemEffect.update(dt));
-    this.updateBackground(dt);
     this.checkGameOver();
 
     // End performance measurement
@@ -544,8 +503,10 @@ export default class Game {
     this.container.removeChild(this.gameOver);
     this.levelContainer.filters = null;
 
-    // Properties
     this.player.reset();
+    this.background.reset();
+
+    // Properties
     this.score = 0;
     this.boosts = 0;
     this.createMap();
@@ -557,10 +518,6 @@ export default class Game {
     this.itemEffects.forEach((itemEffect) => itemEffect.destroy());
 
     // Sprites
-    this.background2aSprite.pivot.x = 0;
-    this.background3aSprite.pivot.x = 0;
-    this.background2bSprite.pivot.x = 0;
-    this.background3bSprite.pivot.x = 0;
     this.increaseScore(0);
     this.increaseBoost(0);
 
