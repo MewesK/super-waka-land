@@ -179,6 +179,10 @@ export default class Player {
       return;
     }
 
+    // Update timers
+    this.boostTimer?.update(this.game.app.ticker.elapsedMS);
+    this.jumpTimer?.update(this.game.app.ticker.elapsedMS);
+
     // Update boost effect
     this.boostEffect.update(dt);
 
@@ -322,7 +326,7 @@ export default class Player {
     this.setVelocity(this.VELOCITY.x, this.VELOCITY.y);
     this.lastVelocity = this.velocity.clone();
     this.preBoostVelocity = null;
-    this.setPosition(this.game.TILE_WIDTH * 2, 0);
+    this.setPosition(this.game.tilemap.TILE_WIDTH * 2, 0);
     this.lastPosition = this.position.clone();
 
     // Set vertical position of the player container

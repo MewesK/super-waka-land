@@ -1,46 +1,29 @@
-import { CompositeTilemap } from '@pixi/tilemap';
-import { Timer } from 'eventemitter3-timer';
-import { Sprite, Container, Rectangle, filters, BitmapText, UPDATE_PRIORITY } from 'pixi.js';
+import { Container, Rectangle, filters, BitmapText, UPDATE_PRIORITY } from 'pixi.js';
+
 import Background from './Background';
-
-import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
 import Player from './Player';
-import { intersect, random } from './Utilities';
-
-const TileType = {
-  Void: 0,
-  Platform: 1,
-  Coin: 2,
-  Coke: 3,
-};
+import Tilemap, { TileType } from './Tilemap';
+import { random } from './Utilities';
 
 export default class Game {
   FLOOR_Y = 12;
   FLOOR_Y_MIN = 5;
   FLOOR_Y_MAX = 13;
-  TILE_WIDTH = 16;
-  TILE_HEIGHT = 16;
 
   app;
   container = new Container();
   levelContainer = new Container();
 
-  player;
   background;
+  tilemap;
+  player;
 
   // Properties
   score = 0;
   boosts = 0;
   map = [[]];
 
-  // Timers
-  animationTimer = null;
-
-  // Effects
-  itemEffects = [];
-
   // Sprites
-  tilemap;
   scoreText;
   boostText;
 
@@ -61,26 +44,34 @@ export default class Game {
 
   constructor(app) {
     this.app = app;
-    this.player = new Player(this);
+
     this.background = new Background(this);
+    this.tilemap = new Tilemap(this);
+    this.player = new Player(this);
+
+    // Score text
+    this.scoreText = new BitmapText('Score: 0', {
+      fontName: 'Edit Undo',
+      fontSize: 16,
+      tint: 0x935e53,
+    });
+    this.scoreText.x = 2;
+
+    // Boost text
+    this.boostText = new BitmapText('Boost: ', {
+      fontName: 'Edit Undo',
+      fontSize: 16,
+      tint: 0x935e53,
+    });
+    this.boostText.x = 2;
+    this.boostText.y = 10;
 
     this.createSprites();
-
-    // Add timer
-    this.animationTimer = new Timer(150);
-    this.animationTimer.loop = true;
-    this.animationTimer.on('repeat', (elapsedTime, repeat) => {
-      // Update tile animations
-      this.app.renderer.plugins.tilemap.tileAnim[0] = repeat;
-      this.app.renderer.plugins.tilemap.tileAnim[1] = repeat;
-    });
-    this.animationTimer.start();
-
     this.reset();
 
     // Compose stage
     this.levelContainer.addChild(this.background.container);
-    this.levelContainer.addChild(this.tilemap);
+    this.levelContainer.addChild(this.tilemap.container);
     this.levelContainer.addChild(this.player.container);
     this.levelContainer.addChild(this.scoreText);
     this.levelContainer.addChild(this.boostText);
@@ -169,117 +160,11 @@ export default class Game {
     this.secondaryActionPressed = false;
   }
 
-  checkCollision() {
-    // Calculate the tile indices around the player
-    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
-    const tilemapY = this.tilemap.pivot.y % this.app.screen.height;
-    const tilemapXMin = Math.max(
-      0,
-      Math.floor((tilemapX + this.player.container.position.x) / this.TILE_WIDTH) - 1
-    );
-    const tilemapXMax = Math.min(
-      this.mapWidth,
-      tilemapXMin + Math.ceil(this.player.width / this.TILE_WIDTH) + 1
-    );
-    const tilemapYMin = Math.max(
-      0,
-      Math.floor((tilemapY + this.player.container.position.y) / this.TILE_HEIGHT) - 1
-    );
-    const tilemapYMax = Math.min(
-      this.mapHeight,
-      tilemapYMin + Math.ceil(this.player.height / this.TILE_HEIGHT) + 1
-    );
-
-    // Check for collisions
-    let intersecting = false;
-    let landing = false;
-    let collecting = false;
-    for (let y = tilemapYMin; y <= tilemapYMax; y++) {
-      for (let x = tilemapXMin; x <= tilemapXMax; x++) {
-        const tile = this.map[y][x];
-
-        if (tile.value !== TileType.Void) {
-          // Create tile rectangle with screen coordinates
-          const tileRectangle = new Rectangle(
-            x * this.TILE_WIDTH - tilemapX,
-            y * this.TILE_HEIGHT - tilemapY,
-            this.TILE_WIDTH,
-            this.TILE_HEIGHT + (tile.value === TileType.Coke ? this.TILE_HEIGHT : 0)
-          );
-
-          // Is overlapping and player was previously above the tile?
-          let intersectRect;
-          if ((intersectRect = intersect(this.player.container, tileRectangle))) {
-            if (tile.value === TileType.Coin && intersectRect.height > 0) {
-              // Collect coin
-              collecting = true;
-              this.setTile(x, y, TileType.Void);
-              this.increaseScore(10);
-              this.itemEffects.push(
-                new ItemEffect(
-                  this,
-                  ItemEffectType.Coin,
-                  tileRectangle.x - tileRectangle.width / 2,
-                  tileRectangle.y + tileRectangle.height / 2
-                )
-              );
-            } else if (tile.value === TileType.Coke && intersectRect.height > 0) {
-              // Collect coke
-              collecting = true;
-              this.setTile(x, y, TileType.Void);
-              this.increaseScore(50);
-              this.increaseBoost(1);
-              this.itemEffects.push(
-                new ItemEffect(
-                  this,
-                  ItemEffectType.Coke,
-                  tileRectangle.x - tileRectangle.width / 2,
-                  tileRectangle.y + tileRectangle.height / 2
-                )
-              );
-            } else if (
-              tile.value === TileType.Platform &&
-              this.player.lastPosition.y + this.player.height <= tileRectangle.y
-            ) {
-              intersecting = true;
-
-              // Fix position and cancel falling
-              this.player.setVelocity(null, 0, true);
-              this.player.setPosition(null, tileRectangle.y - this.player.height, true);
-
-              // Check for landing
-              if (this.player.airborne) {
-                console.debug('Landed');
-                landing = true;
-              }
-
-              // One collision is enough
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    this.player.airborne = !intersecting;
-
-    // Start jumping if just landed but still holding key
-    if (landing && this.primaryActionPressed) {
-      console.debug('Early jump');
-      this.player.startJump();
-    }
-
-    // Redraw tilemap if an item has been collected
-    if (collecting) {
-      this.createTilemap(false);
-    }
-  }
-
   checkGameOver() {
     // Check for death
     if (this.player.position.y > this.app.screen.height) {
       this.player.dead = true;
-      this.itemEffects.forEach((itemEffect) => itemEffect.destroy());
+      this.tilemap.itemEffects.forEach((itemEffect) => itemEffect.destroy());
 
       const filter1 = new filters.ColorMatrixFilter();
       filter1.desaturate();
@@ -301,26 +186,6 @@ export default class Game {
   }
 
   createSprites() {
-    // Tilemap
-    this.tilemap = new CompositeTilemap();
-
-    // Score text
-    this.scoreText = new BitmapText('Score: 0', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      tint: 0x935e53,
-    });
-    this.scoreText.x = 2;
-
-    // Boost text
-    this.boostText = new BitmapText('Boost: ', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      tint: 0x935e53,
-    });
-    this.boostText.x = 2;
-    this.boostText.y = 10;
-
     // Game over screen
     this.gameOverText1 = new BitmapText('Game Over', {
       fontName: 'Edit Undo',
@@ -341,8 +206,8 @@ export default class Game {
   }
 
   createMap() {
-    this.mapWidth = Math.ceil(this.app.screen.width / this.TILE_WIDTH) * 2;
-    this.mapHeight = Math.ceil(this.app.screen.height / this.TILE_HEIGHT);
+    this.mapWidth = Math.ceil(this.app.screen.width / this.tilemap.TILE_WIDTH) * 2;
+    this.mapHeight = Math.ceil(this.app.screen.height / this.tilemap.TILE_HEIGHT);
 
     for (let y = 0; y <= this.mapHeight; y++) {
       this.map[y] = [];
@@ -352,12 +217,12 @@ export default class Game {
     }
 
     // Draw tilemap
-    this.createTilemap();
+    this.tilemap.create();
   }
 
-  createNewTiles() {
+  generateMap() {
     // Check if we need to create new tiles
-    const tilemapX = this.tilemap.pivot.x % this.app.screen.width;
+    const tilemapX = this.tilemap.tilemap.pivot.x % this.app.screen.width;
     if (tilemapX < this.lastTilemapX) {
       // Move second half to the first
       for (let y = 0; y <= this.mapHeight; y++) {
@@ -410,56 +275,12 @@ export default class Game {
       }
 
       // Redraw tilemap
-      this.createTilemap();
+      this.tilemap.create();
 
       // Reset tilemap position
-      this.tilemap.position.set(this.player.position.x, this.tilemap.position.y);
+      this.tilemap.tilemap.position.set(this.player.position.x, this.tilemap.tilemap.position.y);
     }
     this.lastTilemapX = tilemapX;
-  }
-
-  createTilemap(resetPosition = true) {
-    this.tilemap.clear();
-    for (let y = 0; y <= this.mapHeight; y++) {
-      for (let x = 0; x <= this.mapWidth * 2; x++) {
-        if (this.map[y][x].value === TileType.Coin) {
-          this.tilemap
-            .tile('gold_coin1', x * this.TILE_WIDTH, y * this.TILE_HEIGHT)
-            .tileAnimX(16, 5);
-        } else if (this.map[y][x].value === TileType.Coke) {
-          this.tilemap.tile('coke1', x * this.TILE_WIDTH, y * this.TILE_HEIGHT).tileAnimX(13, 2);
-        } else if (this.map[y][x].value === TileType.Platform) {
-          let tile = null;
-
-          // Platform start
-          if (x > 0 && this.map[y][x - 1].value === TileType.Void) {
-            tile = 'planks1';
-          }
-
-          // Platform end
-          else if (x + 1 < this.map[y].length && this.map[y][x + 1].value === TileType.Void) {
-            tile = 'planks5';
-          }
-
-          // Platform
-          else {
-            if (this.map[y][x].random === 0) {
-              tile = 'planks2';
-            } else if (this.map[y][x].random === 1) {
-              tile = 'planks4';
-            } else {
-              tile = 'planks3';
-            }
-          }
-
-          this.tilemap.tile(tile, x * this.TILE_WIDTH, y * this.TILE_HEIGHT);
-        }
-      }
-    }
-    if (resetPosition) {
-      this.tilemap.position.set(0, 0);
-      this.tilemap.pivot.set(0, 0);
-    }
   }
 
   increaseScore(value) {
@@ -484,15 +305,12 @@ export default class Game {
     // Start performance measurement
     this.app.stats.begin();
 
-    // Update timers
-    this.animationTimer.timerManager.update(this.app.ticker.elapsedMS);
+    this.generateMap();
 
-    this.createNewTiles();
     this.player.update(dt);
-    this.checkCollision();
+    this.tilemap.checkCollision();
     this.background.update(dt);
-    this.tilemap.pivot.x = this.player.position.x;
-    this.itemEffects.forEach((itemEffect) => itemEffect.update(dt));
+    this.tilemap.update(dt);
     this.checkGameOver();
 
     // End performance measurement
@@ -503,19 +321,14 @@ export default class Game {
     this.container.removeChild(this.gameOver);
     this.levelContainer.filters = null;
 
-    this.player.reset();
     this.background.reset();
+    this.tilemap.reset();
+    this.player.reset();
 
     // Properties
     this.score = 0;
     this.boosts = 0;
     this.createMap();
-
-    // Timers
-    this.animationTimer.reset();
-
-    // Effects
-    this.itemEffects.forEach((itemEffect) => itemEffect.destroy());
 
     // Sprites
     this.increaseScore(0);
