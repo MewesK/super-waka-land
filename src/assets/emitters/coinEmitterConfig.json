@@ -1,13 +1,13 @@
 {
   "autoUpdate": true,
-  "emit": false,
+  "emit": true,
   "alpha": {
     "start": 1,
     "end": 0
   },
   "scale": {
-    "start": 0.1,
-    "end": 0.01,
+    "start": 0.2,
+    "end": 0.02,
     "minimumScaleMultiplier": 1
   },
   "color": {
@@ -35,12 +35,12 @@
   },
   "lifetime": {
     "min": 0.2,
-    "max": 0.5
+    "max": 0.8
   },
   "blendMode": "normal",
   "frequency": 0.001,
   "emitterLifetime": 0.1,
-  "maxParticles": 100,
+  "maxParticles": 30,
   "pos": {
     "x": 0,
     "y": 0

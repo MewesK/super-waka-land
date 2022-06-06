@@ -1,18 +1,18 @@
 {
   "autoUpdate": true,
-  "emit": false,
+  "emit": true,
   "alpha": {
-    "start": 1,
-    "end": 0.12
+    "start": 0.5,
+    "end": 0.2
   },
   "scale": {
-    "start": 0.01,
-    "end": 0.8,
+    "start": 0.3,
+    "end": 1.1,
     "minimumScaleMultiplier": 0.5
   },
   "color": {
-    "start": "#000000",
-    "end": "#000000"
+    "start": "#291207",
+    "end": "#632C10"
   },
   "speed": {
     "start": 100,
@@ -25,13 +25,13 @@
   },
   "maxSpeed": 0,
   "startRotation": {
-    "min": 260,
-    "max": 280
+    "min": 255,
+    "max": 285
   },
   "noRotation": false,
   "rotationSpeed": {
     "min": 0,
-    "max": 10
+    "max": 0
   },
   "lifetime": {
     "min": 0.5,
@@ -40,7 +40,7 @@
   "blendMode": "normal",
   "frequency": 0.008,
   "emitterLifetime": 0.15,
-  "maxParticles": 500,
+  "maxParticles": 8,
   "pos": {
     "x": 0,
     "y": 0

@@ -6,12 +6,15 @@ All graphics are based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
-- Sound
-  - Effects
-  - Background music
-  - Mute button
 - Nice death screen
   - Retry button
+- Sound
+  - Effects
+    - "Okay", character select, https://www.twitch.tv/wakalaka4eva/clip/RealCarelessDragonfruitDoggo-YxThimicA17PxuUj
+    - "Yeh", boost, https://www.twitch.tv/wakalaka4eva/clip/PoliteLivelyChoughPupper-xYs2OeevkDOZFPvV
+    - "On yo", death, https://www.twitch.tv/wakalaka4eva/clip/InnocentProudDumplingsThisIsSparta-EdY8ng-XdjCdjiA-
+  - Background music (bg-music1.mid)
+  - Mute button
 - Intro screen
   - Logo
   - Manual
