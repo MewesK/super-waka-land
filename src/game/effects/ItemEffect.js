@@ -18,9 +18,10 @@ export default class ItemEffect {
     this.game = game;
     this.type = type;
     this.emitter = new Emitter(
-      this.game.app.stage,
+      this.game.map.container,
       upgradeConfig(type.CONFIG, [Sprite.from(type.TEXTURE).texture])
     );
+    this.emitter.rotate(200);
     this.emitter.updateOwnerPos(x, y);
     this.emitter.playOnceAndDestroy();
   }
@@ -38,11 +39,6 @@ export default class ItemEffect {
   }
 
   update(dt) {
-    if (!this.emitter.destroyed) {
-      this.emitter.updateOwnerPos(
-        this.emitter.ownerPos.x - (this.game.player.position.x - this.game.player.lastPosition.x),
-        this.emitter.ownerPos.y
-      );
-    }
+    // Do nothing
   }
 }

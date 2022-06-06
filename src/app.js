@@ -1,4 +1,4 @@
-import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont, Buffer } from 'pixi.js';
+import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont } from 'pixi.js';
 import Stats from 'stats.js';
 import Game from './game/Game';
 
@@ -16,9 +16,10 @@ import retroLandMayhemFontAtlas from 'bundle-text:./assets/fonts/retro-land-mayh
 import retroLandMayhemFontImage from './assets/fonts/retro-land-mayhem.png';
 
 // DEBUG
-//console.log = () => {};
-//console.debug = () => {};
-// DEBUG
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {};
+  console.debug = () => {};
+}
 
 // Settings
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
@@ -81,7 +82,6 @@ function setup() {
 
     // Create new game
     const game = new Game(app);
-    const buffer = new Buffer();
 
     app.stage.interactive = true;
     app.stage.addChild(game.container);
