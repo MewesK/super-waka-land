@@ -41,7 +41,7 @@ export default class GameOverOverlay {
     this.retryText.x = this.game.app.screen.width / 2 - this.retryText.width / 2;
     this.retryText.y = 150;
 
-    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2 + 20;
+    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2 + 15;
   }
 
   show() {

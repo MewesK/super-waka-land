@@ -6,6 +6,9 @@ All graphics are based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
+- Fix effect positions
+- Better input handling
+  - Swipe up to boost
 - Retry button
 - Sound
   - Effects
