@@ -326,7 +326,7 @@ export default class Player {
     this.setVelocity(this.VELOCITY.x, this.VELOCITY.y);
     this.lastVelocity = this.velocity.clone();
     this.preBoostVelocity = null;
-    this.setPosition(this.game.tilemap.TILE_WIDTH * 2, 0);
+    this.setPosition(this.game.map.TILE_WIDTH * 2, 0);
     this.lastPosition = this.position.clone();
 
     // Set vertical position of the player container
