@@ -212,7 +212,42 @@ export default class Game {
     this.map.generateMap();
 
     this.player.update(dt);
-    this.map.checkCollision();
+
+    let landing = false;
+    this.map.checkCollision(
+      // collectCoinCallback
+      (tileRectangle) => {
+        this.increaseScore(10);
+      },
+      // collectCokeCallback
+      (tileRectangle) => {
+        this.increaseScore(50);
+        this.increaseBoost(1);
+      },
+      // intersectFloorCallback
+      (tileRectangle) => {
+        // Fix position and cancel falling
+        this.player.setVelocity(null, 0, true);
+        this.player.setPosition(null, tileRectangle.y - this.player.height, true);
+
+        // Check for landing
+        if (this.player.airborne) {
+          console.debug('Landed');
+          landing = true;
+        }
+      },
+      // finishCallback
+      (intersecting) => {
+        this.player.airborne = !intersecting;
+
+        // Start jumping if just landed but still holding key
+        if (landing && this.primaryActionPressed) {
+          console.debug('Early jump');
+          this.player.startJump();
+        }
+      }
+    );
+
     this.background.update(dt);
     this.map.update(dt);
     this.checkGameOver();

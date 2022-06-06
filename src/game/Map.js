@@ -59,7 +59,11 @@ export default class Map {
     this.animationTimer.start();
   }
 
-  checkCollision() {
+  setTile(x, y, value = TileType.Void, random = null) {
+    this.map[y][x] = { value, random };
+  }
+
+  checkCollision(collectCoinCallback, collectCokeCallback, intersectFloorCallback, finishCallback) {
     // Calculate the tile indices around the player
     const tilemapX = this.tilemap.pivot.x % this.game.app.screen.width;
     const tilemapY = this.tilemap.pivot.y % this.game.app.screen.height;
@@ -82,7 +86,6 @@ export default class Map {
 
     // Check for collisions
     let intersecting = false;
-    let landing = false;
     let collecting = false;
     for (let y = tilemapYMin; y <= tilemapYMax; y++) {
       for (let x = tilemapXMin; x <= tilemapXMax; x++) {
@@ -104,7 +107,6 @@ export default class Map {
               // Collect coin
               collecting = true;
               this.setTile(x, y, TileType.Void);
-              this.game.increaseScore(10);
               this.itemEffects.push(
                 new ItemEffect(
                   this.game,
@@ -113,12 +115,13 @@ export default class Map {
                   tileRectangle.y + tileRectangle.height / 2
                 )
               );
+
+              // Callback
+              collectCoinCallback(tileRectangle);
             } else if (tile.value === TileType.Coke && intersectRect.height > 0) {
               // Collect coke
               collecting = true;
               this.setTile(x, y, TileType.Void);
-              this.game.increaseScore(50);
-              this.game.increaseBoost(1);
               this.itemEffects.push(
                 new ItemEffect(
                   this.game,
@@ -127,21 +130,17 @@ export default class Map {
                   tileRectangle.y + tileRectangle.height / 2
                 )
               );
+
+              // Callback
+              collectCokeCallback(tileRectangle);
             } else if (
               tile.value === TileType.Platform &&
               this.game.player.lastPosition.y + this.game.player.height <= tileRectangle.y
             ) {
               intersecting = true;
 
-              // Fix position and cancel falling
-              this.game.player.setVelocity(null, 0, true);
-              this.game.player.setPosition(null, tileRectangle.y - this.game.player.height, true);
-
-              // Check for landing
-              if (this.game.player.airborne) {
-                console.debug('Landed');
-                landing = true;
-              }
+              // Callback
+              intersectFloorCallback(tileRectangle);
 
               // One collision is enough
               break;
@@ -151,18 +150,13 @@ export default class Map {
       }
     }
 
-    this.game.player.airborne = !intersecting;
-
-    // Start jumping if just landed but still holding key
-    if (landing && this.game.primaryActionPressed) {
-      console.debug('Early jump');
-      this.game.player.startJump();
-    }
-
     // Redraw tilemap if an item has been collected
     if (collecting) {
       this.createTilemap(false);
     }
+
+    // Callback
+    finishCallback(intersecting, collecting);
   }
 
   createMap() {
@@ -176,7 +170,7 @@ export default class Map {
       }
     }
 
-    // Draw tilemap
+    // Create tilemap
     this.createTilemap();
   }
 
@@ -278,7 +272,7 @@ export default class Map {
         }
       }
 
-      // Redraw tilemap
+      // Create tilemap
       this.createTilemap();
 
       // Reset tilemap position
@@ -314,9 +308,5 @@ export default class Map {
     this.platformY = this.FLOOR_Y;
     this.platformLength = 0;
     this.lastTilemapX = 0;
-  }
-
-  setTile(x, y, value = TileType.Void, random = null) {
-    this.map[y][x] = { value, random };
   }
 }
