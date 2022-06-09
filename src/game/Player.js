@@ -7,7 +7,7 @@ export default class Player {
   POWER = 1.5;
   MASS = 1.0;
   GRAVITY = 0.3;
-  PULL = 0.001;
+  PULL = 0.0003;
   VELOCITY = new Point(2, 0);
   MAX_VELOCITY = new Point(8, 8);
   BOOST_MULTIPLIER = new Point(6.0, -4.5);
