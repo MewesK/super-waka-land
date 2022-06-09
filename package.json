@@ -28,6 +28,7 @@
     "@pixi/sound": "^4.2.0",
     "@pixi/tilemap": "^3.2.2",
     "eventemitter3-timer": "^1.0.1",
+    "mjolnir.js": "^2.6.0",
     "pixi-filters": "^4.1.6",
     "pixi.js": "^6.3.2",
     "stats.js": "^0.17.0"

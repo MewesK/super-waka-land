@@ -6,8 +6,6 @@ Based on work by wakalaka4eva (https://stacyandtan.carrd.co/).
 
 ## TODO
 
-- Better input handling
-  - Swipe up to boost
 - Death screen: Retry button
 - Sound
   - Effects

@@ -5,10 +5,12 @@ import Player from './Player';
 import Map from './Map';
 import HUD from './HUD';
 import GameOverOverlay from './overlays/GameOverOverlay';
+import InputManager from './InputManager';
 
 export default class Game {
   app;
   container = new Container();
+  inputManager;
 
   // Properties
   score = 0;
@@ -23,11 +25,9 @@ export default class Game {
   // Overlays
   gameOverOverlay;
 
-  primaryActionPressed = false;
-  secondaryActionPressed = false;
-
   constructor(app) {
     this.app = app;
+    this.inputManager = new InputManager(this);
 
     this.background = new Background(this);
     this.map = new Map(this);
@@ -44,82 +44,30 @@ export default class Game {
     this.container.addChild(this.hud.container);
 
     // Register event listeners
-    window.addEventListener('keydown', (event) => {
-      if (event.code === 'KeyW') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.startPrimaryAction();
+    this.inputManager.on(
+      'jump',
+      ['s', 'pointer'],
+      () => {
+        if (this.player.dead) {
+          this.reset();
+        } else if (!this.player.airborne) {
+          this.player.startJump();
+        }
+      },
+      () => {
+        this.player.endJump();
       }
-      if (event.code === 'KeyD') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.startSecondaryAction();
+    );
+    this.inputManager.on('boost', ['d', 'swipeup'], () => {
+      if (this.boosts > 0) {
+        this.increaseBoost(-1);
+        this.player.startBoost();
       }
-    });
-    window.addEventListener('keyup', (event) => {
-      if (event.code === 'KeyW') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.endPrimaryAction();
-      }
-      if (event.code === 'KeyD') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.endSecondaryAction();
-      }
-    });
-    app.stage.on('pointerdown', (event) => {
-      event.stopPropagation();
-      this.startPrimaryAction();
-    });
-    app.stage.on('pointerup', (event) => {
-      event.stopPropagation();
-      this.endPrimaryAction();
     });
 
     // Start game loop
     console.debug('Starting game loop');
     this.app.ticker.add(this.update, this, UPDATE_PRIORITY.HIGH);
-  }
-
-  startPrimaryAction() {
-    if (this.primaryActionPressed) {
-      return;
-    }
-    this.primaryActionPressed = true;
-
-    if (this.player.dead) {
-      this.reset();
-    } else if (!this.player.airborne) {
-      this.player.startJump();
-    }
-  }
-
-  endPrimaryAction() {
-    if (!this.primaryActionPressed) {
-      return;
-    }
-    this.primaryActionPressed = false;
-    this.player.endJump();
-  }
-
-  startSecondaryAction() {
-    if (this.secondaryActionPressed) {
-      return;
-    }
-    this.secondaryActionPressed = true;
-
-    if (this.boosts > 0) {
-      this.increaseBoost(-1);
-      this.player.startBoost();
-    }
-  }
-
-  endSecondaryAction() {
-    if (!this.secondaryActionPressed) {
-      return;
-    }
-    this.secondaryActionPressed = false;
   }
 
   checkGameOver() {
@@ -148,7 +96,6 @@ export default class Game {
 
     // Start performance measurement
     this.app.stats.begin();
-
 
     this.player.update(dt);
 
@@ -180,7 +127,7 @@ export default class Game {
         this.player.airborne = !intersecting;
 
         // Start jumping if just landed but still holding key
-        if (landing && this.primaryActionPressed) {
+        if (landing && this.inputManager.pressed['jump']) {
           console.debug('Early jump');
           this.player.startJump();
         }
@@ -197,6 +144,8 @@ export default class Game {
   }
 
   reset() {
+    this.inputManager.reset();
+
     // Properties
     this.score = 0;
     this.boosts = 0;
@@ -209,9 +158,5 @@ export default class Game {
 
     // Overlays
     this.gameOverOverlay.hide();
-
-    // Temp
-    this.primaryActionPressed = false;
-    this.secondaryActionPressed = false;
   }
 }
