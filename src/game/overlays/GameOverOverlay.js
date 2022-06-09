@@ -18,16 +18,16 @@ export default class GameOverOverlay {
     this.deadSprite.y = 0;
 
     this.titleText = new BitmapText('Game Over', {
-      fontName: 'Edit Undo',
-      fontSize: 30,
+      fontName: 'Stop Bullying',
+      fontSize: 36,
     });
     this.container.addChild(this.titleText);
     this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
-    this.titleText.y = 70;
+    this.titleText.y = 65;
 
     this.scoreText = new BitmapText('Final Score: 0', {
       fontName: 'Edit Undo',
-      fontSize: 16,
+      fontSize: 18,
     });
     this.container.addChild(this.scoreText);
     this.scoreText.x = this.game.app.screen.width / 2 - this.scoreText.width / 2;

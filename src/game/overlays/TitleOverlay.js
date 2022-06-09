@@ -1,11 +1,21 @@
-import { Container, filters } from 'pixi.js';
+import { BitmapText, Container, filters } from 'pixi.js';
 
 export default class TitleOverlay {
   game;
   container = new Container();
 
+  titleText;
+  
   constructor(game) {
     this.game = game;
+
+    this.titleText = new BitmapText('Game Over', {
+      fontName: 'Stop Bullying',
+      fontSize: 36,
+    });
+    this.container.addChild(this.titleText);
+    this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
+    this.titleText.y = 65;
   }
 
   show() {
