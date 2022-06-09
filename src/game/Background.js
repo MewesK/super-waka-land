@@ -3,8 +3,8 @@ import { Container, Sprite } from 'pixi.js';
 export default class Background {
   ISLAND_Y = 96;
   WAVE_Y = 32;
-  ISLAND_SPEED = 0.2 * 20;
-  WAVE_SPEED = 0.25 * 20;
+  ISLAND_SPEED = 0.2;
+  WAVE_SPEED = 0.25;
 
   game;
   container = new Container();
