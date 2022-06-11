@@ -1,4 +1,4 @@
-import { BitmapText, Container, filters, Rectangle } from 'pixi.js';
+import { BitmapText, Container, filters, MSAA_QUALITY, Rectangle } from 'pixi.js';
 
 export default class TitleOverlay {
   game;
@@ -28,8 +28,8 @@ export default class TitleOverlay {
     this.game.container.filterArea = new Rectangle(
       0,
       0,
-      this.game.container.width,
-      this.game.container.height
+      this.game.app.screen.width,
+      this.game.app.screen.height
     );
 
     this.game.container.filters = [filter1, filter2];

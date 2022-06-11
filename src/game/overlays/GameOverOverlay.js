@@ -56,8 +56,8 @@ export default class GameOverOverlay {
     this.game.container.filterArea = new Rectangle(
       0,
       0,
-      this.game.container.width,
-      this.game.container.height
+      this.game.app.screen.width,
+      this.game.app.screen.height
     );
 
     this.game.container.filters = [filter1, filter2];

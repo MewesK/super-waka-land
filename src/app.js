@@ -1,4 +1,13 @@
-import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont } from 'pixi.js';
+import {
+  Application,
+  Loader,
+  Spritesheet,
+  settings,
+  SCALE_MODES,
+  BitmapFont,
+  MSAA_QUALITY,
+  PRECISION,
+} from 'pixi.js';
 import Stats from 'stats.js';
 import Game from './game/Game';
 
@@ -12,19 +21,21 @@ import editUndoFontImage from './assets/fonts/edit-undo.png';
 import stopBullyingFontAtlas from 'bundle-text:./assets/fonts/stop-bullying.fnt';
 import stopBullyingFontImage from './assets/fonts/stop-bullying.png';
 
+// Settings
+const WIDTH = 256;
+const HEIGHT = 224;
+const RESOLUTION = 10;
+const BACKGROUND_COLOR = 0xffffde;
+const DEBUG = false;
+
+settings.SCALE_MODE = SCALE_MODES.NEAREST;
+settings.ROUND_PIXELS = false;
+
 // DEBUG
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' || !DEBUG) {
   console.log = () => {};
   console.debug = () => {};
 }
-
-// Settings
-settings.SCALE_MODE = SCALE_MODES.NEAREST;
-
-const WIDTH = 256;
-const HEIGHT = 224;
-const RESOLUTION = 3;
-const BACKGROUND_COLOR = 0xffffde;
 
 //
 // Create Pixi application

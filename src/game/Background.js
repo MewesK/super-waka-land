@@ -3,8 +3,8 @@ import { Container, Sprite } from 'pixi.js';
 export default class Background {
   ISLAND_Y = 96;
   WAVE_Y = 32;
-  ISLAND_SPEED = 0.2;
-  WAVE_SPEED = 0.25;
+  ISLAND_SPEED = 1;
+  WAVE_SPEED = 1.1;
 
   game;
   container = new Container();
@@ -48,19 +48,21 @@ export default class Background {
   }
 
   update(dt) {
-    this.background2aSprite.x -= this.ISLAND_SPEED * dt;
+    const background2Dx = this.ISLAND_SPEED * dt;
+    this.background2aSprite.x -= background2Dx;
     if (this.background2aSprite.x <= -this.background2aSprite.width) {
       this.background2aSprite.x = this.background2aSprite.width;
     }
-    this.background2bSprite.x -= this.ISLAND_SPEED * dt;
+    this.background2bSprite.x -= background2Dx;
     if (this.background2bSprite.x < -this.background2bSprite.width) {
       this.background2bSprite.x = this.background2bSprite.width;
     }
-    this.background3aSprite.x -= this.WAVE_SPEED * dt;
+    const background3Dx = this.WAVE_SPEED * dt;
+    this.background3aSprite.x -= background3Dx;
     if (this.background3aSprite.x < -this.background3aSprite.width) {
       this.background3aSprite.x = this.background3aSprite.width;
     }
-    this.background3bSprite.x -= this.WAVE_SPEED * dt;
+    this.background3bSprite.x -= background3Dx;
     if (this.background3bSprite.x < -this.background3bSprite.width) {
       this.background3bSprite.x = this.background3bSprite.width;
     }

@@ -286,7 +286,7 @@ export default class Player {
   }
 
   endJump() {
-    if (this.jumpTimer === null) {
+    if (this.jumpTimer === null || this.boostTimer !== null) {
       return;
     }
 

@@ -1,4 +1,4 @@
-@import "npm:@picocss/pico/css/pico.min.css";
+@import 'npm:@picocss/pico/css/pico.min.css';
 
 :root {
   --border-radius: 0.1rem;
@@ -9,6 +9,8 @@ nav {
 }
 
 main {
+  padding: 0rem !important;
+  margin-bottom: 2rem !important;
   position: relative;
   text-align: center;
 }
@@ -16,6 +18,10 @@ main {
 main canvas {
   width: 100%;
   height: 100%;
+  max-width: 100vh;
+  max-height: 90vh;
+  image-rendering: pixelated;
+  box-shadow: var(--card-box-shadow);
 }
 
 main div {
@@ -47,9 +53,7 @@ footer a {
 }
 
 @media (min-width: 992px) {
-  main canvas {
-    width: auto;
-    height: auto;
-    box-shadow: var(--card-box-shadow);
+  main {
+    padding: 1rem !important;
   }
 }
