@@ -1,5 +1,5 @@
 import { Timer } from 'eventemitter3-timer';
-import { AnimatedSprite, Point, Sprite, Container } from 'pixi.js';
+import { AnimatedSprite, Point, Sprite, Container, settings } from 'pixi.js';
 
 import BoostEffect from './effects/BoostEffect';
 
@@ -10,7 +10,7 @@ export default class Player {
   PULL = 0.0003;
   VELOCITY = new Point(2, 0);
   MAX_VELOCITY = new Point(8, 8);
-  BOOST_MULTIPLIER = new Point(6.0, -4.5);
+  BOOST_MULTIPLIER = new Point(3.0, -4.5);
   JUMP_MULTIPLIER = new Point(0.0, -3.0);
   JUMP_BOOST_MULTIPLIER = new Point(0.0, -0.9);
 
@@ -304,7 +304,7 @@ export default class Player {
     console.debug('Start boost');
 
     this.preBoostVelocity = this.velocity.clone();
-    this.setVelocity(this.POWER * this.BOOST_MULTIPLIER.x, this.POWER * this.BOOST_MULTIPLIER.y);
+    this.setVelocity(this.velocity.x + this.POWER * this.BOOST_MULTIPLIER.x, this.POWER * this.BOOST_MULTIPLIER.y);
     this.boostEffect.start();
 
     // Create boost timer
