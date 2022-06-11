@@ -7,11 +7,8 @@
   "scripts": {
     "clean": "rm -rf .parcel-cache && rm -rf dist && mkdir dist",
     "copy-assets": "cp -r src/assets/sounds/* dist",
-    "prestart": "npm run clean",
-    "start": "npm run copy-assets && npx parcel --hmr-port 1236",
-    "prebuild": "npm run clean",
-    "build": "npx parcel build --public-url '.'",
-    "postbuild": "npm run copy-assets",
+    "start": "npm run clean && npm run copy-assets && npx parcel --hmr-port 1236",
+    "build": "npm run clean && npm run copy-assets && npx parcel build --public-url '.'",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [
