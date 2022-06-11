@@ -2,7 +2,7 @@ import { Timer } from 'eventemitter3-timer';
 import { BitmapText, Container, filters, Rectangle } from 'pixi.js';
 
 export default class TitleOverlay {
-  BRIGHTNESS = 0.6;
+  BRIGHTNESS = 0.15;
   FADE_STEPS = 10;
 
   game;
@@ -12,20 +12,44 @@ export default class TitleOverlay {
   showing = false;
 
   titleText;
+  subtitleText;
+  tutorialText;
 
   constructor(game) {
     this.game = game;
 
     this.titleText = new BitmapText('Super\nWaka Land', {
       fontName: 'Stop Bullying',
-      fontSize: 36,
+      fontSize: 46,
       align: 'center',
+      letterSpacing: -1,
     });
     this.container.addChild(this.titleText);
     this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
     this.titleText.y = 0;
 
-    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2 + 15;
+    this.subtitleText = new BitmapText('Help rat to start his\ncollege fund!', {
+      fontName: 'Edit Undo',
+      fontSize: 16,
+      align: 'center',
+    });
+    this.container.addChild(this.subtitleText);
+    this.subtitleText.x = this.game.app.screen.width / 2 - this.subtitleText.width / 2;
+    this.subtitleText.y = 100;
+
+    this.tutorialText = new BitmapText(
+      'Tap to jump\nSwipe up for boost\nCollect stuff\nCoin $10 * Coke $50 * Boost $50',
+      {
+        fontName: 'Edit Undo',
+        fontSize: 10,
+        align: 'center',
+      }
+    );
+    this.container.addChild(this.tutorialText);
+    this.tutorialText.x = this.game.app.screen.width / 2 - this.tutorialText.width / 2;
+    this.tutorialText.y = 150;
+
+    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2;
   }
 
   update() {
@@ -42,6 +66,8 @@ export default class TitleOverlay {
     }
 
     this.showing = true;
+    this.container.alpha = 1;
+    this.game.hud.container.alpha = 0;
 
     const filter = new filters.ColorMatrixFilter();
     filter.brightness(this.BRIGHTNESS);
@@ -64,6 +90,7 @@ export default class TitleOverlay {
     }
 
     this.showing = false;
+    this.game.hud.container.alpha = 1;
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;

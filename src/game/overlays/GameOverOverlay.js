@@ -19,22 +19,23 @@ export default class GameOverOverlay {
   constructor(game) {
     this.game = game;
 
-    this.deadSprite = Sprite.from('dead');
-    this.container.addChild(this.deadSprite);
-    this.deadSprite.x = this.game.app.screen.width / 2 - this.deadSprite.width / 2;
-    this.deadSprite.y = 0;
-
     this.titleText = new BitmapText('Game Over', {
       fontName: 'Stop Bullying',
       fontSize: 36,
+      letterSpacing: -1,
     });
     this.container.addChild(this.titleText);
     this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
-    this.titleText.y = 65;
+    this.titleText.y = 0;
+
+    this.deadSprite = Sprite.from('dead');
+    this.container.addChild(this.deadSprite);
+    this.deadSprite.x = this.game.app.screen.width / 2 - this.deadSprite.width / 2;
+    this.deadSprite.y = 37;
 
     this.scoreText = new BitmapText('Rats College Fund:\n$0', {
       fontName: 'Edit Undo',
-      fontSize: 18,
+      fontSize: 16,
       align: 'center',
     });
     this.container.addChild(this.scoreText);
@@ -43,7 +44,7 @@ export default class GameOverOverlay {
 
     this.retryText = new BitmapText('Try again', {
       fontName: 'Edit Undo',
-      fontSize: 12,
+      fontSize: 10,
     });
     this.container.addChild(this.retryText);
     this.retryText.x = this.game.app.screen.width / 2 - this.retryText.width / 2;
@@ -66,6 +67,7 @@ export default class GameOverOverlay {
     }
 
     this.showing = true;
+    this.container.alpha = 1;
     this.scoreText.text = 'Rats College Fund:\n$' + this.game.score;
 
     const filter = new filters.ColorMatrixFilter();
@@ -101,7 +103,6 @@ export default class GameOverOverlay {
     });
     this.fadeTimer.on('end', () => {
       this.game.app.stage.removeChild(this.container);
-      this.container.alpha = 1.0;
       this.game.container.filters = null;
       this.fadeTimer = null;
     });

@@ -110,6 +110,8 @@ export default class Game {
     }
 
     this.player.update(dt);
+    this.background.update(dt);
+    this.map.update(dt);
 
     let landing = false;
     this.map.checkCollision(
@@ -145,9 +147,6 @@ export default class Game {
         }
       }
     );
-
-    this.background.update(dt);
-    this.map.update(dt);
 
     this.checkGameOver();
 
