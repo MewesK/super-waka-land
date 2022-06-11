@@ -33,7 +33,7 @@ export default class Game {
   constructor(app) {
     this.app = app;
     this.inputManager = new InputManager(this);
-    this.backgroundMusic = Loader.shared.resources.backgroundMusic.sound;
+    this.backgroundMusic = Loader.shared.resources.bgMusic.sound;
     this.backgroundMusic.loop = true;
     this.backgroundMusic.volume = 0.03;
     this.backgroundMusic.play();
