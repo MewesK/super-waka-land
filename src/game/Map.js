@@ -227,45 +227,51 @@ export default class Map {
       }
     }
 
-    // Generate new tiles for the second half
-    for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
-      // Generate new section if necessary
-      if (this.platformX === 0) {
-        this.abyssLength = random(3, 6);
-        this.abyssX = this.abyssLength;
-        this.platformY = random(
-          Math.min(
-            this.FLOOR_Y_MAX,
-            Math.max(this.FLOOR_Y_MIN, this.platformY - 7 + this.abyssLength)
-          ),
-          this.FLOOR_Y_MAX
-        );
-        this.platformLength = random(2, 8);
-        this.platformX = this.platformLength;
+    if (this.game.paused) {
+      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
+        this.setTile(x, this.FLOOR_Y, TileType.Platform, random(0, 3));
       }
-
-      // Fill current section
-      if (this.abyssX > 0) {
-        // Fill coke
-        if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
-          this.setTile(x, this.platformY - 4, TileType.Coke);
+    } else {
+      // Generate new tiles for the second half
+      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
+        // Generate new section if necessary
+        if (this.platformX === 0) {
+          this.abyssLength = random(3, 6);
+          this.abyssX = this.abyssLength;
+          this.platformY = random(
+            Math.min(
+              this.FLOOR_Y_MAX,
+              Math.max(this.FLOOR_Y_MIN, this.platformY - 7 + this.abyssLength)
+            ),
+            this.FLOOR_Y_MAX
+          );
+          this.platformLength = random(2, 8);
+          this.platformX = this.platformLength;
         }
 
-        // Fill abyss
-        this.abyssX--;
-      } else {
-        // Fill coin
-        if (
-          this.platformLength >= 3 &&
-          this.platformX < this.platformLength &&
-          this.platformX - 1 > 0
-        ) {
-          this.setTile(x, this.platformY - 3, TileType.Coin);
-        }
+        // Fill current section
+        if (this.abyssX > 0) {
+          // Fill coke
+          if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
+            this.setTile(x, this.platformY - 4, TileType.Coke);
+          }
 
-        // Fill platform
-        this.setTile(x, this.platformY, TileType.Platform, random(0, 3));
-        this.platformX--;
+          // Fill abyss
+          this.abyssX--;
+        } else {
+          // Fill coin
+          if (
+            this.platformLength >= 3 &&
+            this.platformX < this.platformLength &&
+            this.platformX - 1 > 0
+          ) {
+            this.setTile(x, this.platformY - 3, TileType.Coin);
+          }
+
+          // Fill platform
+          this.setTile(x, this.platformY, TileType.Platform, random(0, 3));
+          this.platformX--;
+        }
       }
     }
 

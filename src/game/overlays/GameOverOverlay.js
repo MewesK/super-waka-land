@@ -45,6 +45,8 @@ export default class GameOverOverlay {
   }
 
   show() {
+    this.game.map.itemEffects.forEach((itemEffect) => itemEffect.destroy());
+
     const filter1 = new filters.ColorMatrixFilter();
     filter1.desaturate();
 

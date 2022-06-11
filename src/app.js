@@ -27,7 +27,7 @@ const RESOLUTION = 3;
 const BACKGROUND_COLOR = 0xffffde;
 
 //
-// Create new Pixi application
+// Create Pixi application
 //
 
 const app = new Application({
@@ -37,42 +37,47 @@ const app = new Application({
   backgroundColor: BACKGROUND_COLOR,
   antialias: false,
 });
-app.stats = new Stats();
-app.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-
-// Mount application
 document.getElementById('app').appendChild(app.view);
-document.getElementById('app').appendChild(app.stats.dom);
+
+// Create FPS counter
+if (process.env.NODE_ENV !== 'production') {
+  app.stats = new Stats();
+  app.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+  document.getElementById('app').appendChild(app.stats.dom);
+}
 
 // Load resources
-Loader.shared.onProgress.add(loadProgressHandler);
-Loader.shared.add(spritesImage).add(editUndoFontImage).add(stopBullyingFontImage).load(setup);
-
-function loadProgressHandler(loader, resource) {
+Loader.shared.onProgress.add((loader, resource) => {
   console.debug('Loading: ' + resource.url);
   console.debug('Progress: ' + loader.progress + '%');
-}
+});
+Loader.shared
+  .add(spritesImage)
+  .add(editUndoFontImage)
+  .add(stopBullyingFontImage)
+  .load(() => {
+    console.debug('All files loaded');
 
-function setup() {
-  console.debug('All files loaded');
+    // Load fonts
+    BitmapFont.install(editUndoFontAtlas, Loader.shared.resources[editUndoFontImage].texture);
+    BitmapFont.install(
+      stopBullyingFontAtlas,
+      Loader.shared.resources[stopBullyingFontImage].texture
+    );
 
-  // Load fonts
-  BitmapFont.install(editUndoFontAtlas, Loader.shared.resources[editUndoFontImage].texture);
-  BitmapFont.install(stopBullyingFontAtlas, Loader.shared.resources[stopBullyingFontImage].texture);
+    // Load spritesheet
+    const sheet = new Spritesheet(
+      Loader.shared.resources[spritesImage].texture.baseTexture,
+      spritesAtlas
+    );
+    sheet.parse(() => {
+      console.debug('Spritesheet loaded');
 
-  // Load spritesheet
-  const sheet = new Spritesheet(
-    Loader.shared.resources[spritesImage].texture.baseTexture,
-    spritesAtlas
-  );
-  sheet.parse(() => {
-    console.debug('Spritesheet loaded');
+      // Create game
+      const game = new Game(app);
 
-    // Create new game
-    const game = new Game(app);
-
-    app.stage.interactive = true;
-    app.stage.addChild(game.container);
-    app.renderer.render(app.stage);
+      app.stage.interactive = true;
+      app.stage.addChild(game.container);
+      app.renderer.render(app.stage);
+    });
   });
-}

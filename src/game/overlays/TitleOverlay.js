@@ -1,11 +1,11 @@
-import { BitmapText, Container, filters } from 'pixi.js';
+import { BitmapText, Container, filters, Rectangle } from 'pixi.js';
 
 export default class TitleOverlay {
   game;
   container = new Container();
 
   titleText;
-  
+
   constructor(game) {
     this.game = game;
 
@@ -19,7 +19,11 @@ export default class TitleOverlay {
   }
 
   show() {
-    const filter1 = new filters.BlurFilter();
+    const filter1 = new filters.ColorMatrixFilter();
+    filter1.desaturate();
+
+    const filter2 = new filters.ColorMatrixFilter();
+    filter2.brightness(0.5, false);
 
     this.game.container.filterArea = new Rectangle(
       0,
@@ -28,7 +32,7 @@ export default class TitleOverlay {
       this.game.container.height
     );
 
-    this.game.container.filters = [filter1];
+    this.game.container.filters = [filter1, filter2];
 
     this.game.app.stage.addChild(this.container);
   }

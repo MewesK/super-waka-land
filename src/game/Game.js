@@ -6,11 +6,13 @@ import Map from './Map';
 import HUD from './HUD';
 import GameOverOverlay from './overlays/GameOverOverlay';
 import InputManager from './InputManager';
+import TitleOverlay from './overlays/TitleOverlay';
 
 export default class Game {
   app;
   container = new Container();
   inputManager;
+  paused = true;
 
   // Properties
   score = 0;
@@ -24,6 +26,7 @@ export default class Game {
 
   // Overlays
   gameOverOverlay;
+  titleOverlay;
 
   constructor(app) {
     this.app = app;
@@ -34,6 +37,7 @@ export default class Game {
     this.player = new Player(this);
     this.hud = new HUD(this);
     this.gameOverOverlay = new GameOverOverlay(this);
+    this.titleOverlay = new TitleOverlay(this);
 
     this.reset();
 
@@ -42,13 +46,17 @@ export default class Game {
     this.container.addChild(this.map.container);
     this.container.addChild(this.player.container);
     this.container.addChild(this.hud.container);
+    this.titleOverlay.show();
 
     // Register event listeners
     this.inputManager.on(
       'jump',
       ['s', 'pointer'],
       () => {
-        if (this.player.dead) {
+        if (this.paused) {
+          this.paused = false;
+          this.reset();
+        } else if (this.player.dead) {
           this.reset();
         } else if (!this.player.airborne) {
           this.player.startJump();
@@ -74,7 +82,6 @@ export default class Game {
     // Check for death
     if (this.player.position.y > this.app.screen.height) {
       this.player.dead = true;
-      this.map.itemEffects.forEach((itemEffect) => itemEffect.destroy());
       this.gameOverOverlay.show();
     }
   }
@@ -95,7 +102,9 @@ export default class Game {
     }
 
     // Start performance measurement
-    this.app.stats.begin();
+    if (process.env.NODE_ENV !== 'production') {
+      this.app.stats.begin();
+    }
 
     this.player.update(dt);
 
@@ -140,7 +149,9 @@ export default class Game {
     this.checkGameOver();
 
     // End performance measurement
-    this.app.stats.end();
+    if (process.env.NODE_ENV !== 'production') {
+      this.app.stats.end();
+    }
   }
 
   reset() {
