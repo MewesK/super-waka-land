@@ -13,7 +13,13 @@ export default class Game {
   app;
   container = new Container();
   inputManager;
-  backgroundMusic;
+
+  // Sound
+  bgMusic;
+  boostSound;
+  coinSound;
+  jumpSound;
+  powerupSound;
 
   // Properties
   paused = true;
@@ -33,10 +39,19 @@ export default class Game {
   constructor(app) {
     this.app = app;
     this.inputManager = new InputManager(this);
-    this.backgroundMusic = Loader.shared.resources.bgMusic.sound;
-    this.backgroundMusic.loop = true;
-    this.backgroundMusic.volume = 0.03;
-    this.backgroundMusic.play();
+
+    this.bgMusic = Loader.shared.resources.bgMusic.sound;
+    this.bgMusic.loop = true;
+    this.bgMusic.volume = 0.03;
+    this.bgMusic.play();
+    this.boostSound = Loader.shared.resources.boostSound.sound;
+    this.boostSound.volume = 0.1;
+    this.coinSound = Loader.shared.resources.coinSound.sound;
+    this.coinSound.volume = 0.06;
+    this.jumpSound = Loader.shared.resources.jumpSound.sound;
+    this.jumpSound.volume = 0.05;
+    this.powerupSound = Loader.shared.resources.powerupSound.sound;
+    this.powerupSound.volume = 0.1;
 
     this.background = new Background(this);
     this.map = new Map(this);
@@ -66,7 +81,9 @@ export default class Game {
           this.paused = false;
           this.reset();
         } else if (this.player.dead) {
-          this.reset();
+          if (this.gameOverOverlay.skippable) {
+            this.reset();
+          }
         } else if (!this.player.airborne) {
           this.player.startJump();
         }
@@ -107,6 +124,9 @@ export default class Game {
   }
 
   update(dt) {
+    this.gameOverOverlay.update(dt);
+    this.titleOverlay.update(dt);
+
     if (this.player.dead) {
       return;
     }
@@ -124,10 +144,12 @@ export default class Game {
     this.map.checkCollision(
       // collectCoinCallback
       (tileRectangle) => {
+        this.coinSound.play();
         this.increaseScore(10);
       },
       // collectCokeCallback
       (tileRectangle) => {
+        this.powerupSound.play();
         this.increaseScore(50);
         this.increaseBoost(1);
       },
@@ -156,9 +178,6 @@ export default class Game {
     );
 
     this.checkGameOver();
-
-    this.gameOverOverlay.update(dt);
-    this.titleOverlay.update(dt);
 
     // End performance measurement
     if (process.env.NODE_ENV !== 'production') {

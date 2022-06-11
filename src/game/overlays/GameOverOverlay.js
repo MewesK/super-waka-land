@@ -8,8 +8,10 @@ export default class GameOverOverlay {
   game;
   container = new Container();
   fadeTimer;
+  skipTimer;
 
   showing = false;
+  skippable = false;
 
   deadSprite;
   titleText;
@@ -54,17 +56,21 @@ export default class GameOverOverlay {
   }
 
   update() {
-    if (this.fadeTimer === null) {
-      return;
-    }
-
     this.fadeTimer?.update(this.game.app.ticker.elapsedMS);
+    this.skipTimer?.update(this.game.app.ticker.elapsedMS);
   }
 
   show() {
     if (this.showing) {
       return;
     }
+
+    this.skippable = false;
+    this.skipTimer = new Timer(1000);
+    this.skipTimer.on('end', () => {
+      this.skippable = true;
+    });
+    this.skipTimer.start();
 
     this.showing = true;
     this.container.alpha = 1;

@@ -59,6 +59,10 @@ Loader.shared
   .add(editUndoFontImage)
   .add(stopBullyingFontImage)
   .add('bgMusic', './bg-music1.mp3')
+  .add('boostSound', './boost.wav')
+  .add('coinSound', './coin.wav')
+  .add('jumpSound', './jump.wav')
+  .add('powerupSound', './powerup.wav')
   .load(() => {
     console.debug('All files loaded');
 

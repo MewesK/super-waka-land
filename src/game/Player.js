@@ -265,6 +265,7 @@ export default class Player {
     }
 
     console.debug('Start jump');
+    this.game.jumpSound.play();
 
     this.setVelocity(null, this.POWER * this.JUMP_MULTIPLIER.y);
     this.airborne = true;
@@ -301,6 +302,7 @@ export default class Player {
     }
 
     console.debug('Start boost');
+    this.game.boostSound.play();
 
     this.preBoostVelocity = this.velocity.clone();
     this.setVelocity(this.velocity.x + this.POWER * this.BOOST_MULTIPLIER.x, this.POWER * this.BOOST_MULTIPLIER.y);
