@@ -46,6 +46,8 @@ export default class Game {
     this.container.addChild(this.map.container);
     this.container.addChild(this.player.container);
     this.container.addChild(this.hud.container);
+    this.app.stage.addChild(this.container);
+
     this.titleOverlay.show();
 
     // Register event listeners
@@ -68,6 +70,7 @@ export default class Game {
     );
     this.inputManager.on('boost', ['d', 'swipeup'], () => {
       if (this.boosts > 0) {
+        this.increaseScore(50);
         this.increaseBoost(-1);
         this.player.startBoost();
       }
@@ -148,6 +151,9 @@ export default class Game {
 
     this.checkGameOver();
 
+    this.gameOverOverlay.update(dt);
+    this.titleOverlay.update(dt);
+
     // End performance measurement
     if (process.env.NODE_ENV !== 'production') {
       this.app.stats.end();
@@ -169,5 +175,6 @@ export default class Game {
 
     // Overlays
     this.gameOverOverlay.hide();
+    this.titleOverlay.hide();
   }
 }

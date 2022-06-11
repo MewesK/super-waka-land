@@ -26,7 +26,7 @@ const WIDTH = 256;
 const HEIGHT = 224;
 const RESOLUTION = 10;
 const BACKGROUND_COLOR = 0xffffde;
-const DEBUG = false;
+const DEBUG = true;
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = false;
@@ -88,7 +88,6 @@ Loader.shared
       const game = new Game(app);
 
       app.stage.interactive = true;
-      app.stage.addChild(game.container);
       app.renderer.render(app.stage);
     });
   });
