@@ -6,10 +6,10 @@ import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
 import { intersect, random } from './Utilities';
 
 export const TileType = {
-  Void: 0,
-  Platform: 1,
-  Coin: 2,
-  Coke: 3,
+  VOID: 0,
+  PLATFORM: 1,
+  COIN: 2,
+  COKE: 3,
 };
 
 export default class Map {
@@ -25,6 +25,7 @@ export default class Map {
 
   map = [[]];
   mapWith;
+  mapFullWidth;
   mapHeight;
 
   // Timers
@@ -44,6 +45,10 @@ export default class Map {
   constructor(game) {
     this.game = game;
 
+    this.mapWidth = Math.ceil(this.game.app.screen.width / this.TILE_WIDTH);
+    this.mapFullWidth = this.mapWidth * 2;
+    this.mapHeight = Math.ceil(this.game.app.screen.height / this.TILE_HEIGHT);
+
     // Tilemap
     this.tilemap = new CompositeTilemap();
     this.container.addChild(this.tilemap);
@@ -59,7 +64,7 @@ export default class Map {
     this.animationTimer.start();
   }
 
-  setTile(x, y, value = TileType.Void, random = null) {
+  setTile(x, y, value = TileType.VOID, random = null) {
     this.map[y][x] = { value, random };
   }
 
@@ -69,19 +74,19 @@ export default class Map {
     const tilemapY = this.tilemap.pivot.y % this.game.app.screen.height;
     const tilemapXMin = Math.max(
       0,
-      Math.floor((tilemapX + this.game.player.container.position.x) / this.TILE_WIDTH) - 1
+      Math.floor((tilemapX + this.game.player.container.position.x) / this.TILE_WIDTH) - 2
     );
     const tilemapXMax = Math.min(
-      this.mapWidth,
-      tilemapXMin + Math.ceil(this.game.player.width / this.TILE_WIDTH) + 1
+      this.mapFullWidth - 1,
+      Math.ceil(tilemapXMin + this.game.player.width / this.TILE_WIDTH + 2)
     );
     const tilemapYMin = Math.max(
       0,
-      Math.floor((tilemapY + this.game.player.container.position.y) / this.TILE_HEIGHT) - 1
+      Math.floor((tilemapY + this.game.player.container.position.y) / this.TILE_HEIGHT) - 2
     );
     const tilemapYMax = Math.min(
-      this.mapHeight,
-      tilemapYMin + Math.ceil(this.game.player.height / this.TILE_HEIGHT) + 1
+      this.mapHeight - 1,
+      Math.ceil(tilemapYMin + this.game.player.height / this.TILE_HEIGHT + 2)
     );
 
     // Check for collisions
@@ -91,22 +96,22 @@ export default class Map {
       for (let x = tilemapXMin; x <= tilemapXMax; x++) {
         const tile = this.map[y][x];
 
-        if (tile.value !== TileType.Void) {
+        if (tile.value !== TileType.VOID) {
           // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
             x * this.TILE_WIDTH - tilemapX,
             y * this.TILE_HEIGHT - tilemapY,
             this.TILE_WIDTH,
-            this.TILE_HEIGHT + (tile.value === TileType.Coke ? this.TILE_HEIGHT : 0)
+            this.TILE_HEIGHT + (tile.value === TileType.COKE ? this.TILE_HEIGHT : 0)
           );
 
           // Is overlapping and player was previously above the tile?
           let intersectRect;
           if ((intersectRect = intersect(this.game.player.container, tileRectangle))) {
-            if (tile.value === TileType.Coin && intersectRect.height > 0) {
+            if (tile.value === TileType.COIN && intersectRect.height > 0) {
               // Collect coin
               collecting = true;
-              this.setTile(x, y, TileType.Void);
+              this.setTile(x, y, TileType.VOID);
               this.itemEffects.push(
                 new ItemEffect(
                   this.game,
@@ -118,10 +123,10 @@ export default class Map {
 
               // Callback
               collectCoinCallback(tileRectangle);
-            } else if (tile.value === TileType.Coke && intersectRect.height > 0) {
+            } else if (tile.value === TileType.COKE && intersectRect.height > 0) {
               // Collect coke
               collecting = true;
-              this.setTile(x, y, TileType.Void);
+              this.setTile(x, y, TileType.VOID);
               this.itemEffects.push(
                 new ItemEffect(
                   this.game,
@@ -134,7 +139,7 @@ export default class Map {
               // Callback
               collectCokeCallback(tileRectangle);
             } else if (
-              tile.value === TileType.Platform &&
+              tile.value === TileType.PLATFORM &&
               this.game.player.lastPosition.y + this.game.player.height <= tileRectangle.y
             ) {
               intersecting = true;
@@ -160,13 +165,10 @@ export default class Map {
   }
 
   createMap() {
-    this.mapWidth = Math.ceil(this.game.app.screen.width / this.TILE_WIDTH) * 2;
-    this.mapHeight = Math.ceil(this.game.app.screen.height / this.TILE_HEIGHT);
-
-    for (let y = 0; y <= this.mapHeight; y++) {
+    for (let y = 0; y < this.mapHeight; y++) {
       this.map[y] = [];
-      for (let x = 0; x <= this.mapWidth * 2; x++) {
-        this.setTile(x, y, y === this.FLOOR_Y ? TileType.Platform : TileType.Void, random(0, 3));
+      for (let x = 0; x < this.mapFullWidth; x++) {
+        this.setTile(x, y, y === this.FLOOR_Y ? TileType.PLATFORM : TileType.VOID, random(0, 3));
       }
     }
 
@@ -176,24 +178,24 @@ export default class Map {
 
   createTilemap(resetPosition = true) {
     this.tilemap.clear();
-    for (let y = 0; y <= this.mapHeight; y++) {
-      for (let x = 0; x <= this.mapWidth * 2; x++) {
-        if (this.map[y][x].value === TileType.Coin) {
+    for (let y = 0; y < this.mapHeight; y++) {
+      for (let x = 0; x < this.mapFullWidth; x++) {
+        if (this.map[y][x].value === TileType.COIN) {
           this.tilemap
             .tile('gold_coin1', x * this.TILE_WIDTH, y * this.TILE_HEIGHT)
             .tileAnimX(16, 5);
-        } else if (this.map[y][x].value === TileType.Coke) {
+        } else if (this.map[y][x].value === TileType.COKE) {
           this.tilemap.tile('coke1', x * this.TILE_WIDTH, y * this.TILE_HEIGHT).tileAnimX(13, 2);
-        } else if (this.map[y][x].value === TileType.Platform) {
+        } else if (this.map[y][x].value === TileType.PLATFORM) {
           let tile = null;
 
           // Platform start
-          if (x > 0 && this.map[y][x - 1].value === TileType.Void) {
+          if (x > 0 && this.map[y][x - 1].value === TileType.VOID) {
             tile = 'planks1';
           }
 
           // Platform end
-          else if (x + 1 < this.map[y].length && this.map[y][x + 1].value === TileType.Void) {
+          else if (x + 1 < this.map[y].length && this.map[y][x + 1].value === TileType.VOID) {
             tile = 'planks5';
           }
 
@@ -219,21 +221,23 @@ export default class Map {
   }
 
   generateMap() {
+    console.debug('Generating map');
+
     // Move second half to the first
-    for (let y = 0; y <= this.mapHeight; y++) {
-      for (let x = this.mapWidth / 2; x <= this.mapWidth; x++) {
-        this.setTile(x - this.mapWidth / 2, y, this.map[y][x].value, this.map[y][x].random);
-        this.setTile(x, y, TileType.Void);
+    for (let y = 0; y < this.mapHeight; y++) {
+      for (let x = this.mapWidth; x < this.mapFullWidth; x++) {
+        this.setTile(x - this.mapWidth, y, this.map[y][x].value, this.map[y][x].random);
+        this.setTile(x, y, TileType.VOID);
       }
     }
 
     if (this.game.paused) {
-      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
-        this.setTile(x, this.FLOOR_Y, TileType.Platform, random(0, 3));
+      for (let x = this.mapWidth; x <= this.mapFullWidth; x++) {
+        this.setTile(x, this.FLOOR_Y, TileType.PLATFORM, random(0, 3));
       }
     } else {
       // Generate new tiles for the second half
-      for (let x = this.mapWidth / 2 + 1; x <= this.mapWidth; x++) {
+      for (let x = this.mapWidth; x < this.mapFullWidth; x++) {
         // Generate new section if necessary
         if (this.platformX === 0) {
           this.abyssLength = random(3, 6);
@@ -253,7 +257,7 @@ export default class Map {
         if (this.abyssX > 0) {
           // Fill coke
           if (this.abyssLength % this.abyssX === 2 && random(0, 2) >= 1) {
-            this.setTile(x, this.platformY - 4, TileType.Coke);
+            this.setTile(x, this.platformY - 4, TileType.COKE);
           }
 
           // Fill abyss
@@ -265,18 +269,18 @@ export default class Map {
             this.platformX < this.platformLength &&
             this.platformX - 1 > 0
           ) {
-            this.setTile(x, this.platformY - 3, TileType.Coin);
+            this.setTile(x, this.platformY - 3, TileType.COIN);
           }
 
           // Fill platform
-          this.setTile(x, this.platformY, TileType.Platform, random(0, 3));
+          this.setTile(x, this.platformY, TileType.PLATFORM, random(0, 3));
           this.platformX--;
         }
       }
     }
 
     // Create tilemap
-    this.createTilemap();
+    this.createTilemap(false);
 
     // Reset tilemap position
     this.tilemap.position.set(this.game.player.position.x, this.tilemap.position.y);

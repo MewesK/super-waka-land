@@ -1,20 +1,22 @@
-import { Container, Rectangle, filters, BitmapText, UPDATE_PRIORITY } from 'pixi.js';
+import { Container, Loader, UPDATE_PRIORITY } from 'pixi.js';
 
 import Background from './Background';
 import Player from './Player';
 import Map from './Map';
 import HUD from './HUD';
-import GameOverOverlay from './overlays/GameOverOverlay';
 import InputManager from './InputManager';
+
+import GameOverOverlay from './overlays/GameOverOverlay';
 import TitleOverlay from './overlays/TitleOverlay';
 
 export default class Game {
   app;
   container = new Container();
   inputManager;
-  paused = true;
+  backgroundMusic;
 
   // Properties
+  paused = true;
   score = 0;
   boosts = 0;
 
@@ -31,11 +33,16 @@ export default class Game {
   constructor(app) {
     this.app = app;
     this.inputManager = new InputManager(this);
+    this.backgroundMusic = Loader.shared.resources.backgroundMusic.sound;
+    this.backgroundMusic.loop = true;
+    this.backgroundMusic.volume = 0.03;
+    this.backgroundMusic.play();
 
     this.background = new Background(this);
     this.map = new Map(this);
     this.player = new Player(this);
     this.hud = new HUD(this);
+
     this.gameOverOverlay = new GameOverOverlay(this);
     this.titleOverlay = new TitleOverlay(this);
 

@@ -16,7 +16,6 @@ export default class InputManager {
     this.keyboardManager = new EventManager(document.getElementsByTagName('body')[0]);
     this.keyboardManager.on({
       keydown: (event) => {
-        console.debug('keydown', event, this);
         if (!this.pressed[event.key]) {
           if (this.upListeners[event.key]) {
             this.pressed[event.key] = true;
@@ -28,7 +27,6 @@ export default class InputManager {
         }
       },
       keyup: (event) => {
-        console.debug('keyup', event, this);
         if (this.pressed[event.key]) {
           this.pressed[event.key] = false;
           this.pressed[this.names[event.key]] = false;
@@ -42,7 +40,6 @@ export default class InputManager {
     this.pointerManager = new EventManager(this.game.app.view);
     this.pointerManager.on({
       pointerdown: (event) => {
-        console.debug('pointerdown', event, this);
         if (!this.pressed['pointer']) {
           if (this.upListeners['pointer']) {
             this.pressed['pointer'] = true;
@@ -54,7 +51,6 @@ export default class InputManager {
         }
       },
       pointerup: (event) => {
-        console.debug('pointerup', event, this);
         if (this.pressed['pointer']) {
           this.pressed['pointer'] = false;
           this.pressed[this.names['pointer']] = false;
@@ -64,7 +60,6 @@ export default class InputManager {
         }
       },
       swipeup: (event) => {
-        console.debug('swipeup', event, this);
         if (this.downListeners['swipeup']) {
           this.downListeners['swipeup'](event);
         }

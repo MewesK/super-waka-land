@@ -1,13 +1,4 @@
-import {
-  Application,
-  Loader,
-  Spritesheet,
-  settings,
-  SCALE_MODES,
-  BitmapFont,
-  MSAA_QUALITY,
-  PRECISION,
-} from 'pixi.js';
+import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont } from 'pixi.js';
 import Stats from 'stats.js';
 import Game from './game/Game';
 
@@ -66,6 +57,7 @@ Loader.shared
   .add(spritesImage)
   .add(editUndoFontImage)
   .add(stopBullyingFontImage)
+  .add('backgroundMusic', './bg-music1.mp3')
   .load(() => {
     console.debug('All files loaded');
 

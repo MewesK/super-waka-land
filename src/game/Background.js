@@ -48,7 +48,7 @@ export default class Background {
   }
 
   update(dt) {
-    const background2Dx = this.ISLAND_SPEED * dt;
+    const background2Dx = (this.game.player.velocity.x / 10 + this.ISLAND_SPEED) * dt;
     this.background2aSprite.x -= background2Dx;
     if (this.background2aSprite.x <= -this.background2aSprite.width) {
       this.background2aSprite.x = this.background2aSprite.width;
@@ -57,7 +57,7 @@ export default class Background {
     if (this.background2bSprite.x < -this.background2bSprite.width) {
       this.background2bSprite.x = this.background2bSprite.width;
     }
-    const background3Dx = this.WAVE_SPEED * dt;
+    const background3Dx = (this.game.player.velocity.x / 10 + this.WAVE_SPEED) * dt;
     this.background3aSprite.x -= background3Dx;
     if (this.background3aSprite.x < -this.background3aSprite.width) {
       this.background3aSprite.x = this.background3aSprite.width;

@@ -1,4 +1,4 @@
-import { BitmapText, Container } from "pixi.js";
+import { BitmapText, Container } from 'pixi.js';
 
 export default class HUD {
   game;
@@ -11,12 +11,13 @@ export default class HUD {
     this.game = game;
 
     // Score text
-    this.scoreText = new BitmapText('Score: 0', {
+    this.scoreText = new BitmapText('Score: $0', {
       fontName: 'Edit Undo',
       fontSize: 16,
       tint: 0x935e53,
     });
-    this.scoreText.x = 2;
+    this.scoreText.x = 4;
+    this.scoreText.y = 2;
     this.container.addChild(this.scoreText);
 
     // Boost text
@@ -25,8 +26,8 @@ export default class HUD {
       fontSize: 16,
       tint: 0x935e53,
     });
-    this.boostText.x = 2;
-    this.boostText.y = 10;
+    this.boostText.x = 4;
+    this.boostText.y = 15;
     this.container.addChild(this.boostText);
   }
 
@@ -35,7 +36,7 @@ export default class HUD {
   }
 
   updateScore() {
-    this.scoreText.text = 'Score: ' + this.game.score;
+    this.scoreText.text = 'Score: $' + this.game.score;
   }
 
   reset() {

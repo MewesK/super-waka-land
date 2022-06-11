@@ -279,7 +279,6 @@ export default class Player {
       }
       // Add more jump velocity after the first 10ms for 110ms after pressing jump (decreasing over time)
       const boostVelocityY = (this.POWER / (repeat - 3)) * this.JUMP_BOOST_MULTIPLIER.y;
-      console.debug('Charge jump', repeat, boostVelocityY);
       this.addVelocity(null, boostVelocityY);
     });
     this.jumpTimer.start();
