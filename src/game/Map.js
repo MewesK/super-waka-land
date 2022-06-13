@@ -74,19 +74,19 @@ export default class Map {
     const tilemapY = this.tilemap.pivot.y % this.game.app.screen.height;
     const tilemapXMin = Math.max(
       0,
-      Math.floor((tilemapX + this.game.player.container.position.x) / this.TILE_WIDTH) - 2
+      Math.floor((tilemapX + this.game.player.container.position.x) / this.TILE_WIDTH) - 3
     );
     const tilemapXMax = Math.min(
       this.mapFullWidth - 1,
-      Math.ceil(tilemapXMin + this.game.player.width / this.TILE_WIDTH + 2)
+      Math.ceil(tilemapXMin + this.game.player.width / this.TILE_WIDTH + 3)
     );
     const tilemapYMin = Math.max(
       0,
-      Math.floor((tilemapY + this.game.player.container.position.y) / this.TILE_HEIGHT) - 2
+      Math.floor((tilemapY + this.game.player.container.position.y) / this.TILE_HEIGHT) - 3
     );
     const tilemapYMax = Math.min(
       this.mapHeight - 1,
-      Math.ceil(tilemapYMin + this.game.player.height / this.TILE_HEIGHT + 2)
+      Math.ceil(tilemapYMin + this.game.player.height / this.TILE_HEIGHT + 3)
     );
 
     // Check for collisions
@@ -220,7 +220,7 @@ export default class Map {
     }
   }
 
-  generateMap() {
+  generateMap(dt) {
     console.debug('Generating map');
 
     // Move second half to the first
@@ -283,7 +283,7 @@ export default class Map {
     this.createTilemap(false);
 
     // Reset tilemap position
-    this.tilemap.position.set(this.game.player.position.x, this.tilemap.position.y);
+    this.tilemap.position.x += this.mapWidth * this.TILE_WIDTH;
   }
 
   update(dt) {
@@ -292,13 +292,6 @@ export default class Map {
 
     // Update effects
     this.itemEffects.forEach((itemEffect) => itemEffect.update(dt));
-
-    // Check if we need to create new tiles
-    const tilemapX = this.tilemap.pivot.x % this.game.app.screen.width;
-    if (tilemapX < this.lastTilemapX) {
-      this.generateMap();
-    }
-    this.lastTilemapX = tilemapX;
 
     // Update tilemap position
     this.tilemap.pivot.x = this.game.player.position.x;
