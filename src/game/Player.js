@@ -1,7 +1,7 @@
 import { Timer } from 'eventemitter3-timer';
-import { AnimatedSprite, Point, Sprite, Container, settings } from 'pixi.js';
+import { AnimatedSprite, Point, Sprite, Container } from 'pixi.js';
 
-import { DEBUG } from '../app';
+import { DEBUG } from './Utilities';
 import BoostEffect from './effects/BoostEffect';
 
 export default class Player {
