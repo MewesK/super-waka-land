@@ -271,6 +271,7 @@
             </struct>
             <key type="filename">sprites/debug1.png</key>
             <key type="filename">sprites/debug2.png</key>
+            <key type="filename">sprites/debug3.png</key>
             <key type="filename">sprites/gold_coin1.png</key>
             <key type="filename">sprites/gold_coin2.png</key>
             <key type="filename">sprites/gold_coin3.png</key>

@@ -1,6 +1,6 @@
 import { Container, Loader, UPDATE_PRIORITY } from 'pixi.js';
 
-import { DEBUG } from '../app';
+import { DEBUG } from './Utilities';
 import Background from './Background';
 import Player from './Player';
 import Map from './Map';
@@ -144,12 +144,12 @@ export default class Game {
     let landing = false;
     this.map.checkCollision(
       // collectCoinCallback
-      (tileRectangle) => {
+      () => {
         this.coinSound.play();
         this.increaseScore(10);
       },
       // collectCokeCallback
-      (tileRectangle) => {
+      () => {
         this.powerupSound.play();
         this.increaseScore(50);
         this.increaseBoost(1);
@@ -167,8 +167,8 @@ export default class Game {
         }
       },
       // finishCallback
-      (intersecting) => {
-        this.player.airborne = !intersecting;
+      (intersecting, touching) => {
+        this.player.airborne = !intersecting && !touching;
 
         // Start jumping if just landed but still holding key
         if (landing && this.inputManager.pressed['jump']) {

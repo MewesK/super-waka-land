@@ -1,6 +1,7 @@
 import { Timer } from 'eventemitter3-timer';
 import { AnimatedSprite, Point, Sprite, Container, settings } from 'pixi.js';
 
+import { DEBUG } from '../app';
 import BoostEffect from './effects/BoostEffect';
 
 export default class Player {
@@ -26,8 +27,8 @@ export default class Player {
   lastPosition = new Point(0, 0);
 
   // State
-  #dead = false;
-  #airborne = true;
+  #airborne;
+  #dead;
 
   // Timers
   jumpTimer;
@@ -211,11 +212,13 @@ export default class Player {
       }
 
       // Debug
-      if (newVelocity.y < 0) {
-        this.jumpHeight += newVelocity.y * dt;
-      }
-      if (this.lastVelocity.y < 0 && newVelocity.y >= 0) {
-        console.debug('Max jump height: ', this.jumpHeight, this.lastVelocity.y);
+      if (DEBUG) {
+        if (newVelocity.y < 0) {
+          this.jumpHeight += newVelocity.y * dt;
+        }
+        if (this.lastVelocity.y < 0 && newVelocity.y >= 0) {
+          console.debug('Max jump height: ', this.jumpHeight, this.lastVelocity.y);
+        }
       }
     }
 
@@ -305,7 +308,10 @@ export default class Player {
     this.game.boostSound.play();
 
     this.preBoostVelocity = this.velocity.clone();
-    this.setVelocity(this.velocity.x + this.POWER * this.BOOST_MULTIPLIER.x, this.POWER * this.BOOST_MULTIPLIER.y);
+    this.setVelocity(
+      this.velocity.x + this.POWER * this.BOOST_MULTIPLIER.x,
+      this.POWER * this.BOOST_MULTIPLIER.y
+    );
     this.boostEffect.start();
 
     // Create boost timer

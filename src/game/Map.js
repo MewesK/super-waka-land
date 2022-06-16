@@ -2,8 +2,7 @@ import { CompositeTilemap } from '@pixi/tilemap';
 import { Timer } from 'eventemitter3-timer';
 import { Container, Rectangle } from 'pixi.js';
 
-import { DEBUG } from '../app';
-import { intersect, random } from './Utilities';
+import { DEBUG, random } from './Utilities';
 import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
 
 export const TileType = {
@@ -11,6 +10,11 @@ export const TileType = {
   PLATFORM: 1,
   COIN: 2,
   COKE: 3,
+};
+export const DebugType = {
+  INTERSECTING: 0,
+  TOUCHING: 1,
+  CHECKING: 2,
 };
 
 export default class Map {
@@ -53,9 +57,9 @@ export default class Map {
 
     // Tilemap
     this.tilemap = new CompositeTilemap();
+    this.debugTilemap = new CompositeTilemap();
     this.container.addChild(this.tilemap);
     if (DEBUG) {
-      this.debugTilemap = new CompositeTilemap();
       this.container.addChild(this.debugTilemap);
     }
 
@@ -71,7 +75,11 @@ export default class Map {
   }
 
   setTile(x, y, value = TileType.VOID, random = null) {
-    this.map[y][x] = { value, random };
+    this.map[y][x] = { value, random, debug: this.map[y][x]?.debug };
+  }
+
+  setDebugTile(x, y, debug) {
+    this.map[y][x] = { value: this.map[y][x].value, random: this.map[y][x].random, debug };
   }
 
   checkCollision(collectCoinCallback, collectCokeCallback, intersectFloorCallback, finishCallback) {
@@ -97,16 +105,22 @@ export default class Map {
       Math.ceil(tilemapYMin + this.game.player.height / this.TILE_HEIGHT + 3)
     );
 
+    // Create player rectangle with screen coordinates
+    const playerRectangle = new Rectangle(
+      this.game.player.container.x,
+      this.game.player.container.y,
+      this.game.player.container.width,
+      this.game.player.container.height
+    );
+
     // Check for collisions
     let intersecting = false;
+    let touching = false;
     let collecting = false;
-    if (DEBUG) {
-      this.debugTilemap.clear();
-    }
     for (let y = 0; y < this.mapHeight; y++) {
       for (let x = 0; x < this.mapFullWidth; x++) {
         const tile = this.map[y][x];
-
+        // Check only non-void tiles
         if (tile.value !== TileType.VOID) {
           // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
@@ -115,14 +129,9 @@ export default class Map {
             this.TILE_WIDTH,
             this.TILE_HEIGHT + (tile.value === TileType.COKE ? this.TILE_HEIGHT : 0)
           );
-
-          // Is overlapping and player was previously above the tile?
-          let intersectRect;
-          if ((intersectRect = intersect(this.game.player.container, tileRectangle))) {
-            if (DEBUG) {
-              this.debugTilemap.tile('debug1', tileRectangle.x, tileRectangle.y);
-            }
-            if (tile.value === TileType.COIN && intersectRect.height > 0) {
+          // Is overlapping
+          if (playerRectangle.intersects(tileRectangle)) {
+            if (tile.value === TileType.COIN) {
               // Collect coin
               collecting = true;
               this.setTile(x, y, TileType.VOID);
@@ -137,7 +146,7 @@ export default class Map {
 
               // Callback
               collectCoinCallback(tileRectangle);
-            } else if (tile.value === TileType.COKE && intersectRect.height > 0) {
+            } else if (tile.value === TileType.COKE) {
               // Collect coke
               collecting = true;
               this.setTile(x, y, TileType.VOID);
@@ -154,12 +163,22 @@ export default class Map {
               collectCokeCallback(tileRectangle);
             } else if (
               tile.value === TileType.PLATFORM &&
-              this.game.player.lastPosition.y + this.game.player.height <= tileRectangle.y
+              this.game.player.lastPosition.y + this.game.player.height <= tileRectangle.y // Was player previoulsy above the tile?
             ) {
               intersecting = true;
 
               // Callback
               intersectFloorCallback(tileRectangle);
+            }
+
+            // Debug overlay
+            this.setDebugTile(x, y, DebugType.INTERSECTING);
+          } else {
+            if (playerRectangle.intersects(tileRectangle.clone().pad(0, 0.1))) {
+              touching = true;
+
+              // Debug overlay
+              this.setDebugTile(x, y, DebugType.TOUCHING);
             }
           }
         }
@@ -167,12 +186,12 @@ export default class Map {
     }
 
     // Redraw tilemap if an item has been collected
-    if (collecting) {
+    if (collecting || DEBUG) {
       this.createTilemap(false);
     }
 
     // Callback
-    finishCallback(intersecting, collecting);
+    finishCallback(intersecting, touching, collecting);
   }
 
   createMap() {
@@ -189,6 +208,8 @@ export default class Map {
 
   createTilemap(resetPosition = true) {
     this.tilemap.clear();
+    this.debugTilemap.clear();
+
     for (let y = 0; y < this.mapHeight; y++) {
       for (let x = 0; x < this.mapFullWidth; x++) {
         if (this.map[y][x].value === TileType.COIN) {
@@ -223,10 +244,20 @@ export default class Map {
 
           this.tilemap.tile(tile, x * this.TILE_WIDTH, y * this.TILE_HEIGHT);
         }
+        if (DEBUG) {
+          if (this.map[y][x].debug === DebugType.INTERSECTING) {
+            this.debugTilemap.tile('debug1', x * this.TILE_WIDTH, y * this.TILE_HEIGHT);
+          } else if (this.map[y][x].debug === DebugType.TOUCHING) {
+            this.debugTilemap.tile('debug2', x * this.TILE_WIDTH, y * this.TILE_HEIGHT);
+          } else if (this.map[y][x].debug === DebugType.CHECKING) {
+            this.debugTilemap.tile('debug3', x * this.TILE_WIDTH, y * this.TILE_HEIGHT);
+          }
+        }
       }
     }
     if (resetPosition) {
       this.tilemap.position.set(0, 0);
+      this.debugTilemap.position.set(0, 0);
     }
   }
 
@@ -237,7 +268,9 @@ export default class Map {
     for (let y = 0; y < this.mapHeight; y++) {
       for (let x = this.mapWidth; x < this.mapFullWidth; x++) {
         this.setTile(x - this.mapWidth, y, this.map[y][x].value, this.map[y][x].random);
+        this.setDebugTile(x - this.mapWidth, y, this.map[y][x].debug);
         this.setTile(x, y, TileType.VOID);
+        this.setDebugTile(x, y, undefined);
       }
     }
 
@@ -303,6 +336,9 @@ export default class Map {
 
     // Update tilemap position
     this.tilemap.position.x -= this.game.player.position.x - this.game.player.lastPosition.x;
+    if (DEBUG) {
+      this.debugTilemap.position.x -= this.game.player.position.x - this.game.player.lastPosition.x;
+    }
 
     // Check if we need to create new tiles
     if (this.tilemap.position.x <= -(this.mapWidth * this.TILE_WIDTH)) {
