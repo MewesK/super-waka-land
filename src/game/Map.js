@@ -2,8 +2,9 @@ import { CompositeTilemap } from '@pixi/tilemap';
 import { Timer } from 'eventemitter3-timer';
 import { Container, Rectangle } from 'pixi.js';
 
-import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
+import { DEBUG } from '../app';
 import { intersect, random } from './Utilities';
+import ItemEffect, { ItemEffectType } from './effects/ItemEffect';
 
 export const TileType = {
   VOID: 0,
@@ -22,6 +23,7 @@ export default class Map {
   game;
   container = new Container();
   tilemap;
+  debugTilemap;
 
   map = [[]];
   mapWith;
@@ -52,6 +54,10 @@ export default class Map {
     // Tilemap
     this.tilemap = new CompositeTilemap();
     this.container.addChild(this.tilemap);
+    if (DEBUG) {
+      this.debugTilemap = new CompositeTilemap();
+      this.container.addChild(this.debugTilemap);
+    }
 
     // Add timer
     this.animationTimer = new Timer(150);
@@ -70,11 +76,11 @@ export default class Map {
 
   checkCollision(collectCoinCallback, collectCokeCallback, intersectFloorCallback, finishCallback) {
     // Calculate the tile indices around the player
-    const tilemapX = this.tilemap.pivot.x % this.game.app.screen.width;
-    const tilemapY = this.tilemap.pivot.y % this.game.app.screen.height;
     const tilemapXMin = Math.max(
       0,
-      Math.floor((tilemapX + this.game.player.container.position.x) / this.TILE_WIDTH) - 3
+      Math.floor(
+        (this.tilemap.position.x + this.game.player.container.position.x) / this.TILE_WIDTH
+      ) - 3
     );
     const tilemapXMax = Math.min(
       this.mapFullWidth - 1,
@@ -82,7 +88,9 @@ export default class Map {
     );
     const tilemapYMin = Math.max(
       0,
-      Math.floor((tilemapY + this.game.player.container.position.y) / this.TILE_HEIGHT) - 3
+      Math.floor(
+        (this.tilemap.position.y + this.game.player.container.position.y) / this.TILE_HEIGHT
+      ) - 3
     );
     const tilemapYMax = Math.min(
       this.mapHeight - 1,
@@ -92,15 +100,18 @@ export default class Map {
     // Check for collisions
     let intersecting = false;
     let collecting = false;
-    for (let y = tilemapYMin; y <= tilemapYMax; y++) {
-      for (let x = tilemapXMin; x <= tilemapXMax; x++) {
+    if (DEBUG) {
+      this.debugTilemap.clear();
+    }
+    for (let y = 0; y < this.mapHeight; y++) {
+      for (let x = 0; x < this.mapFullWidth; x++) {
         const tile = this.map[y][x];
 
         if (tile.value !== TileType.VOID) {
           // Create tile rectangle with screen coordinates
           const tileRectangle = new Rectangle(
-            x * this.TILE_WIDTH - tilemapX,
-            y * this.TILE_HEIGHT - tilemapY,
+            this.tilemap.position.x + x * this.TILE_WIDTH,
+            this.tilemap.position.y + y * this.TILE_HEIGHT,
             this.TILE_WIDTH,
             this.TILE_HEIGHT + (tile.value === TileType.COKE ? this.TILE_HEIGHT : 0)
           );
@@ -108,6 +119,9 @@ export default class Map {
           // Is overlapping and player was previously above the tile?
           let intersectRect;
           if ((intersectRect = intersect(this.game.player.container, tileRectangle))) {
+            if (DEBUG) {
+              this.debugTilemap.tile('debug1', tileRectangle.x, tileRectangle.y);
+            }
             if (tile.value === TileType.COIN && intersectRect.height > 0) {
               // Collect coin
               collecting = true;
@@ -146,9 +160,6 @@ export default class Map {
 
               // Callback
               intersectFloorCallback(tileRectangle);
-
-              // One collision is enough
-              break;
             }
           }
         }
@@ -216,7 +227,6 @@ export default class Map {
     }
     if (resetPosition) {
       this.tilemap.position.set(0, 0);
-      this.tilemap.pivot.set(0, 0);
     }
   }
 
@@ -232,11 +242,12 @@ export default class Map {
     }
 
     if (this.game.paused) {
+      // Generate new tiles for the title screen level
       for (let x = this.mapWidth; x <= this.mapFullWidth; x++) {
         this.setTile(x, this.FLOOR_Y, TileType.PLATFORM, random(0, 3));
       }
     } else {
-      // Generate new tiles for the second half
+      // Generate new tiles for the real level
       for (let x = this.mapWidth; x < this.mapFullWidth; x++) {
         // Generate new section if necessary
         if (this.platformX === 0) {
@@ -280,10 +291,7 @@ export default class Map {
     }
 
     // Create tilemap
-    this.createTilemap(false);
-
-    // Reset tilemap position
-    this.tilemap.position.x += this.mapWidth * this.TILE_WIDTH;
+    this.createTilemap();
   }
 
   update(dt) {
@@ -294,7 +302,12 @@ export default class Map {
     this.itemEffects.forEach((itemEffect) => itemEffect.update(dt));
 
     // Update tilemap position
-    this.tilemap.pivot.x = this.game.player.position.x;
+    this.tilemap.position.x -= this.game.player.position.x - this.game.player.lastPosition.x;
+
+    // Check if we need to create new tiles
+    if (this.tilemap.position.x <= -(this.mapWidth * this.TILE_WIDTH)) {
+      this.generateMap(dt);
+    }
   }
 
   reset() {

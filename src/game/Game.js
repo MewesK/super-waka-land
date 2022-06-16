@@ -1,5 +1,6 @@
 import { Container, Loader, UPDATE_PRIORITY } from 'pixi.js';
 
+import { DEBUG } from '../app';
 import Background from './Background';
 import Player from './Player';
 import Map from './Map';
@@ -132,7 +133,7 @@ export default class Game {
     }
 
     // Start performance measurement
-    if (process.env.NODE_ENV !== 'production') {
+    if (DEBUG) {
       this.app.stats.begin();
     }
 
@@ -178,15 +179,8 @@ export default class Game {
     );
     this.checkGameOver();
 
-    // Check if we need to create new tiles
-    const tilemapX = this.map.tilemap.pivot.x % this.app.screen.width;
-    if (tilemapX < this.map.lastTilemapX) {
-      this.map.generateMap(dt);
-    }
-    this.map.lastTilemapX = tilemapX;
-
     // End performance measurement
-    if (process.env.NODE_ENV !== 'production') {
+    if (DEBUG) {
       this.app.stats.end();
     }
   }

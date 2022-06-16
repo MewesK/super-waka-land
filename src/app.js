@@ -1,4 +1,11 @@
-import { Application, Loader, Spritesheet, settings, SCALE_MODES, BitmapFont } from 'pixi.js';
+import {
+  Application,
+  Loader,
+  Spritesheet,
+  settings,
+  SCALE_MODES,
+  BitmapFont,
+} from 'pixi.js';
 import Stats from 'stats.js';
 import '@pixi/sound';
 import Game from './game/Game';
@@ -14,17 +21,17 @@ import stopBullyingFontAtlas from 'bundle-text:./assets/fonts/stop-bullying.fnt'
 import stopBullyingFontImage from './assets/fonts/stop-bullying.png';
 
 // Settings
-const WIDTH = 256;
-const HEIGHT = 224;
-const RESOLUTION = 10;
-const BACKGROUND_COLOR = 0xffffde;
-const DEBUG = true;
+export const WIDTH = 256;
+export const HEIGHT = 224;
+export const RESOLUTION = 10;
+export const BACKGROUND_COLOR = 0xffffde;
+export const DEBUG = process.env.NODE_ENV !== 'production' || true;
 
 settings.SCALE_MODE = SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = false;
 
 // DEBUG
-if (process.env.NODE_ENV === 'production' || !DEBUG) {
+if (DEBUG) {
   console.log = () => {};
   console.debug = () => {};
 }
@@ -43,7 +50,7 @@ const app = new Application({
 document.getElementById('app').appendChild(app.view);
 
 // Create FPS counter
-if (process.env.NODE_ENV !== 'production') {
+if (DEBUG) {
   app.stats = new Stats();
   app.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.getElementById('app').appendChild(app.stats.dom);
@@ -83,7 +90,6 @@ Loader.shared
 
       // Create game
       const game = new Game(app);
-
       app.stage.interactive = true;
       app.renderer.render(app.stage);
     });
