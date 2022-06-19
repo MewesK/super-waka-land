@@ -87,17 +87,35 @@ main #leaderboard * {
 }
 
 main #leaderboard h3 {
+  font-size: 6vw !important;
+}
+
+main #leaderboard h4, main #leaderboard h4 * {
   font-size: 4vw !important;
+}
+
+main #leaderboard button,main #leaderboard input {
+  position: absolute;
+  width: 96%;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  left: 50%;
+  transform: translate(-50%, 0%);
+}
+
+main #leaderboard button {
+  bottom: 0;
 }
 
 /*
  * Leaderboard Table
  */
 
- main #leaderboard table {
-  width: 95%;
+main #leaderboard table {
+  width: 96%;
   margin: auto;
-  margin-top: 0.7rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1rem;
 }
 
 main #leaderboard thead {
@@ -110,9 +128,13 @@ main #leaderboard tr {
   width: 100%;
 }
 
+main #leaderboard tr#you {
+  background-color: #ff0000;
+}
+
 main #leaderboard tbody {
   display: block;
-  max-height: 80%;
+  max-height: 45vw !important;
   overflow-y: scroll;
 }
 

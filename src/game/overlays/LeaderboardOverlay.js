@@ -34,87 +34,68 @@ export default class LeaderboardOverlay {
     this.skipTimer?.update(this.game.app.ticker.elapsedMS);
   }
 
-  show() {
+  async show() {
     if (this.showing) {
       return;
     }
 
     this.showing = true;
     this.skippable = false;
+    this.container.alpha = 1;
 
     this.game.app.stage.addChild(this.container);
 
+    // Show leaderboard overlay with spinner
     const leaderboardElement = document.querySelector('#leaderboard');
     leaderboardElement.setAttribute('aria-busy', true);
     leaderboardElement.style.display = 'block';
 
-    fetch('https://api.super-waka-land.com/highscore/1.0', {
-      method: 'GET',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        leaderboardElement.setAttribute('aria-busy', false);
-        if ('content' in document.createElement('template')) {
-          const tableTemplate = document.querySelector('#leaderboard-table-template');
-          const table = tableTemplate.content.cloneNode(true);
-          const tbody = table.querySelector('tbody');
+    try {
+      // Fetch leaderboard
+      let data = await this.fetchLeaderboard();
 
-          const rowTemplate = document.querySelector('#leaderboard-row-template');
-          let counter = 1;
-          let rank = data.length < 100 ? data.length : false;
-          for (const entry of data) {
-            if (this.game.score > entry.score) {
-              rank = counter;
-            }
-            const row = rowTemplate.content.cloneNode(true);
-            const th = row.querySelectorAll('th');
-            th[0].textContent = counter;
-            const td = row.querySelectorAll('td');
-            td[0].textContent = entry.score;
-            td[1].textContent = entry.name;
-            tbody.appendChild(row);
-            counter++;
-          }
-          if (this.game.score === 0) {
-            rank = false;
-          }
+      // Hide spinner
+      leaderboardElement.setAttribute('aria-busy', false);
 
-          const nextTemplate = document.querySelector('#leaderboard-next-template');
-          const next = nextTemplate.content.cloneNode(true);
-          next.querySelector('button').addEventListener('click', (event) => {
-            this.game.reset();
-          });
-
-          if (rank !== false) {
-            const rankedTemplate = document.querySelector('#leaderboard-ranked-template');
-            const ranked = rankedTemplate.content.cloneNode(true);
-            ranked.querySelector('#rank').textContent = rank;
-            ranked.querySelector('form').addEventListener('submit', (event) => {
-              event.preventDefault();
-
-              console.log('SUBMIT');
-
-              leaderboardElement.removeChild(
-                leaderboardElement.querySelector('#leaderboard-ranked')
-              );
-              leaderboardElement.appendChild(table);
-              leaderboardElement.appendChild(next);
-              this.skippable = true;
-            });
-            leaderboardElement.appendChild(ranked);
-          } else {
-            leaderboardElement.appendChild(table);
-            leaderboardElement.appendChild(next);
-            this.skippable = true;
-          }
-        } else {
-          console.error('HTML templates not supported');
+      // Check player rank
+      let rank = this.game.score > 0 && data.length < 100 ? data.length : false;
+      let counter = 1;
+      for (const entry of data) {
+        if (this.game.score > entry.score) {
+          rank = counter;
+          break;
         }
-      });
+        counter++;
+      }
+
+      if (rank !== false) {
+        // Create submit form
+        this.createRanked(rank, async (event) => {
+          console.log('SUBMIT', new FormData(event.target).get('name'));
+
+          // Post score and update data
+          data = await this.postScore(new FormData(event.target).get('name'), this.game.score);
+
+          // Remove submit form
+          leaderboardElement.removeChild(leaderboardElement.querySelector('#leaderboard-ranked'));
+
+          // Show table
+          this.createTable(data, rank);
+        });
+      } else {
+        // Show table
+        this.createTable(data);
+      }
+    } catch (error) {
+      console.error(error);
+
+      leaderboardElement.setAttribute('aria-busy', false);
+      leaderboardElement.innerHTML = `Error: ${error}`;
+
+      this.createNext();
+    } finally {
+      this.skippable = true;
+    }
   }
 
   hide() {
@@ -143,5 +124,87 @@ export default class LeaderboardOverlay {
       this.fadeTimer = null;
     });
     this.fadeTimer.start();
+  }
+
+  createTable(data, rank = false) {
+    const tableTemplate = document.querySelector('#leaderboard-table-template');
+    const table = tableTemplate.content.cloneNode(true);
+    const tbody = table.querySelector('tbody');
+    const rowTemplate = document.querySelector('#leaderboard-row-template');
+
+    let counter = 1;
+    for (const entry of data) {
+      const row = rowTemplate.content.cloneNode(true);
+      if (rank === counter) {
+        row.querySelector('tr').id = 'you';
+      }
+      const th = row.querySelectorAll('th');
+      th[0].textContent = counter;
+      const td = row.querySelectorAll('td');
+      td[0].textContent = entry.score;
+      td[1].textContent = entry.name;
+      tbody.appendChild(row);
+      counter++;
+    }
+
+    const leaderboardElement = document.querySelector('#leaderboard');
+    leaderboardElement.appendChild(table);
+
+    if (rank) {
+      const youRow = tbody.querySelector('#you');
+      tbody.scrollTop = youRow.offsetTop - youRow.offsetHeight;
+    }
+
+    this.createNext();
+  }
+
+  createNext() {
+    const nextTemplate = document.querySelector('#leaderboard-next-template');
+    const next = nextTemplate.content.cloneNode(true);
+    next.querySelector('button').addEventListener('click', () => {
+      this.game.reset();
+    });
+
+    const leaderboardElement = document.querySelector('#leaderboard');
+    leaderboardElement.appendChild(next);
+  }
+
+  createRanked(rank, submitHandler) {
+    const rankedTemplate = document.querySelector('#leaderboard-ranked-template');
+    const ranked = rankedTemplate.content.cloneNode(true);
+    ranked.querySelector('#rank').textContent = `#${rank}`;
+    ranked.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      return submitHandler(event);
+    });
+
+    const leaderboardElement = document.querySelector('#leaderboard');
+    leaderboardElement.appendChild(ranked);
+  }
+
+  async fetchLeaderboard() {
+    const response = await fetch('https://api.super-waka-land.com/highscore/1.0', {
+      method: 'GET',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  }
+
+  async postScore(name, score) {
+    const response = await fetch('https://api.super-waka-land.com/highscore/1.0', {
+      method: 'POST',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        score,
+      }),
+    });
+    return response.json();
   }
 }

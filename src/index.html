@@ -73,12 +73,12 @@
   <template id="leaderboard-ranked-template">
     <section id="leaderboard-ranked">
       <h3>Contratulations!</h3>
-      <p>
+      <h4>
         You ranked <span id="rank"></span> on the leaderboard
-      </p>
+      </h4>
       <form>
         <label for="name" aria-hidden="true">Name</label>
-        <input type="text" id="name" name="name" placeholder="Name" required>
+        <input type="text" id="name" name="name" placeholder="Name" required  maxlength="32">
         <button type="submit" class="outline">Submit</button>
       </form>
     </section>

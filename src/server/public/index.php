@@ -110,13 +110,16 @@ $app->post('/highscore/{version}', function (Request $request, Response $respons
 
   $version = isset($args['version']) ? $args['version'] : '1.0';
   $data = $request->getParsedBody();
-  if (!isset($data['name']) || !isset($data['score'])) {
+  if (!isset($data['name']) || !isset($data['score']) || strlen($data['name']) > 32) {
     throw new HttpBadRequestException($request, 'Invalid body');
   }
 
   addScore($version, $data['name'], (int) $data['score']);
 
-  return $response->withStatus(201);
+  $leaderboard = getLeaderboard($version);
+
+  $response->getBody()->write(json_encode($leaderboard));
+  return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
 });
 
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function(Request $request, Response $response) {
