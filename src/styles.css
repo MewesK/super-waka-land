@@ -2,8 +2,7 @@
 
 @font-face {
   font-family: 'Edit Undo';
-  src: url('/fonts/EditUndo.woff2') format('woff2'),
-      url('/fonts/EditUndo.woff') format('woff');
+  src: url('/fonts/EditUndo.woff2') format('woff2'), url('/fonts/EditUndo.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -11,10 +10,6 @@
 
 :root {
   --border-radius: 0.1rem;
-}
-
-nav {
-  background-color: var(--muted-border-color);
 }
 
 main {
@@ -40,26 +35,35 @@ main div {
   right: 0;
 }
 
-#score {
-  font-size: large;
-  font-weight: bold;
-  text-align: center;
-}
-
 #manual {
   color: var(--muted-color);
   text-align: center;
   line-height: 2;
 }
 
+#manual kbd {
+  padding: 0.15rem 0.25rem
+}
+
+#leaderboard {
+  font-family: 'Edit Undo';
+}
+
 footer {
+  text-align: center;
+}
+
+footer p {
   color: var(--muted-color);
   font-size: small;
-  text-align: center;
 }
 
 footer a {
   color: var(--muted-color);
+}
+
+footer .github {
+  margin-top: 3em;
 }
 
 @media (min-width: 992px) {

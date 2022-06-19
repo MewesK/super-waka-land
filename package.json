@@ -27,6 +27,7 @@
     "@pixi/particle-emitter": "^5.0.7",
     "@pixi/sound": "^4.2.0",
     "@pixi/tilemap": "^3.2.2",
+    "detect-gpu": "^4.0.27",
     "eventemitter3-timer": "^1.0.1",
     "mjolnir.js": "^2.6.0",
     "pixi-filters": "^4.1.6",
@@ -34,8 +35,11 @@
     "stats.js": "^0.17.0"
   },
   "devDependencies": {
+    "@parcel/packager-raw-url": "^2.6.0",
     "@parcel/packager-xml": "^2.6.0",
+    "@parcel/runtime-webextension": "^2.6.1",
     "@parcel/transformer-inline-string": "^2.6.0",
+    "@parcel/transformer-webmanifest": "^2.6.0",
     "@parcel/transformer-xml": "^2.6.0",
     "gh-pages": "^4.0.0",
     "parcel": "latest",
@@ -48,6 +52,7 @@
   },
   "parcelIgnore": [
     "images/*.*",
+    "fonts/*.*",
     "manifest.json"
   ]
 }
