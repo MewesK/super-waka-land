@@ -1,5 +1,14 @@
 @import 'npm:@picocss/pico/css/pico.min.css';
 
+@font-face {
+  font-family: 'Edit Undo';
+  src: url('/fonts/EditUndo.woff2') format('woff2'),
+      url('/fonts/EditUndo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --border-radius: 0.1rem;
 }
@@ -40,6 +49,7 @@ main div {
 #manual {
   color: var(--muted-color);
   text-align: center;
+  line-height: 2;
 }
 
 footer {

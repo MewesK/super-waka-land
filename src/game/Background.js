@@ -19,11 +19,11 @@ export default class Background {
     this.game = game;
 
     // Sprites
-    this.background1Sprite = Sprite.from('bg_wakaland_1');
-    this.background2aSprite = Sprite.from('bg_wakaland_2');
-    this.background2bSprite = Sprite.from('bg_wakaland_2');
-    this.background3aSprite = Sprite.from('bg_wakaland_3');
-    this.background3bSprite = Sprite.from('bg_wakaland_3');
+    this.background1Sprite = Sprite.from('rat_bg1');
+    this.background2aSprite = Sprite.from('rat_bg2');
+    this.background2bSprite = Sprite.from('rat_bg2');
+    this.background3aSprite = Sprite.from('rat_bg3');
+    this.background3bSprite = Sprite.from('rat_bg3');
 
     this.background2aSprite.y = this.game.app.screen.height - this.ISLAND_Y;
     this.background2bSprite.x = this.background2bSprite.width;

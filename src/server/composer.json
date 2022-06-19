@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "php -S localhost:8888 -t public public/index.php"
+  },
+  "require": {
+    "slim/slim": "^4.10",
+    "slim/psr7": "^1.5",
+    "vlucas/phpdotenv": "^5.4"
+  }
+}

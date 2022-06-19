@@ -1,7 +1,7 @@
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { Sprite } from 'pixi.js';
 
-import boostEmitterConfig from '../../assets/emitters/boostEmitterConfig.json';
+import boostEmitterConfig from './emitters/boostEmitterConfig.json';
 
 export default class BoostEffect {
   CONFIG = boostEmitterConfig;

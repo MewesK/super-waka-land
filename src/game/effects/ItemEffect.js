@@ -1,8 +1,8 @@
 import { Emitter, upgradeConfig } from '@pixi/particle-emitter';
 import { Sprite } from 'pixi.js';
 
-import coinEmitterConfig from '../../assets/emitters/coinEmitterConfig.json';
-import cokeEmitterConfig from '../../assets/emitters/cokeEmitterConfig.json';
+import coinEmitterConfig from './emitters/coinEmitterConfig.json';
+import cokeEmitterConfig from './emitters/cokeEmitterConfig.json';
 
 export const ItemEffectType = {
   Coin: { CONFIG: coinEmitterConfig, TEXTURE: 'particle_dot' },

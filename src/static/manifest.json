@@ -1,0 +1,35 @@
+{
+  "short_name": "Super Waka Land",
+  "name": "Super Waka Land: Help rat to start his college fund!",
+  "icons": [
+    {
+      "src": "/images/favicon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/favicon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FFFFE1",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#FFFFE1",
+  "shortcuts": [
+    {
+      "name": "Leaderboard",
+      "url": "/?leaderboard"
+    }
+  ],
+  "description": "A fun simple platform game featuring the best rat in the universe!",
+  "screenshots": [
+    {
+      "src": "/images/screenshot.png",
+      "type": "image/png",
+      "sizes": "720x960"
+    },
+  ]
+}

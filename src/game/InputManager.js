@@ -16,6 +16,9 @@ export default class InputManager {
     this.keyboardManager = new EventManager(document.getElementsByTagName('body')[0]);
     this.keyboardManager.on({
       keydown: (event) => {
+        if (this.upListeners[event.key]) {
+          event.preventDefault();
+        }
         if (!this.pressed[event.key]) {
           if (this.upListeners[event.key]) {
             this.pressed[event.key] = true;
@@ -27,6 +30,9 @@ export default class InputManager {
         }
       },
       keyup: (event) => {
+        if (this.upListeners[event.key]) {
+          event.preventDefault();
+        }
         if (this.pressed[event.key]) {
           this.pressed[event.key] = false;
           this.pressed[this.names[event.key]] = false;

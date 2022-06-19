@@ -9,6 +9,7 @@ import InputManager from './InputManager';
 
 import GameOverOverlay from './overlays/GameOverOverlay';
 import TitleOverlay from './overlays/TitleOverlay';
+import LeaderboardOverlay from './overlays/LeaderboardOverlay';
 
 export default class Game {
   app;
@@ -35,6 +36,7 @@ export default class Game {
 
   // Overlays
   gameOverOverlay;
+  leaderboardOverlay;
   titleOverlay;
 
   constructor(app) {
@@ -60,6 +62,7 @@ export default class Game {
     this.hud = new HUD(this);
 
     this.gameOverOverlay = new GameOverOverlay(this);
+    this.leaderboardOverlay = new LeaderboardOverlay(this);
     this.titleOverlay = new TitleOverlay(this);
 
     this.reset();
@@ -76,13 +79,17 @@ export default class Game {
     // Register event listeners
     this.inputManager.on(
       'jump',
-      ['s', 'pointer'],
+      ['s', 'pointer', ' '],
       () => {
         if (this.paused) {
           this.paused = false;
           this.reset();
         } else if (this.player.dead) {
-          if (this.gameOverOverlay.skippable) {
+          if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
+            this.gameOverOverlay.hide();
+            this.leaderboardOverlay.show();
+          }
+          if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
             this.reset();
           }
         } else if (!this.player.airborne) {
@@ -93,7 +100,7 @@ export default class Game {
         this.player.endJump();
       }
     );
-    this.inputManager.on('boost', ['d', 'swipeup'], () => {
+    this.inputManager.on('boost', ['d', 'swipeup', 'Shift'], () => {
       if (this.boosts > 0) {
         this.increaseScore(50);
         this.increaseBoost(-1);
@@ -126,6 +133,7 @@ export default class Game {
 
   update(dt) {
     this.gameOverOverlay.update(dt);
+    this.leaderboardOverlay.update(dt);
     this.titleOverlay.update(dt);
 
     if (this.player.dead) {
@@ -200,6 +208,7 @@ export default class Game {
 
     // Overlays
     this.gameOverOverlay.hide();
+    this.leaderboardOverlay.hide();
     this.titleOverlay.hide();
   }
 }

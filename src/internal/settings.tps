@@ -26,7 +26,7 @@
             </struct>
         </array>
         <key>allowRotation</key>
-        <true/>
+        <false/>
         <key>shapeDebug</key>
         <false/>
         <key>dpi</key>
@@ -124,7 +124,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>atlas.json</filename>
+                <filename>../static/images/atlas.json</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -147,7 +147,7 @@
         <key>prependSmartFolderName</key>
         <false/>
         <key>autodetectAnimations</key>
-        <true/>
+        <false/>
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
@@ -193,7 +193,18 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">sprites/bg_wakaland_1.png</key>
+            <key type="filename">sprites/burglar_back.png</key>
+            <key type="filename">sprites/burglar_blink.png</key>
+            <key type="filename">sprites/burglar_idle.png</key>
+            <key type="filename">sprites/burglar_jump.png</key>
+            <key type="filename">sprites/burglar_run.png</key>
+            <key type="filename">sprites/burglar_walk.png</key>
+            <key type="filename">sprites/rat_back.png</key>
+            <key type="filename">sprites/rat_blink.png</key>
+            <key type="filename">sprites/rat_idle.png</key>
+            <key type="filename">sprites/rat_jump.png</key>
+            <key type="filename">sprites/rat_run.png</key>
+            <key type="filename">sprites/rat_walk.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -202,39 +213,9 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>64,56,128,112</rect>
+                <rect>6,8,13,16</rect>
                 <key>scale9Paddings</key>
-                <rect>64,56,128,112</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">sprites/bg_wakaland_2.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>64,16,128,32</rect>
-                <key>scale9Paddings</key>
-                <rect>64,16,128,32</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">sprites/bg_wakaland_3.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>64,8,128,16</rect>
-                <key>scale9Paddings</key>
-                <rect>64,8,128,16</rect>
+                <rect>6,8,13,16</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -251,21 +232,6 @@
                 <rect>3,8,7,16</rect>
                 <key>scale9Paddings</key>
                 <rect>3,8,7,16</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">sprites/dead.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>14,14,28,28</rect>
-                <key>scale9Paddings</key>
-                <rect>14,14,28,28</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -303,12 +269,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">sprites/rat_back.png</key>
-            <key type="filename">sprites/rat_blink.png</key>
-            <key type="filename">sprites/rat_idle.png</key>
-            <key type="filename">sprites/rat_jump.png</key>
-            <key type="filename">sprites/rat_run.png</key>
-            <key type="filename">sprites/rat_walk.png</key>
+            <key type="filename">sprites/logo.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -317,9 +278,91 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>6,8,13,16</rect>
+                <rect>41,17,82,35</rect>
                 <key>scale9Paddings</key>
-                <rect>6,8,13,16</rect>
+                <rect>41,17,82,35</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">sprites/orange_back.png</key>
+            <key type="filename">sprites/orange_blink.png</key>
+            <key type="filename">sprites/orange_idle.png</key>
+            <key type="filename">sprites/orange_jump.png</key>
+            <key type="filename">sprites/orange_run.png</key>
+            <key type="filename">sprites/orange_walk.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>5,7,11,14</rect>
+                <key>scale9Paddings</key>
+                <rect>5,7,11,14</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">sprites/orange_bg2.png</key>
+            <key type="filename">sprites/rat_bg2.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>64,16,128,32</rect>
+                <key>scale9Paddings</key>
+                <rect>64,16,128,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">sprites/orange_dead.png</key>
+            <key type="filename">sprites/rat_dead.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>14,14,28,28</rect>
+                <key>scale9Paddings</key>
+                <rect>14,14,28,28</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">sprites/rat_bg1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>64,56,128,112</rect>
+                <key>scale9Paddings</key>
+                <rect>64,56,128,112</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">sprites/rat_bg3.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>64,8,128,16</rect>
+                <key>scale9Paddings</key>
+                <rect>64,8,128,16</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
