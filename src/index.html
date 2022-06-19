@@ -20,22 +20,23 @@
 
 <body>
 
-  <main id="app" class="container-fluid"></main>
+  <main class="container-fluid">
+    <div id="app"></div>
+  </main>
 
   <section id="manual">
-    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump (and start the game). <small>The longer you press down the higher you'll jump.</small><br>
-    Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. <small>The boost works in the air too, so you can save yourself from the abyss.</small>
-  </section>
-
-  <section id="leaderboard">
-    Test
+    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump (and start the game). <small>The longer you press down the
+      higher you'll jump.</small><br>
+    Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. <small>The boost works in the air too, so you can save
+      yourself from the abyss.</small>
   </section>
 
   <footer>
     <p>
-      Made with <span style="color: #e25555;">&hearts;</span> by <a href="https://github.com/MewesK" target="_blank"><strong>mewk</strong></a><br>
+      Made with <span style="color: #e25555;">&hearts;</span> by <a href="https://github.com/MewesK"
+        target="_blank"><strong>mewk</strong></a><br>
       Character concept by <a href="https://stacyandtan.carrd.co/" target="_blank"><strong>wakalaka4eva</strong></a><br>
-      Additional graphics by <a href="https://pibe.is.great/"><strong>pibe</strong></a>
+      Additional graphics by <a href="https://twitter.com/siderealpibe" target="_blank"><strong>pibe</strong></a>
     </p>
     <a href="https://github.com/MewesK/super-waka-land" class="github" target="_blank">
       <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"
@@ -46,6 +47,28 @@
       </svg>
     </a>
   </footer>
+
+  <template id="leaderboard-table-template">
+    <table id="leaderboard-table" role="grid">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Score</th>
+          <th scope="col">Name</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </template>
+
+  <template id="leaderboard-row-template">
+    <tr>
+      <th scope="row"></th>
+      <td></td>
+      <td></td>
+    </tr>
+  </template>
 </body>
 
 </html>

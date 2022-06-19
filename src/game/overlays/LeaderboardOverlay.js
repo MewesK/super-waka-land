@@ -1,5 +1,5 @@
 import { Timer } from 'eventemitter3-timer';
-import { BitmapText, Container, filters, Rectangle, Sprite } from 'pixi.js';
+import { BitmapText, Container } from 'pixi.js';
 
 export default class LeaderboardOverlay {
   BRIGHTNESS = 0.15;
@@ -14,8 +14,6 @@ export default class LeaderboardOverlay {
   skippable = false;
 
   titleText;
-  scoreText;
-  retryText;
 
   constructor(game) {
     this.game = game;
@@ -29,24 +27,7 @@ export default class LeaderboardOverlay {
     this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
     this.titleText.y = 0;
 
-    this.scoreText = new BitmapText('Rats College Fund:\n$0', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      align: 'center',
-    });
-    this.container.addChild(this.scoreText);
-    this.scoreText.x = this.game.app.screen.width / 2 - this.scoreText.width / 2;
-    this.scoreText.y = 100;
-
-    this.retryText = new BitmapText('Try again', {
-      fontName: 'Edit Undo',
-      fontSize: 10,
-    });
-    this.container.addChild(this.retryText);
-    this.retryText.x = this.game.app.screen.width / 2 - this.retryText.width / 2;
-    this.retryText.y = 150;
-
-    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2 + 15;
+    this.container.y = 15;
   }
 
   update() {
@@ -68,9 +49,49 @@ export default class LeaderboardOverlay {
 
     this.showing = true;
     this.container.alpha = 1;
-    this.scoreText.text = 'Rats College Fund:\n$' + this.game.score;
 
     this.game.app.stage.addChild(this.container);
+
+    const loadingTemplate = document.getElementById('leaderboard-loading-template');
+
+    const leaderboardElement = document.getElementById('leaderboard');
+    leaderboardElement.innerHTML = '';
+    leaderboardElement.setAttribute('aria-busy', true);
+    leaderboardElement.style.display = 'block';
+
+    fetch('https://api.super-waka-land.com/highscore/1.0', {
+      method: 'GET',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        leaderboardElement.setAttribute('aria-busy', false);
+        if ('content' in document.createElement('template')) {
+          const tableTemplate = document.getElementById('leaderboard-table-template');
+          const table = tableTemplate.content.cloneNode(true);
+          const tbody = table.querySelector('tbody');
+
+          const rowTemplate = document.getElementById('leaderboard-row-template');
+          let counter = 1;
+          for (const entry of data) {
+            const row = rowTemplate.content.cloneNode(true);
+            const th = row.querySelectorAll('th');
+            th[0].textContent = counter++;
+            const td = row.querySelectorAll('td');
+            td[0].textContent = entry.score;
+            td[1].textContent = entry.name;
+            tbody.appendChild(row);
+          }
+
+          leaderboardElement.innerHTML = '';
+          leaderboardElement.appendChild(table);
+        } else {
+          console.error('HTML templates not supported');
+        }
+      });
   }
 
   hide() {
@@ -79,6 +100,9 @@ export default class LeaderboardOverlay {
     }
 
     this.showing = false;
+
+    const leaderboardElement = document.getElementById('leaderboard');
+    leaderboardElement.style.display = 'none';
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;

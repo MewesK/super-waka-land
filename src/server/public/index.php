@@ -2,8 +2,8 @@
 use Dotenv\Dotenv;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Exception\HttpBadRequestException;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -26,11 +26,12 @@ $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('application/json');
 
-$app->add(function (Request $request, RequestHandler $handler) {
-  if (!strstr($request->getHeaderLine('Content-Type'), 'application/json')) {
-    throw new HttpBadRequestException($request, 'Invalid content-type');
-  }
-  return $handler->handle($request);
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
 $app->addRoutingMiddleware();
@@ -85,7 +86,15 @@ function addScore(string $version = '1.0', string $name, int $score) {
 // Actions
 //
 
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response;
+});
+
 $app->get('/highscore/{version}', function (Request $request, Response $response, $args) {
+  if (!strstr($request->getHeaderLine('Content-Type'), 'application/json')) {
+    throw new HttpBadRequestException($request, 'Invalid content-type');
+  }
+
   $version = isset($args['version']) ? $args['version'] : '1.0';
 
   $leaderboard = getLeaderboard($version);
@@ -95,6 +104,10 @@ $app->get('/highscore/{version}', function (Request $request, Response $response
 });
 
 $app->post('/highscore/{version}', function (Request $request, Response $response, $args) {
+  if (!strstr($request->getHeaderLine('Content-Type'), 'application/json')) {
+    throw new HttpBadRequestException($request, 'Invalid content-type');
+  }
+
   $version = isset($args['version']) ? $args['version'] : '1.0';
   $data = $request->getParsedBody();
   if (!isset($data['name']) || !isset($data['score'])) {
@@ -104,6 +117,10 @@ $app->post('/highscore/{version}', function (Request $request, Response $respons
   addScore($version, $data['name'], (int) $data['score']);
 
   return $response->withStatus(201);
+});
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function(Request $request, Response $response) {
+    throw new HttpNotFoundException($request);
 });
 
 $app->run();

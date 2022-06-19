@@ -5,4 +5,4 @@
 ## Credits
 
  - Character concept by wakalaka4eva (https://stacyandtan.carrd.co/)
- - Additional graphics by pibe (https://pibe.is.great/)
+ - Additional graphics by pibe (https://twitter.com/siderealpibe)

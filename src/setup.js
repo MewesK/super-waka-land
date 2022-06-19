@@ -34,10 +34,18 @@ getGPUTier().then((tier) => {
   });
   document.getElementById('app').appendChild(app.view);
 
+  // Create leaderboard
+  const leaderboard = document.createElement('div');
+  leaderboard.id = 'leaderboard';
+  leaderboard.innerHTML = 'Test test test';
+  leaderboard.style.display = 'none';
+  document.getElementById('app').appendChild(leaderboard);
+
   if (DEBUG) {
     // Create FPS counter
     app.stats = new Stats();
     app.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    app.stats.dom.id = 'stats';
     document.getElementById('app').appendChild(app.stats.dom);
   }
 
