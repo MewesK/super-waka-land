@@ -175,8 +175,12 @@ export default class Map {
             this.setDebugTile(x, y, DebugType.INTERSECTING);
           } else {
             if (playerRectangle.intersects(tileRectangle.clone().pad(0, 0.1))) {
-              touching = true;
-
+              if (
+                tile.value === TileType.PLATFORM &&
+                this.game.player.lastPosition.y + this.game.player.height <= tileRectangle.y // Was player previoulsy above the tile?
+              ) {
+                touching = true;
+              }
               // Debug overlay
               this.setDebugTile(x, y, DebugType.TOUCHING);
             }
