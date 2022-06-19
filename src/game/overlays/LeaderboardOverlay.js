@@ -71,16 +71,15 @@ export default class LeaderboardOverlay {
       if (rank !== false) {
         // Create submit form
         this.createRanked(rank, async (event) => {
-          console.log('SUBMIT', new FormData(event.target).get('name'));
-
           // Post score and update data
-          data = await this.postScore(new FormData(event.target).get('name'), this.game.score);
+          const name = new FormData(event.target).get('name');
+          data = await this.postScore(name, this.game.score);
 
           // Remove submit form
           leaderboardElement.removeChild(leaderboardElement.querySelector('#leaderboard-ranked'));
 
           // Show table
-          this.createTable(data, rank);
+          this.createTable(data, name, this.game.score);
         });
       } else {
         // Show table
@@ -126,7 +125,7 @@ export default class LeaderboardOverlay {
     this.fadeTimer.start();
   }
 
-  createTable(data, rank = false) {
+  createTable(data, name, score) {
     const tableTemplate = document.querySelector('#leaderboard-table-template');
     const table = tableTemplate.content.cloneNode(true);
     const tbody = table.querySelector('tbody');
@@ -135,7 +134,7 @@ export default class LeaderboardOverlay {
     let counter = 1;
     for (const entry of data) {
       const row = rowTemplate.content.cloneNode(true);
-      if (rank === counter) {
+      if (entry.name === name && parseInt(entry.score) === score) {
         row.querySelector('tr').id = 'you';
       }
       const th = row.querySelectorAll('th');
@@ -150,7 +149,7 @@ export default class LeaderboardOverlay {
     const leaderboardElement = document.querySelector('#leaderboard');
     leaderboardElement.appendChild(table);
 
-    if (rank) {
+    if (name && score) {
       const youRow = tbody.querySelector('#you');
       tbody.scrollTop = youRow.offsetTop - youRow.offsetHeight;
     }
