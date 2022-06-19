@@ -34,10 +34,9 @@ getGPUTier().then((tier) => {
   });
   document.getElementById('app').appendChild(app.view);
 
-  // Create leaderboard
+  // Create leaderboard overlay
   const leaderboard = document.createElement('div');
   leaderboard.id = 'leaderboard';
-  leaderboard.innerHTML = 'Test test test';
   leaderboard.style.display = 'none';
   document.getElementById('app').appendChild(leaderboard);
 

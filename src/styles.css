@@ -26,60 +26,6 @@ main canvas {
   box-shadow: var(--card-box-shadow);
 }
 
-main #leaderboard {
-  position: absolute;
-  width: 90%;
-  height: 70%;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  font-family: 'Edit Undo';
-  background-color: rgba(128, 128, 128, 0.2);
-}
-
-main #leaderboard * {
-  color: #ffffff !important;
-  font-size: 2.5vw !important;
-}
-
-main #leaderboard table {
-  width: 95%;
-  margin: auto;
-  margin-top: 0.7rem;
-}
-
-main #leaderboard thead {
-  border-bottom: 4px solid #ffffff;
-}
-
-main #leaderboard thead,
-main #leaderboard tr {
-  display: table;
-  width: 100%;
-}
-
-main #leaderboard tbody {
-  display: block;
-  max-height: 80%;
-  overflow-y: scroll;
-}
-
-main #leaderboard th,
-main #leaderboard td {
-  border: none;
-}
-
-main #leaderboard th:nth-of-type(1) {
-  width: 10%;
-}
-main #leaderboard th:nth-of-type(2), main #leaderboard td:nth-of-type(1) {
-  width: 20%;
-}
-main #leaderboard th:nth-of-type(3), main #leaderboard td:nth-of-type(2) {
-  width: 60%;
-}
-
 main #stats {
   position: absolute !important;
   left: inherit !important;
@@ -118,4 +64,83 @@ footer .github {
   main {
     padding: 1rem !important;
   }
+}
+
+/*
+ * Leaderboard
+ */
+
+main #leaderboard {
+  position: absolute;
+  width: 90%;
+  height: 70%;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+main #leaderboard * {
+  color: #ffffff !important;
+  font-family: 'Edit Undo';
+  font-size: 2.5vw !important;
+}
+
+main #leaderboard h3 {
+  font-size: 4vw !important;
+}
+
+/*
+ * Leaderboard Table
+ */
+
+ main #leaderboard table {
+  width: 95%;
+  margin: auto;
+  margin-top: 0.7rem;
+}
+
+main #leaderboard thead {
+  border-bottom: 4px solid #ffffff;
+}
+
+main #leaderboard thead,
+main #leaderboard tr {
+  display: table;
+  width: 100%;
+}
+
+main #leaderboard tbody {
+  display: block;
+  max-height: 80%;
+  overflow-y: scroll;
+}
+
+main #leaderboard th,
+main #leaderboard td {
+  border: none;
+}
+
+main #leaderboard th:nth-of-type(1) {
+  width: 10%;
+}
+main #leaderboard th:nth-of-type(2),
+main #leaderboard td:nth-of-type(1) {
+  width: 20%;
+}
+main #leaderboard th:nth-of-type(3),
+main #leaderboard td:nth-of-type(2) {
+  width: 60%;
+}
+
+/*
+ * Leaderboard Form
+ */
+
+main #leaderboard #rank {
+  color: #ff0000 !important;
+}
+
+main #leaderboard label {
+  display: none;
 }

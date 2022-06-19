@@ -8,7 +8,6 @@ export default class LeaderboardOverlay {
   game;
   container = new Container();
   fadeTimer;
-  skipTimer;
 
   showing = false;
   skippable = false;
@@ -40,22 +39,12 @@ export default class LeaderboardOverlay {
       return;
     }
 
-    this.skippable = false;
-    this.skipTimer = new Timer(1000);
-    this.skipTimer.on('end', () => {
-      this.skippable = true;
-    });
-    this.skipTimer.start();
-
     this.showing = true;
-    this.container.alpha = 1;
+    this.skippable = false;
 
     this.game.app.stage.addChild(this.container);
 
-    const loadingTemplate = document.getElementById('leaderboard-loading-template');
-
-    const leaderboardElement = document.getElementById('leaderboard');
-    leaderboardElement.innerHTML = '';
+    const leaderboardElement = document.querySelector('#leaderboard');
     leaderboardElement.setAttribute('aria-busy', true);
     leaderboardElement.style.display = 'block';
 
@@ -70,24 +59,58 @@ export default class LeaderboardOverlay {
       .then((data) => {
         leaderboardElement.setAttribute('aria-busy', false);
         if ('content' in document.createElement('template')) {
-          const tableTemplate = document.getElementById('leaderboard-table-template');
+          const tableTemplate = document.querySelector('#leaderboard-table-template');
           const table = tableTemplate.content.cloneNode(true);
           const tbody = table.querySelector('tbody');
 
-          const rowTemplate = document.getElementById('leaderboard-row-template');
+          const rowTemplate = document.querySelector('#leaderboard-row-template');
           let counter = 1;
+          let rank = data.length < 100 ? data.length : false;
           for (const entry of data) {
+            if (this.game.score > entry.score) {
+              rank = counter;
+            }
             const row = rowTemplate.content.cloneNode(true);
             const th = row.querySelectorAll('th');
-            th[0].textContent = counter++;
+            th[0].textContent = counter;
             const td = row.querySelectorAll('td');
             td[0].textContent = entry.score;
             td[1].textContent = entry.name;
             tbody.appendChild(row);
+            counter++;
+          }
+          if (this.game.score === 0) {
+            rank = false;
           }
 
-          leaderboardElement.innerHTML = '';
-          leaderboardElement.appendChild(table);
+          const nextTemplate = document.querySelector('#leaderboard-next-template');
+          const next = nextTemplate.content.cloneNode(true);
+          next.querySelector('button').addEventListener('click', (event) => {
+            this.game.reset();
+          });
+
+          if (rank !== false) {
+            const rankedTemplate = document.querySelector('#leaderboard-ranked-template');
+            const ranked = rankedTemplate.content.cloneNode(true);
+            ranked.querySelector('#rank').textContent = rank;
+            ranked.querySelector('form').addEventListener('submit', (event) => {
+              event.preventDefault();
+
+              console.log('SUBMIT');
+
+              leaderboardElement.removeChild(
+                leaderboardElement.querySelector('#leaderboard-ranked')
+              );
+              leaderboardElement.appendChild(table);
+              leaderboardElement.appendChild(next);
+              this.skippable = true;
+            });
+            leaderboardElement.appendChild(ranked);
+          } else {
+            leaderboardElement.appendChild(table);
+            leaderboardElement.appendChild(next);
+            this.skippable = true;
+          }
         } else {
           console.error('HTML templates not supported');
         }
@@ -101,8 +124,9 @@ export default class LeaderboardOverlay {
 
     this.showing = false;
 
-    const leaderboardElement = document.getElementById('leaderboard');
+    const leaderboardElement = document.querySelector('#leaderboard');
     leaderboardElement.style.display = 'none';
+    leaderboardElement.innerHTML = '';
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;

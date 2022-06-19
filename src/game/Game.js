@@ -87,9 +87,9 @@ export default class Game {
         } else if (this.player.dead) {
           if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
             this.gameOverOverlay.hide();
+            console.log('show leader');
             this.leaderboardOverlay.show();
-          }
-          if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
+          } else if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
             this.reset();
           }
         } else if (!this.player.airborne) {

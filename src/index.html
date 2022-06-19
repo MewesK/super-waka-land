@@ -69,6 +69,26 @@
       <td></td>
     </tr>
   </template>
+
+  <template id="leaderboard-ranked-template">
+    <section id="leaderboard-ranked">
+      <h3>Contratulations!</h3>
+      <p>
+        You ranked <span id="rank"></span> on the leaderboard
+      </p>
+      <form>
+        <label for="name" aria-hidden="true">Name</label>
+        <input type="text" id="name" name="name" placeholder="Name" required>
+        <button type="submit" class="outline">Submit</button>
+      </form>
+    </section>
+  </template>
+
+  <template id="leaderboard-next-template">
+    <button class="outline">
+      Play Again
+    </button>
+  </template>
 </body>
 
 </html>
