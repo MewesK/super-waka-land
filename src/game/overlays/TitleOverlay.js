@@ -38,7 +38,7 @@ export default class TitleOverlay {
         fontName: 'Edit Undo',
         fontSize: 10,
         align: 'center',
-        tint: 0xc0c0c0,
+        tint: 0xa0a0a0,
       }
     );
     this.container.addChild(this.tutorialText);
