@@ -25,7 +25,7 @@ export default class InputManager {
             this.pressed[this.names[event.key]] = true;
           }
           if (this.downListeners[event.key]) {
-            this.downListeners[event.key](event);
+            this.downListeners[event.key].forEach((listener) => listener(event));
           }
         }
       },
@@ -37,7 +37,7 @@ export default class InputManager {
           this.pressed[event.key] = false;
           this.pressed[this.names[event.key]] = false;
           if (this.upListeners[event.key]) {
-            this.upListeners[event.key](event);
+            this.upListeners[event.key].forEach((listener) => listener(event));
           }
         }
       },
@@ -52,7 +52,7 @@ export default class InputManager {
             this.pressed[this.names['pointer']] = true;
           }
           if (this.downListeners['pointer']) {
-            this.downListeners['pointer'](event);
+            this.downListeners['pointer'].forEach((listener) => listener(event));
           }
         }
       },
@@ -61,13 +61,13 @@ export default class InputManager {
           this.pressed['pointer'] = false;
           this.pressed[this.names['pointer']] = false;
           if (this.upListeners['pointer']) {
-            this.upListeners['pointer'](event);
+            this.upListeners['pointer'].forEach((listener) => listener(event));
           }
         }
       },
       swipeup: (event) => {
         if (this.downListeners['swipeup']) {
-          this.downListeners['swipeup'](event);
+          this.downListeners['swipeup'].forEach((listener) => listener(event));
         }
       },
     });
@@ -77,11 +77,17 @@ export default class InputManager {
     subEventList.forEach((subEvent) => {
       this.names[subEvent] = eventName;
       if (downListener) {
-        this.downListeners[subEvent] = downListener;
+        if (!this.downListeners[subEvent]) {
+          this.downListeners[subEvent] = [];
+        }
+        this.downListeners[subEvent].push(downListener);
       }
       if (upListener) {
+        if (!this.upListeners[subEvent]) {
+          this.upListeners[subEvent] = [];
+        }
         this.pressed[subEvent] = false;
-        this.upListeners[subEvent] = upListener;
+        this.upListeners[subEvent].push(upListener);
       }
     });
   }

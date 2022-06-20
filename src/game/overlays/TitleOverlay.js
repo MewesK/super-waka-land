@@ -3,7 +3,6 @@ import { BitmapText, Container, filters, Rectangle, Sprite } from 'pixi.js';
 
 export default class TitleOverlay {
   BRIGHTNESS = 0.15;
-  FADE_STEPS = 10;
 
   game;
   container = new Container();

@@ -80,26 +80,38 @@ export default class Game {
     this.titleOverlay.show();
 
     // Register event listeners
+    this.inputManager.on('select', ['ArrowLeft', 'ArrowRight'], (event) => {
+      if (this.paused && this.characterOverlay.showing) {
+        this.characterOverlay.select(this.characterOverlay.selected + 1);
+      }
+    });
+    this.inputManager.on('skip', ['s', 'pointer', ' '], (event) => {
+      if (this.paused) {
+        if (this.titleOverlay.showing) {
+          this.titleOverlay.hide();
+          this.characterOverlay.show();
+        } else if (this.characterOverlay.showing && !event.pointerType) {
+          this.paused = false;
+          this.reset();
+        }
+      } else if (this.player.dead) {
+        if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
+          this.gameOverOverlay.hide();
+          this.leaderboardOverlay.show();
+        } else if (
+          this.leaderboardOverlay.showing &&
+          this.leaderboardOverlay.skippable &&
+          !event.pointerType
+        ) {
+          this.reset();
+        }
+      }
+    });
     this.inputManager.on(
       'jump',
       ['s', 'pointer', ' '],
       () => {
-        if (this.paused) {
-          if (this.titleOverlay.showing) {
-            this.titleOverlay.hide();
-            this.characterOverlay.show();
-          } else if (this.characterOverlay.showing && this.characterOverlay.skippable) {
-            this.paused = false;
-            this.reset();
-          }
-        } else if (this.player.dead) {
-          if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
-            this.gameOverOverlay.hide();
-            this.leaderboardOverlay.show();
-          } else if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
-            this.reset();
-          }
-        } else if (!this.player.airborne) {
+        if (!this.paused && !this.player.dead && !this.player.airborne) {
           this.player.startJump();
         }
       },
