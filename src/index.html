@@ -25,10 +25,12 @@
   </main>
 
   <section id="manual">
-    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump (and start the game). <small>The longer you press down the
-      higher you'll jump.</small><br>
-    Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. <small>The boost works in the air too, so you can save
-      yourself from the abyss.</small>
+    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump (and start the game). The longer you press down the
+    higher you'll jump.<br>
+    Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. The boost works in the air too, so you can save
+    yourself from the abyss.<br>
+    To select a charcter tap on it or select it with the cursor keys.
+  </section>
   </section>
 
   <footer>
@@ -47,6 +49,14 @@
       </svg>
     </a>
   </footer>
+
+  <!----> Templates -->
+
+  <template id="character-select-template">
+    <button class="outline">
+      Confirm
+    </button>
+  </template>
 
   <template id="leaderboard-table-template">
     <table id="leaderboard-table" role="grid">
@@ -72,21 +82,21 @@
 
   <template id="leaderboard-ranked-template">
     <section id="leaderboard-ranked">
-      <h3>Contratulations!</h3>
+      <h3>Congratulations!</h3>
       <h4>
-        You ranked <span id="rank"></span> on the leaderboard
+        You rank <span id="rank"></span> on the leaderboard
       </h4>
       <form>
-        <label for="name" aria-hidden="true">Name</label>
-        <input type="text" id="name" name="name" placeholder="Name" required  maxlength="32">
+        <label for="name" aria-hidden="true">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="Your Name" required maxlength="32">
         <button type="submit" class="outline">Submit</button>
       </form>
     </section>
   </template>
 
-  <template id="leaderboard-next-template">
+  <template id="leaderboard-retry-template">
     <button class="outline">
-      Play Again
+      Retry
     </button>
   </template>
 </body>

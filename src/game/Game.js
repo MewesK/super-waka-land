@@ -7,8 +7,9 @@ import Map from './Map';
 import HUD from './HUD';
 import InputManager from './InputManager';
 
-import GameOverOverlay from './overlays/GameOverOverlay';
 import TitleOverlay from './overlays/TitleOverlay';
+import CharacterOverlay from './overlays/CharacterOverlay';
+import GameOverOverlay from './overlays/GameOverOverlay';
 import LeaderboardOverlay from './overlays/LeaderboardOverlay';
 
 export default class Game {
@@ -36,6 +37,7 @@ export default class Game {
 
   // Overlays
   gameOverOverlay;
+  characterOverlay;
   leaderboardOverlay;
   titleOverlay;
 
@@ -62,6 +64,7 @@ export default class Game {
     this.hud = new HUD(this);
 
     this.gameOverOverlay = new GameOverOverlay(this);
+    this.characterOverlay = new CharacterOverlay(this);
     this.leaderboardOverlay = new LeaderboardOverlay(this);
     this.titleOverlay = new TitleOverlay(this);
 
@@ -82,8 +85,13 @@ export default class Game {
       ['s', 'pointer', ' '],
       () => {
         if (this.paused) {
-          this.paused = false;
-          this.reset();
+          if (this.titleOverlay.showing) {
+            this.titleOverlay.hide();
+            this.characterOverlay.show();
+          } else if (this.characterOverlay.showing && this.characterOverlay.skippable) {
+            this.paused = false;
+            this.reset();
+          }
         } else if (this.player.dead) {
           if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
             this.gameOverOverlay.hide();
@@ -131,9 +139,10 @@ export default class Game {
   }
 
   update(dt) {
+    this.titleOverlay.update(dt);
+    this.characterOverlay.update(dt);
     this.gameOverOverlay.update(dt);
     this.leaderboardOverlay.update(dt);
-    this.titleOverlay.update(dt);
 
     if (this.player.dead) {
       return;
@@ -206,8 +215,9 @@ export default class Game {
     this.hud.reset();
 
     // Overlays
+    this.titleOverlay.hide();
+    this.characterOverlay.hide();
     this.gameOverOverlay.hide();
     this.leaderboardOverlay.hide();
-    this.titleOverlay.hide();
   }
 }

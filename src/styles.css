@@ -67,122 +67,124 @@ footer .github {
 }
 
 /*
- * Leaderboard
+ * HTML Overlay
  */
 
-main #leaderboard {
+main #html-overlay {
   position: absolute;
   width: 90%;
   height: 70%;
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(128, 128, 128, 0.2);
+  font-smooth: never !important;
+  -webkit-font-smoothing: none;
 }
 
-main #leaderboard * {
+main #html-overlay * {
   color: #ffffff !important;
   font-family: 'Edit Undo';
   font-size: 2.5vw !important;
 }
 
-/*
- * Leaderboard Form
- */
-
-main #leaderboard #rank {
-  color: #ff0000 !important;
+main #html-overlay[aria-busy=true]::before {
+    width: 2em;
+    height: 2em;
 }
 
-main #leaderboard label {
+main #html-overlay label {
   display: none;
 }
 
-main #leaderboard h3 {
-  font-size: 8vw !important;
-  margin-top: 6rem;
-}
-
-main #leaderboard h4, main #leaderboard h4 * {
-  font-size: 5vw !important;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
-main #leaderboard input {
-  bottom: 9vw;
+main #html-overlay button {
+  bottom: 0;
   border-radius: 0;
-  border: 5px solid #ffffff;
-  background-color: rgba(32, 32, 32, 0.4);
-}
-
-main #leaderboard button {
-  border-radius: 0;
-  border: 5px solid #ffffff;
   background-color: rgba(128, 128, 128, 0.4);
 }
 
-main #leaderboard button:hover {
+main #html-overlay button:hover {
   background-color: rgba(128, 128, 128, 0.8);
 }
 
-main #leaderboard button,main #leaderboard input {
+main #html-overlay input {
+  bottom: 9vw;
+  border-radius: 0;
+  background-color: rgba(32, 32, 32, 0.4);
+}
+
+main #html-overlay button, main #html-overlay input {
   position: absolute;
   width: 96%;
   margin-top: 1rem;
   margin-bottom: 1rem;
   left: 50%;
   transform: translate(-50%, 0%);
+  border: 5px solid #ffffff;
 }
 
-main #leaderboard button {
-  bottom: 0;
+/*
+ * Leaderboard
+ */
+
+main #html-overlay h3 {
+  font-size: 8vw !important;
+  margin-top: 6rem;
+}
+
+main #html-overlay h4, main #html-overlay h4 * {
+  font-size: 5vw !important;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+main #html-overlay #rank {
+  color: #ff0000 !important;
 }
 
 /*
  * Leaderboard Table
  */
 
-main #leaderboard table {
+main #html-overlay table {
   width: 96%;
   margin: auto;
   margin-top: 0.3rem;
   margin-bottom: 1rem;
 }
 
-main #leaderboard thead {
+main #html-overlay thead {
   border-bottom: 4px solid #ffffff;
 }
 
-main #leaderboard thead,
-main #leaderboard tr {
+main #html-overlay thead,
+main #html-overlay tr {
   display: table;
   width: 100%;
 }
 
-main #leaderboard tr#you {
+main #html-overlay tr#you {
   background-color: #ff0000;
 }
 
-main #leaderboard tbody {
+main #html-overlay tbody {
   display: block;
   max-height: 44.2vw !important;
   overflow-y: scroll;
 }
 
-main #leaderboard th,
-main #leaderboard td {
+main #html-overlay th,
+main #html-overlay td {
   border: none;
 }
 
-main #leaderboard th:nth-of-type(1) {
+main #html-overlay th:nth-of-type(1) {
   width: 10%;
 }
-main #leaderboard th:nth-of-type(2),
-main #leaderboard td:nth-of-type(1) {
+main #html-overlay th:nth-of-type(2),
+main #html-overlay td:nth-of-type(1) {
   width: 20%;
 }
-main #leaderboard th:nth-of-type(3),
-main #leaderboard td:nth-of-type(2) {
+main #html-overlay th:nth-of-type(3),
+main #html-overlay td:nth-of-type(2) {
   width: 60%;
 }

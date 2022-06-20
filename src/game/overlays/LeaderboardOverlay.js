@@ -31,7 +31,6 @@ export default class LeaderboardOverlay {
 
   update() {
     this.fadeTimer?.update(this.game.app.ticker.elapsedMS);
-    this.skipTimer?.update(this.game.app.ticker.elapsedMS);
   }
 
   async show() {
@@ -43,19 +42,20 @@ export default class LeaderboardOverlay {
     this.skippable = false;
     this.container.alpha = 1;
 
-    this.game.app.stage.addChild(this.container);
+    // Show HTML overlay overlay with spinner
+    const htmlOverlay = document.querySelector('#html-overlay');
+    htmlOverlay.innerHTML = '';
+    htmlOverlay.setAttribute('aria-busy', true);
+    htmlOverlay.style.display = 'block';
 
-    // Show leaderboard overlay with spinner
-    const leaderboardElement = document.querySelector('#leaderboard');
-    leaderboardElement.setAttribute('aria-busy', true);
-    leaderboardElement.style.display = 'block';
+    this.game.app.stage.addChild(this.container);
 
     try {
       // Fetch leaderboard
       let data = await this.fetchLeaderboard();
 
       // Hide spinner
-      leaderboardElement.setAttribute('aria-busy', false);
+      htmlOverlay.setAttribute('aria-busy', false);
 
       // Check player rank
       let rank = this.game.score > 0 && data.length < 100 ? data.length : false;
@@ -76,7 +76,7 @@ export default class LeaderboardOverlay {
           data = await this.postScore(name, this.game.score);
 
           // Remove submit form
-          leaderboardElement.removeChild(leaderboardElement.querySelector('#leaderboard-ranked'));
+          htmlOverlay.removeChild(htmlOverlay.querySelector('#leaderboard-ranked'));
 
           // Show table
           this.createTable(data, name, this.game.score);
@@ -88,10 +88,10 @@ export default class LeaderboardOverlay {
     } catch (error) {
       console.error(error);
 
-      leaderboardElement.setAttribute('aria-busy', false);
-      leaderboardElement.innerHTML = `Error: ${error}`;
+      htmlOverlay.setAttribute('aria-busy', false);
+      htmlOverlay.innerHTML = `Error: ${error}`;
 
-      this.createNext();
+      this.createRetry();
     } finally {
       this.skippable = true;
     }
@@ -104,9 +104,9 @@ export default class LeaderboardOverlay {
 
     this.showing = false;
 
-    const leaderboardElement = document.querySelector('#leaderboard');
-    leaderboardElement.style.display = 'none';
-    leaderboardElement.innerHTML = '';
+    const htmlOverlay = document.querySelector('#html-overlay');
+    htmlOverlay.style.display = 'none';
+    htmlOverlay.innerHTML = '';
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;
@@ -146,26 +146,26 @@ export default class LeaderboardOverlay {
       counter++;
     }
 
-    const leaderboardElement = document.querySelector('#leaderboard');
-    leaderboardElement.appendChild(table);
+    const htmlOverlay = document.querySelector('#html-overlay');
+    htmlOverlay.appendChild(table);
 
     if (name && score) {
       const youRow = tbody.querySelector('#you');
       tbody.scrollTop = youRow.offsetTop - youRow.offsetHeight;
     }
 
-    this.createNext();
+    this.createRetry();
   }
 
-  createNext() {
-    const nextTemplate = document.querySelector('#leaderboard-next-template');
-    const next = nextTemplate.content.cloneNode(true);
-    next.querySelector('button').addEventListener('click', () => {
+  createRetry() {
+    const retryTemplate = document.querySelector('#leaderboard-retry-template');
+    const retry = retryTemplate.content.cloneNode(true);
+    retry.querySelector('button').addEventListener('click', () => {
       this.game.reset();
     });
 
-    const leaderboardElement = document.querySelector('#leaderboard');
-    leaderboardElement.appendChild(next);
+    const htmlOverlay = document.querySelector('#html-overlay');
+    htmlOverlay.appendChild(retry);
   }
 
   createRanked(rank, submitHandler) {
@@ -177,8 +177,8 @@ export default class LeaderboardOverlay {
       return submitHandler(event);
     });
 
-    const leaderboardElement = document.querySelector('#leaderboard');
-    leaderboardElement.appendChild(ranked);
+    const htmlOverlay = document.querySelector('#html-overlay');
+    htmlOverlay.appendChild(ranked);
   }
 
   async fetchLeaderboard() {

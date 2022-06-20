@@ -35,10 +35,10 @@ getGPUTier().then((tier) => {
   document.getElementById('app').appendChild(app.view);
 
   // Create leaderboard overlay
-  const leaderboard = document.createElement('div');
-  leaderboard.id = 'leaderboard';
-  leaderboard.style.display = 'none';
-  document.getElementById('app').appendChild(leaderboard);
+  const htmlOverlay = document.createElement('div');
+  htmlOverlay.id = 'html-overlay';
+  htmlOverlay.style.display = 'none';
+  document.getElementById('app').appendChild(htmlOverlay);
 
   if (DEBUG) {
     // Create FPS counter
@@ -56,7 +56,7 @@ getGPUTier().then((tier) => {
   Loader.shared
     .add('spritesheet', './images/atlas.json')
     .add('editUndoFont', './fonts/edit-undo.fnt')
-    .add('stopBullyingFont', './fonts/stop-bullying.fnt')
+    .add('stopBullyingFont', './fonts/stop-bullying-outlined.fnt')
     .add('bgMusic', './sounds/bg-music1.mp3')
     .add('boostSound', './sounds/boost.wav')
     .add('coinSound', './sounds/coin.wav')
