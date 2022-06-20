@@ -22,6 +22,8 @@ main {
 main canvas {
   width: 100%;
   height: 100%;
+  max-width: 100vh;
+  max-height: 100vh;
   image-rendering: pixelated;
   box-shadow: var(--card-box-shadow);
 }
@@ -88,9 +90,9 @@ main #html-overlay * {
   font-size: 2.5vw !important;
 }
 
-main #html-overlay[aria-busy=true]::before {
-    width: 2em;
-    height: 2em;
+main #html-overlay[aria-busy='true']::before {
+  width: 2em;
+  height: 2em;
 }
 
 main #html-overlay label {
@@ -113,7 +115,8 @@ main #html-overlay input {
   background-color: rgba(32, 32, 32, 0.4);
 }
 
-main #html-overlay button, main #html-overlay input {
+main #html-overlay button,
+main #html-overlay input {
   position: absolute;
   width: 96%;
   margin-top: 1rem;
@@ -133,7 +136,8 @@ main #html-overlay h3 {
   margin-top: 6rem;
 }
 
-main #html-overlay h4, main #html-overlay h4 * {
+main #html-overlay h4,
+main #html-overlay h4 * {
   font-size: 5vw !important;
   margin-top: 2rem;
   margin-bottom: 2rem;
