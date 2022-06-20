@@ -122,6 +122,7 @@ export default class CharacterOverlay {
     this.fadeTimer.repeat = this.FADE_STEPS;
     this.fadeTimer.on('repeat', (elapsedTime, repeat) => {
       this.container.alpha = Math.max(0, 1 - (1 / (this.FADE_STEPS - 2)) * repeat);
+      this.game.hud.container.alpha = Math.max(1, (1 / (this.FADE_STEPS - 2)) * repeat);
       this.game.container.filters[0].brightness(
         this.BRIGHTNESS + repeat * ((1 - this.BRIGHTNESS) / this.FADE_STEPS),
         false
@@ -129,6 +130,7 @@ export default class CharacterOverlay {
     });
     this.fadeTimer.on('end', () => {
       this.game.app.stage.removeChild(this.container);
+      this.game.hud.container.alpha = 1;
       this.game.container.filters = null;
       this.fadeTimer = null;
     });
