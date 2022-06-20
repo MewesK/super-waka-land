@@ -27,11 +27,6 @@ export default class GameOverOverlay {
     this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
     this.titleText.y = 0;
 
-    this.deadSprite = Sprite.from('rat_dead');
-    this.container.addChild(this.deadSprite);
-    this.deadSprite.x = this.game.app.screen.width / 2 - this.deadSprite.width / 2;
-    this.deadSprite.y = 50;
-
     this.scoreText = new BitmapText('Rats College Fund:\n$0', {
       fontName: 'Edit Undo',
       fontSize: 16,
@@ -76,6 +71,11 @@ export default class GameOverOverlay {
 
     this.game.container.filters = [filter];
 
+    this.deadSprite = this.game.player.deadSprite;
+    this.container.addChild(this.deadSprite);
+    this.deadSprite.x = this.game.app.screen.width / 2 - this.deadSprite.width / 2;
+    this.deadSprite.y = 50;
+
     this.game.app.stage.addChild(this.container);
   }
 
@@ -88,5 +88,6 @@ export default class GameOverOverlay {
     this.skippable = false;
 
     this.game.app.stage.removeChild(this.container);
+    this.container.removeChild(this.deadSprite);
   }
 }

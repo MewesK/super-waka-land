@@ -1,6 +1,22 @@
 import { Container, Sprite } from 'pixi.js';
 
 export default class Background {
+  SPRITES = [
+    {
+      background1Sprite: Sprite.from('rat_bg1'),
+      background2aSprite: Sprite.from('rat_bg2'),
+      background2bSprite: Sprite.from('rat_bg2'),
+      background3aSprite: Sprite.from('rat_bg3'),
+      background3bSprite: Sprite.from('rat_bg3'),
+    },
+    {
+      background1Sprite: Sprite.from('rat_bg1'),
+      background2aSprite: Sprite.from('orange_bg2'),
+      background2bSprite: Sprite.from('orange_bg2'),
+      background3aSprite: Sprite.from('rat_bg3'),
+      background3bSprite: Sprite.from('rat_bg3'),
+    },
+  ];
   ISLAND_Y = 96;
   WAVE_Y = 32;
   ISLAND_SPEED = 1;
@@ -9,21 +25,22 @@ export default class Background {
   game;
   container = new Container();
 
-  background1Sprite;
-  background2aSprite;
-  background2bSprite;
-  background3aSprite;
-  background3bSprite;
+  // Properties
+  #character;
 
   constructor(game) {
     this.game = game;
+    this.character = 0;
+  }
 
-    // Sprites
-    this.background1Sprite = Sprite.from('rat_bg1');
-    this.background2aSprite = Sprite.from('rat_bg2');
-    this.background2bSprite = Sprite.from('rat_bg2');
-    this.background3aSprite = Sprite.from('rat_bg3');
-    this.background3bSprite = Sprite.from('rat_bg3');
+  get character() {
+    return this.#character;
+  }
+
+  set character(value) {
+    this.#character = value;
+
+    this.container.removeChildren();
 
     this.background2aSprite.y = this.game.app.screen.height - this.ISLAND_Y;
     this.background2bSprite.x = this.background2bSprite.width;
@@ -37,6 +54,22 @@ export default class Background {
     this.container.addChild(this.background3aSprite);
     this.container.addChild(this.background2bSprite);
     this.container.addChild(this.background3bSprite);
+  }
+
+  get background1Sprite() {
+    return this.SPRITES[this.#character].background1Sprite;
+  }
+  get background2aSprite() {
+    return this.SPRITES[this.#character].background2aSprite;
+  }
+  get background2bSprite() {
+    return this.SPRITES[this.#character].background2bSprite;
+  }
+  get background3aSprite() {
+    return this.SPRITES[this.#character].background3aSprite;
+  }
+  get background3bSprite() {
+    return this.SPRITES[this.#character].background3bSprite;
   }
 
   get width() {
@@ -68,6 +101,5 @@ export default class Background {
     }
   }
 
-  reset() {
-  }
+  reset() {}
 }

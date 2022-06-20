@@ -23,6 +23,8 @@ export default class CharacterOverlay {
     this.container.addChild(ratSprite);
     ratSprite.x = this.game.app.screen.width / 2 - ratSprite.width / 2 - 40;
     ratSprite.y = 60;
+    ratSprite.interactive = true;
+    ratSprite.on('pointerdown', () => this.select(0));
 
     const ratName = new BitmapText('Rat', {
       fontName: 'Edit Undo',
@@ -37,6 +39,8 @@ export default class CharacterOverlay {
     this.container.addChild(orangeSprite);
     orangeSprite.x = this.game.app.screen.width / 2 - ratSprite.width / 2 + 40;
     orangeSprite.y = 66;
+    orangeSprite.interactive = true;
+    orangeSprite.on('pointerdown', () => this.select(1));
 
     const orangeName = new BitmapText('Orange', {
       fontName: 'Edit Undo',
@@ -121,16 +125,24 @@ export default class CharacterOverlay {
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;
     this.fadeTimer.on('repeat', (elapsedTime, repeat) => {
+      // Fade out character overlay
       this.container.alpha = Math.max(0, 1 - (1 / (this.FADE_STEPS - 2)) * repeat);
-      this.game.hud.container.alpha = Math.max(1, (1 / (this.FADE_STEPS - 2)) * repeat);
       this.game.container.filters[0].brightness(
         this.BRIGHTNESS + repeat * ((1 - this.BRIGHTNESS) / this.FADE_STEPS),
         false
       );
+      // Fade in HUD
+      this.game.hud.container.alpha = Math.max(1, (1 / (this.FADE_STEPS - 2)) * repeat);
     });
     this.fadeTimer.on('end', () => {
+      // Hide character overlay
       this.game.app.stage.removeChild(this.container);
+      // Show HUD
       this.game.hud.container.alpha = 1;
+      // Set selected character
+      this.game.player.character = this.selected;
+      this.game.background.character = this.selected;
+      // Reset internals
       this.game.container.filters = null;
       this.fadeTimer = null;
     });

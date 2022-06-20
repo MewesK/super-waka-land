@@ -5,6 +5,38 @@ import { DEBUG } from './Utilities';
 import BoostEffect from './effects/BoostEffect';
 
 export default class Player {
+  SPRITES = [
+    {
+      idleSprite: Sprite.from('rat_idle'),
+      walkSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_walk']);
+        sprite.animationSpeed = 0.1;
+        return sprite;
+      })(),
+      runSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_run']);
+        sprite.animationSpeed = 0.15;
+        return sprite;
+      })(),
+      jumpSprite: Sprite.from('rat_jump'),
+      deadSprite: Sprite.from('rat_dead'),
+    },
+    {
+      idleSprite: Sprite.from('orange_idle'),
+      walkSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_walk']);
+        sprite.animationSpeed = 0.1;
+        return sprite;
+      })(),
+      runSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_run']);
+        sprite.animationSpeed = 0.15;
+        return sprite;
+      })(),
+      jumpSprite: Sprite.from('orange_jump'),
+      deadSprite: Sprite.from('orange_dead'),
+    },
+  ];
   POWER = 1.5;
   MASS = 1.0;
   GRAVITY = 0.3;
@@ -19,6 +51,7 @@ export default class Player {
   container = new Container();
 
   // Properties
+  #character;
   force = new Point(0, 0);
   velocity = new Point(0, 0);
   lastVelocity = new Point(0, 0);
@@ -37,36 +70,50 @@ export default class Player {
   // Effects
   boostEffect;
 
-  // Sprites
-  ratIdleSprite;
-  ratWalkSprite;
-  ratRunSprite;
-  ratJumpSprite;
-
   // Debug
   jumpHeight = 0;
 
   constructor(game) {
     this.game = game;
+    this.character = 0;
 
     // Effects
     this.boostEffect = new BoostEffect(this.game);
 
-    // Sprites
-    this.ratIdleSprite = Sprite.from('rat_idle');
-
-    this.ratWalkSprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_walk']);
-    this.ratWalkSprite.animationSpeed = 0.1;
-    this.ratWalkSprite.play();
-
-    this.ratRunSprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_run']);
-    this.ratRunSprite.animationSpeed = 0.15;
-    this.ratRunSprite.play();
-
-    this.ratJumpSprite = Sprite.from('rat_jump');
-
     // Reset
     this.reset();
+  }
+
+  get character() {
+    return this.#character;
+  }
+
+  set character(value) {
+    this.container.removeChildren();
+    if (this.#character) {
+      this.walkSprite.stop();
+      this.runSprite.stop();
+    }
+    this.#character = value;
+    this.walkSprite.play();
+    this.runSprite.play();
+    this.updateSprite();
+  }
+
+  get idleSprite() {
+    return this.SPRITES[this.#character].idleSprite;
+  }
+  get walkSprite() {
+    return this.SPRITES[this.#character].walkSprite;
+  }
+  get runSprite() {
+    return this.SPRITES[this.#character].runSprite;
+  }
+  get jumpSprite() {
+    return this.SPRITES[this.#character].jumpSprite;
+  }
+  get deadSprite() {
+    return this.SPRITES[this.#character].deadSprite;
   }
 
   get width() {
@@ -230,34 +277,31 @@ export default class Player {
     if (this.#airborne) {
       if (
         this.container.children.length === 0 ||
-        this.container.getChildAt(0) !== this.ratJumpSprite
+        this.container.getChildAt(0) !== this.jumpSprite
       ) {
         this.container.removeChildren();
-        this.container.addChild(this.ratJumpSprite);
+        this.container.addChild(this.jumpSprite);
       }
     } else if (this.velocity.x === 0) {
       if (
         this.container.children.length === 0 ||
-        this.container.getChildAt(0) !== this.ratIdleSprite
+        this.container.getChildAt(0) !== this.idleSprite
       ) {
         this.container.removeChildren();
-        this.container.addChild(this.ratIdleSprite);
+        this.container.addChild(this.idleSprite);
       }
     } else if (this.velocity.x < 3) {
       if (
         this.container.children.length === 0 ||
-        this.container.getChildAt(0) !== this.ratWalkSprite
+        this.container.getChildAt(0) !== this.walkSprite
       ) {
         this.container.removeChildren();
-        this.container.addChild(this.ratWalkSprite);
+        this.container.addChild(this.walkSprite);
       }
     } else if (this.velocity.x >= 3) {
-      if (
-        this.container.children.length === 0 ||
-        this.container.getChildAt(0) !== this.ratRunSprite
-      ) {
+      if (this.container.children.length === 0 || this.container.getChildAt(0) !== this.runSprite) {
         this.container.removeChildren();
-        this.container.addChild(this.ratRunSprite);
+        this.container.addChild(this.runSprite);
       }
     }
   }
