@@ -7,7 +7,6 @@ export default class GameOverOverlay {
 
   game;
   container = new Container();
-  fadeTimer;
   skipTimer;
 
   showing = false;
@@ -47,7 +46,6 @@ export default class GameOverOverlay {
   }
 
   update() {
-    this.fadeTimer?.update(this.game.app.ticker.elapsedMS);
     this.skipTimer?.update(this.game.app.ticker.elapsedMS);
   }
 
@@ -88,6 +86,7 @@ export default class GameOverOverlay {
     }
 
     this.showing = false;
+    this.skippable = false;
 
     this.game.app.stage.removeChild(this.container);
   }

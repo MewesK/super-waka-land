@@ -77,6 +77,7 @@ main #html-overlay {
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
+  pointer-events: none;
   font-smooth: never !important;
   -webkit-font-smoothing: none;
 }
@@ -120,6 +121,7 @@ main #html-overlay button, main #html-overlay input {
   left: 50%;
   transform: translate(-50%, 0%);
   border: 5px solid #ffffff;
+  pointer-events: auto;
 }
 
 /*
@@ -170,6 +172,7 @@ main #html-overlay tbody {
   display: block;
   max-height: 44.2vw !important;
   overflow-y: scroll;
+  pointer-events: auto;
 }
 
 main #html-overlay th,

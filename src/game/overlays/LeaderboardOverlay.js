@@ -103,10 +103,11 @@ export default class LeaderboardOverlay {
     }
 
     this.showing = false;
+    this.skippable = false;
 
     const htmlOverlay = document.querySelector('#html-overlay');
-    htmlOverlay.style.display = 'none';
     htmlOverlay.innerHTML = '';
+    htmlOverlay.style.display = 'none';
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;

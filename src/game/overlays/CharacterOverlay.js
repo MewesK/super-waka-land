@@ -8,10 +8,8 @@ export default class CharacterOverlay {
   game;
   container = new Container();
   fadeTimer;
-  skipTimer;
 
   showing = false;
-  skippable = false;
 
   titleText;
   subtitleText;
@@ -43,7 +41,6 @@ export default class CharacterOverlay {
 
   update() {
     this.fadeTimer?.update(this.game.app.ticker.elapsedMS);
-    this.skipTimer?.update(this.game.app.ticker.elapsedMS);
   }
 
   async show() {
@@ -51,12 +48,6 @@ export default class CharacterOverlay {
       return;
     }
 
-    this.skippable = false;
-    this.skipTimer = new Timer(500);
-    this.skipTimer.on('end', () => {
-      this.skippable = true;
-    });
-    this.skipTimer.start();
 
     this.showing = true;
     this.container.alpha = 1;
@@ -79,8 +70,8 @@ export default class CharacterOverlay {
     this.showing = false;
 
     const htmlOverlay = document.querySelector('#html-overlay');
-    htmlOverlay.style.display = 'none';
     htmlOverlay.innerHTML = '';
+    htmlOverlay.style.display = 'none';
 
     this.fadeTimer = new Timer(20);
     this.fadeTimer.repeat = this.FADE_STEPS;
