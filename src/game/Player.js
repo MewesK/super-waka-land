@@ -89,6 +89,9 @@ export default class Player {
   }
 
   set character(value) {
+    if (this.#character === value) {
+      return;
+    }
     this.container.removeChildren();
     if (this.#character) {
       this.walkSprite.stop();

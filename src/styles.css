@@ -62,12 +62,6 @@ footer .github {
   margin-top: 3em;
 }
 
-@media (min-width: 992px) {
-  main {
-    padding: 1rem !important;
-  }
-}
-
 /*
  * HTML Overlay
  */
@@ -76,6 +70,8 @@ main #html-overlay {
   position: absolute;
   width: 90%;
   height: 70%;
+  max-width: 90vh;
+  max-height: 70vh;
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -91,8 +87,8 @@ main #html-overlay * {
 }
 
 main #html-overlay[aria-busy='true']::before {
-  width: 2em;
-  height: 2em;
+  width: 2vw;
+  height: 2vw;
 }
 
 main #html-overlay label {
@@ -110,21 +106,22 @@ main #html-overlay button:hover {
 }
 
 main #html-overlay input {
-  bottom: 9vw;
+  bottom: 15%;
   border-radius: 0;
   background-color: rgba(32, 32, 32, 0.4);
+  padding-left: 1vw !important;
 }
 
 main #html-overlay button,
 main #html-overlay input {
   position: absolute;
   width: 96%;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  height: 12%;
   left: 50%;
   transform: translate(-50%, 0%);
   border: 5px solid #ffffff;
   pointer-events: auto;
+  padding: 0;
 }
 
 /*
@@ -133,7 +130,7 @@ main #html-overlay input {
 
 main #html-overlay h3 {
   font-size: 8vw !important;
-  margin-top: 6rem;
+  margin-top: 5%;
 }
 
 main #html-overlay h4,
@@ -174,7 +171,7 @@ main #html-overlay tr#you {
 
 main #html-overlay tbody {
   display: block;
-  max-height: 44.2vw !important;
+  max-height: 42vw !important;
   overflow-y: scroll;
   pointer-events: auto;
 }
@@ -194,4 +191,26 @@ main #html-overlay td:nth-of-type(1) {
 main #html-overlay th:nth-of-type(3),
 main #html-overlay td:nth-of-type(2) {
   width: 60%;
+}
+
+@media (min-width: 992px) {
+  main {
+    padding: 1rem !important;
+  }
+
+  main #html-overlay * {
+    font-size: 1.6rem !important;
+  }
+  main #html-overlay h3 {
+    font-size: 4.5rem !important;
+  }
+
+  main #html-overlay h4,
+  main #html-overlay h4 * {
+    font-size: 2.8rem !important;
+  }
+
+  main #html-overlay tbody {
+    max-height: 23rem !important;
+  }
 }

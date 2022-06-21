@@ -38,6 +38,9 @@ export default class Background {
   }
 
   set character(value) {
+    if (this.#character === value) {
+      return;
+    }
     this.#character = value;
 
     this.container.removeChildren();
