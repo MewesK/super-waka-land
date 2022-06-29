@@ -29,7 +29,7 @@ export default class SettingsOverlay extends Overlay {
       .querySelector('template#settings-template')
       .content.cloneNode(true).firstElementChild;
 
-    // Submit button
+    // Continue button
     this.overlayElement.querySelector('#continue-button').addEventListener('click', async () => {});
 
     CONTAINER.appendChild(this.overlayElement);

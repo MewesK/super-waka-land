@@ -17,11 +17,13 @@ export default class GameOverOverlay extends Overlay {
   }
 
   createContainer() {
+    // Create text
     this.titleText = new BitmapText('Game Over', this.TITLE_FONT);
     this.container.addChild(this.titleText);
     this.titleText.x = Math.round(this.game.app.screen.width / 2 - this.titleText.width / 2);
     this.titleText.y = 0;
 
+    // Create sprite
     this.deadSprite = this.game.player.deadSprite;
     this.container.addChild(this.deadSprite);
     this.deadSprite.x = Math.round(this.game.app.screen.width / 2 - this.deadSprite.width / 2);

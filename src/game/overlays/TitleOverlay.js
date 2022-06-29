@@ -7,7 +7,7 @@ export default class TitleOverlay extends Overlay {
 
   logoSprite;
   subtitleText;
-  tutorialText;
+  infoText;
 
   constructor(game) {
     super(game);
@@ -28,10 +28,10 @@ export default class TitleOverlay extends Overlay {
     this.subtitleText.x = Math.round(this.game.app.screen.width / 2 - this.subtitleText.width / 2);
     this.subtitleText.y = 80;
 
-    this.tutorialText = new BitmapText('Click to start', this.INFO_FONT);
-    this.container.addChild(this.tutorialText);
-    this.tutorialText.x = Math.round(this.game.app.screen.width / 2 - this.tutorialText.width / 2);
-    this.tutorialText.y = 172;
+    this.infoText = new BitmapText('Click to start', this.INFO_FONT);
+    this.container.addChild(this.infoText);
+    this.infoText.x = Math.round(this.game.app.screen.width / 2 - this.infoText.width / 2);
+    this.infoText.y = 172;
 
     // Align container
     this.container.y = Math.round(this.game.app.screen.height / 2 - this.container.height / 2);

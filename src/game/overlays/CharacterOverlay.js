@@ -9,6 +9,7 @@ export default class CharacterOverlay extends Overlay {
   selected;
 
   titleText;
+  infoText;
 
   constructor(game) {
     super(game);
@@ -69,6 +70,11 @@ export default class CharacterOverlay extends Overlay {
     this.container.addChild(this.titleText);
     this.titleText.x = Math.round(this.game.app.screen.width / 2 - this.titleText.width / 2);
     this.titleText.y = 0;
+
+    this.infoText = new BitmapText('Select a character', this.INFO_FONT);
+    this.container.addChild(this.infoText);
+    this.infoText.x = Math.round(this.game.app.screen.width / 2 - this.infoText.width / 2);
+    this.infoText.y = 45;
 
     // Align container
     this.container.y = 15;
