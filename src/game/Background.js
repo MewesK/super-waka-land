@@ -45,18 +45,23 @@ export default class Background {
 
     this.container.removeChildren();
 
+    this.container.addChild(this.background1Sprite);
+
+    this.container.addChild(this.background2aSprite);
+    this.background2aSprite.x = 0;
     this.background2aSprite.y = this.game.app.screen.height - this.ISLAND_Y;
+
+    this.container.addChild(this.background2bSprite);
     this.background2bSprite.x = this.background2bSprite.width;
     this.background2bSprite.y = this.background2aSprite.y;
+
+    this.container.addChild(this.background3aSprite);
+    this.background3aSprite.x = 0;
     this.background3aSprite.y = this.game.app.screen.height - this.WAVE_Y;
+
+    this.container.addChild(this.background3bSprite);
     this.background3bSprite.x = this.background3bSprite.width;
     this.background3bSprite.y = this.background3aSprite.y;
-
-    this.container.addChild(this.background1Sprite);
-    this.container.addChild(this.background2aSprite);
-    this.container.addChild(this.background3aSprite);
-    this.container.addChild(this.background2bSprite);
-    this.container.addChild(this.background3bSprite);
   }
 
   get background1Sprite() {

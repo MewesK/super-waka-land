@@ -20,18 +20,16 @@
 
 <body>
 
-  <main class="container-fluid">
-    <div id="app"></div>
+  <main id="app" class="container">
   </main>
 
-  <section id="manual">
-    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump (and start the game). The longer you press down the
-    higher you'll jump.<br>
+  <p id="manual">
+    <strong>Controls</strong><br>
+    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump. The longer you press down the higher you'll jump.<br>
     Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. The boost works in the air too, so you can save
     yourself from the abyss.<br>
-    To select a charcter tap on it or select it with the cursor keys.
-  </section>
-  </section>
+    Press <kbd>R</kbd> to reset the game quickly.
+  </p>
 
   <footer>
     <p>
@@ -52,53 +50,95 @@
 
   <!-- Templates -->
 
-  <template id="character-select-template">
-    <button class="outline">
-      Confirm
-    </button>
+  <template id="character-template">
+    <div id="character-overlay" class="overlay" aria-busy="false" aria-hidden="true">
+      <main>
+        <h3>Select a character</h3>
+      </main>
+      <footer>
+        <form>
+          <label for="name-input" aria-hidden="true">Your Name</label>
+          <input type="text" id="name-input" name="name" placeholder="Your Name" required maxlength="32"
+            spellcheck="false">
+          <button id="confirm-button" type="submit" class="outline bounce">Confirm</button>
+        </form>
+      </footer>
+    </div>
   </template>
 
-  <template id="leaderboard-table-template">
-    <table id="leaderboard-table" role="grid">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Score</th>
-          <th scope="col">Name</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+  <template id="gameover-template">
+    <div id="gameover-overlay" class="overlay" aria-busy="true" aria-hidden="true">
+      <main>
+        <h1>Rats College Fund: <em id="score"></em></h1>
+        <h2>You rank <em id="rank"></em> on the leaderboard</h2>
+      </main>
+      <footer>
+        <button id="leaderboard-button" class="outline bounce">
+          Leaderboard
+        </button>
+      </footer>
+    </div>
   </template>
 
-  <template id="leaderboard-row-template">
-    <tr>
-      <th scope="row"></th>
-      <td></td>
-      <td></td>
-    </tr>
+  <template id="leaderboard-template">
+    <div id="leaderboard-overlay" class="overlay" aria-busy="true" aria-hidden="true">
+      <main>
+        <table class="leaderboard" role="grid">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Score</th>
+              <th scope="col">Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template id="leaderboard-row-template">
+              <tr>
+                <th scope="row"></th>
+                <td></td>
+                <td></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </main>
+      <footer>
+        <button id="retry-button" class="outline  bounce">
+          Retry
+        </button>
+      </footer>
+    </div>
   </template>
 
-  <template id="leaderboard-ranked-template">
-    <section id="leaderboard-ranked">
-      <h3>Congratulations!</h3>
-      <h4>
-        You rank <span id="rank"></span> on the leaderboard
-      </h4>
-      <form>
-        <label for="name" aria-hidden="true">Your Name</label>
-        <input type="text" id="name" name="name" placeholder="Your Name" required maxlength="32">
-        <button type="submit" class="outline">Submit</button>
-      </form>
-    </section>
+  <template id="settings-template">
+    <div id="settings-overlay" class="overlay" aria-busy="false" aria-hidden="true">
+      <main>
+        ...
+      </main>
+      <footer>
+        <button id="continue-button" class="outline  bounce">
+          Continue
+        </button>
+      </footer>
+    </div>
   </template>
 
-  <template id="leaderboard-retry-template">
-    <button class="outline">
-      Retry
-    </button>
-  </template>
+  <svg width="0" height="0" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="crispify">
+        <feComponentTransfer>
+          <feFuncA type="discrete" tableValues="0 1" />
+        </feComponentTransfer>
+      </filter>
+      <filter id="pixelate" x="0" y="0">
+        <feFlood x="4" y="4" height="2" width="2" />
+        <feComposite width="10" height="10" />
+        <feTile result="a" />
+        <feComposite in="SourceGraphic" in2="a" operator="in" />
+        <feMorphology operator="dilate" radius="5" />
+      </filter>
+    </defs>
+  </svg>
 </body>
 
 </html>

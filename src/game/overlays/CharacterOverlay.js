@@ -1,55 +1,55 @@
-import { Timer } from 'eventemitter3-timer';
-import { BitmapText, Container, filters, Sprite } from 'pixi.js';
+import { BitmapText, filters, Sprite } from 'pixi.js';
+import { CONTAINER } from '../Utilities';
+import Overlay from './Overlay';
 
-export default class CharacterOverlay {
-  BRIGHTNESS = 0.15;
-  FADE_STEPS = 10;
-
-  game;
-  container = new Container();
-  fadeTimer;
+export default class CharacterOverlay extends Overlay {
+  FADE_IN_STEPS = 0;
 
   characters;
   selected;
-  showing = false;
 
   titleText;
-  subtitleText;
 
   constructor(game) {
-    this.game = game;
+    super(game);
 
+    this.createContainer();
+    this.createOverlay();
+    this.select(0);
+  }
+
+  createContainer() {
+    // Create rat sprite
     const ratSprite = Sprite.from('rat_idle');
     this.container.addChild(ratSprite);
-    ratSprite.x = this.game.app.screen.width / 2 - ratSprite.width / 2 - 40;
-    ratSprite.y = 60;
+    ratSprite.x = Math.round(this.game.app.screen.width / 2 - ratSprite.width / 2 - 40);
+    ratSprite.y = 80;
     ratSprite.interactive = true;
-    ratSprite.on('pointerdown', () => this.select(0));
-
-    const ratName = new BitmapText('Rat', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      align: 'center',
+    ratSprite.on('pointerdown', (event) => {
+      event.stopPropagation();
+      this.select(0);
     });
-    this.container.addChild(ratName);
-    ratName.x = this.game.app.screen.width / 2 - ratName.width / 2 - 40;
-    ratName.y = 100;
 
+    const ratName = new BitmapText('Rat', this.DEFAULT_FONT);
+    this.container.addChild(ratName);
+    ratName.x = Math.round(this.game.app.screen.width / 2 - ratName.width / 2 - 40);
+    ratName.y = 120;
+
+    // Create orange sprite
     const orangeSprite = Sprite.from('orange_idle');
     this.container.addChild(orangeSprite);
-    orangeSprite.x = this.game.app.screen.width / 2 - ratSprite.width / 2 + 40;
-    orangeSprite.y = 66;
+    orangeSprite.x = Math.round(this.game.app.screen.width / 2 - ratSprite.width / 2 + 40);
+    orangeSprite.y = 86;
     orangeSprite.interactive = true;
-    orangeSprite.on('pointerdown', () => this.select(1));
-
-    const orangeName = new BitmapText('Orange', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      align: 'center',
+    orangeSprite.on('pointerdown', (event) => {
+      event.stopPropagation();
+      this.select(1);
     });
+
+    const orangeName = new BitmapText('Orange', this.DEFAULT_FONT);
     this.container.addChild(orangeName);
-    orangeName.x = this.game.app.screen.width / 2 - orangeName.width / 2 + 40;
-    orangeName.y = 100;
+    orangeName.x = Math.round(this.game.app.screen.width / 2 - orangeName.width / 2 + 40);
+    orangeName.y = 120;
 
     this.characters = [
       {
@@ -64,101 +64,41 @@ export default class CharacterOverlay {
       },
     ];
 
-    this.titleText = new BitmapText('Characters', {
-      fontName: 'Stop Bullying',
-      fontSize: 36,
-      letterSpacing: -1,
-      align: 'center',
-    });
+    // Create text
+    this.titleText = new BitmapText('Characters', this.TITLE_FONT);
     this.container.addChild(this.titleText);
-    this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
+    this.titleText.x = Math.round(this.game.app.screen.width / 2 - this.titleText.width / 2);
     this.titleText.y = 0;
 
-    this.subtitleText = new BitmapText('Please select a character', {
-      fontName: 'Edit Undo',
-      fontSize: 10,
-      align: 'center',
-      tint: 0xa0a0a0,
-    });
-    this.container.addChild(this.subtitleText);
-    this.subtitleText.x = this.game.app.screen.width / 2 - this.subtitleText.width / 2;
-    this.subtitleText.y = 160;
-
+    // Align container
     this.container.y = 15;
-
-    this.select(0);
   }
 
-  update() {
-    this.fadeTimer?.update(this.game.app.ticker.elapsedMS);
+  createOverlay() {
+    this.overlayElement = document
+      .querySelector('template#character-template')
+      .content.cloneNode(true).firstElementChild;
+
+    // Confirm button
+    this.overlayElement.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      this.game.player.name = new FormData(event.target).get('name');
+      this.hide();
+    });
+
+    CONTAINER.appendChild(this.overlayElement);
   }
 
-  async show() {
-    if (this.showing) {
+  async hide() {
+    if (!this.game.player.name) {
+      this.overlayElement.querySelector('#confirm-button').click();
       return;
     }
 
-    this.showing = true;
-    this.container.alpha = 1;
+    await super.hide();
 
-    // Show HTML overlay overlay with spinner
-    const htmlOverlay = document.querySelector('#html-overlay');
-    htmlOverlay.innerHTML = '';
-    htmlOverlay.style.display = 'block';
-
-    this.createSelect();
-
-    this.game.app.stage.addChild(this.container);
-  }
-
-  hide() {
-    if (!this.showing) {
-      return;
-    }
-
-    this.showing = false;
-
-    const htmlOverlay = document.querySelector('#html-overlay');
-    htmlOverlay.innerHTML = '';
-    htmlOverlay.style.display = 'none';
-
-    this.fadeTimer = new Timer(20);
-    this.fadeTimer.repeat = this.FADE_STEPS;
-    this.fadeTimer.on('repeat', (elapsedTime, repeat) => {
-      // Fade out character overlay
-      this.container.alpha = Math.max(0, 1 - (1 / (this.FADE_STEPS - 2)) * repeat);
-      this.game.container.filters[0].brightness(
-        this.BRIGHTNESS + repeat * ((1 - this.BRIGHTNESS) / this.FADE_STEPS),
-        false
-      );
-      // Fade in HUD
-      this.game.hud.container.alpha = Math.max(1, (1 / (this.FADE_STEPS - 2)) * repeat);
-    });
-    this.fadeTimer.on('end', () => {
-      // Hide character overlay
-      this.game.app.stage.removeChild(this.container);
-      // Show HUD
-      this.game.hud.container.alpha = 1;
-      // Set selected character
-      this.game.player.character = this.selected;
-      this.game.background.character = this.selected;
-      // Reset internals
-      this.game.container.filters = null;
-      this.fadeTimer = null;
-    });
-    this.fadeTimer.start();
-  }
-
-  createSelect() {
-    const selectTemplate = document.querySelector('#character-select-template');
-    const select = selectTemplate.content.cloneNode(true);
-    select.querySelector('button').addEventListener('click', () => {
-      this.game.paused = false;
-      this.game.reset();
-    });
-
-    const htmlOverlay = document.querySelector('#html-overlay');
-    htmlOverlay.appendChild(select);
+    this.game.paused = false;
+    this.game.reset();
   }
 
   select(index) {
@@ -166,6 +106,8 @@ export default class CharacterOverlay {
     if (this.selected >= this.characters.length) {
       this.selected = 0;
     }
+
+    console.debug('Selecting ', this.selected);
 
     const filter = new filters.ColorMatrixFilter();
     filter.brightness(this.BRIGHTNESS);
@@ -176,5 +118,8 @@ export default class CharacterOverlay {
         character.sprite.filters = null;
       }
     });
+
+    this.game.player.character = this.selected;
+    this.game.background.character = this.selected;
   }
 }

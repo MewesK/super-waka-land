@@ -51,10 +51,6 @@ export default class Map {
   constructor(game) {
     this.game = game;
 
-    this.mapWidth = Math.ceil(this.game.app.screen.width / this.TILE_WIDTH);
-    this.mapFullWidth = this.mapWidth * 2;
-    this.mapHeight = Math.ceil(this.game.app.screen.height / this.TILE_HEIGHT);
-
     // Tilemap
     this.tilemap = new CompositeTilemap();
     this.debugTilemap = new CompositeTilemap();
@@ -62,6 +58,12 @@ export default class Map {
     if (DEBUG) {
       this.container.addChild(this.debugTilemap);
     }
+
+    // Map
+    this.mapWidth = Math.ceil(this.game.app.screen.width / this.TILE_WIDTH);
+    this.mapFullWidth = this.mapWidth * 2;
+    this.mapHeight = Math.ceil(this.game.app.screen.height / this.TILE_HEIGHT);
+    this.createMap();
 
     // Add timer
     this.animationTimer = new Timer(150);

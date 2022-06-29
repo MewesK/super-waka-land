@@ -1,4 +1,4 @@
-import { Container, Loader, UPDATE_PRIORITY } from 'pixi.js';
+import { Container, Loader, Rectangle, UPDATE_PRIORITY } from 'pixi.js';
 
 import { DEBUG } from './Utilities';
 import Background from './Background';
@@ -11,10 +11,11 @@ import TitleOverlay from './overlays/TitleOverlay';
 import CharacterOverlay from './overlays/CharacterOverlay';
 import GameOverOverlay from './overlays/GameOverOverlay';
 import LeaderboardOverlay from './overlays/LeaderboardOverlay';
+import SettingsOverlay from './overlays/SettingsOverlay';
 
 export default class Game {
   app;
-  container = new Container();
+  container;
   inputManager;
 
   // Sound
@@ -36,75 +37,89 @@ export default class Game {
   hud;
 
   // Overlays
-  gameOverOverlay;
   characterOverlay;
+  gameOverOverlay;
   leaderboardOverlay;
+  settingsOverlay;
   titleOverlay;
 
   constructor(app) {
     this.app = app;
     this.inputManager = new InputManager(this);
 
+    // Prepare sounds
     this.bgMusic = Loader.shared.resources.bgMusic.sound;
     this.bgMusic.loop = true;
-    this.bgMusic.volume = 0.03;
+    this.bgMusic.volume = 0.1;
     this.bgMusic.play();
     this.boostSound = Loader.shared.resources.boostSound.sound;
-    this.boostSound.volume = 0.1;
+    this.boostSound.volume = 0.15;
     this.coinSound = Loader.shared.resources.coinSound.sound;
-    this.coinSound.volume = 0.06;
+    this.coinSound.volume = 0.15;
     this.jumpSound = Loader.shared.resources.jumpSound.sound;
-    this.jumpSound.volume = 0.05;
+    this.jumpSound.volume = 0.15;
     this.powerupSound = Loader.shared.resources.powerupSound.sound;
-    this.powerupSound.volume = 0.1;
+    this.powerupSound.volume = 0.15;
 
-    this.background = new Background(this);
-    this.map = new Map(this);
-    this.player = new Player(this);
-    this.hud = new HUD(this);
-
-    this.gameOverOverlay = new GameOverOverlay(this);
-    this.characterOverlay = new CharacterOverlay(this);
-    this.leaderboardOverlay = new LeaderboardOverlay(this);
-    this.titleOverlay = new TitleOverlay(this);
-
-    this.reset();
-
-    // Compose stage
-    this.container.addChild(this.background.container);
-    this.container.addChild(this.map.container);
-    this.container.addChild(this.player.container);
-    this.container.addChild(this.hud.container);
+    // Create container
+    this.container = new Container();
+    this.container.filterArea = new Rectangle(0, 0, this.app.screen.width, this.app.screen.height);
     this.app.stage.addChild(this.container);
 
-    this.titleOverlay.show();
+    // Create layers
+    this.background = new Background(this);
+    this.container.addChild(this.background.container);
+
+    this.map = new Map(this);
+    this.container.addChild(this.map.container);
+
+    this.player = new Player(this);
+    this.container.addChild(this.player.container);
+
+    this.hud = new HUD(this);
+    this.container.addChild(this.hud.container);
+
+    // Create overlays
+    this.characterOverlay = new CharacterOverlay(this);
+    this.gameOverOverlay = new GameOverOverlay(this);
+    this.leaderboardOverlay = new LeaderboardOverlay(this);
+    this.settingsOverlay = new SettingsOverlay(this);
+    this.titleOverlay = new TitleOverlay(this);
 
     // Register event listeners
+    this.inputManager.on('reset', ['r'], (event) => {
+      this.reset();
+    });
     this.inputManager.on('select', ['ArrowLeft', 'ArrowRight'], (event) => {
       if (this.paused && this.characterOverlay.showing) {
         this.characterOverlay.select(this.characterOverlay.selected + 1);
       }
     });
-    this.inputManager.on('skip', ['s', 'pointer', ' '], (event) => {
+    this.inputManager.on('skip', ['s', 'pointer', ' ', 'Enter'], async (event) => {
       if (this.paused) {
-        if (this.titleOverlay.showing) {
-          this.titleOverlay.hide();
+        if (this.titleOverlay.showing && this.titleOverlay.skippable) {
+          await this.titleOverlay.hide();
           this.characterOverlay.show();
-        } else if (this.characterOverlay.showing && !event.pointerType) {
-          this.paused = false;
-          this.reset();
+        } else if (
+          this.characterOverlay.showing &&
+          this.characterOverlay.skippable &&
+          event.type !== 'pointerdown'
+        ) {
+          this.characterOverlay.hide();
         }
       } else if (this.player.dead) {
-        if (this.gameOverOverlay.showing && this.gameOverOverlay.skippable) {
-          this.gameOverOverlay.hide();
-          this.leaderboardOverlay.show();
-        } else if (
-          this.leaderboardOverlay.showing &&
-          this.leaderboardOverlay.skippable &&
-          !event.pointerType
+        if (
+          this.gameOverOverlay.showing &&
+          this.gameOverOverlay.skippable &&
+          event.type !== 'pointerdown'
         ) {
-          this.reset();
+          await this.gameOverOverlay.hide();
+          this.leaderboardOverlay.show();
+        } else if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
+          this.leaderboardOverlay.hide();
         }
+      } else if (this.settingsOverlay.showing && this.settingsOverlay.skippable) {
+        this.settingsOverlay.hide();
       }
     });
     this.inputManager.on(
@@ -126,6 +141,9 @@ export default class Game {
         this.player.startBoost();
       }
     });
+
+    // Show title overlay
+    this.titleOverlay.show();
 
     // Start game loop
     console.debug('Starting game loop');
@@ -154,6 +172,7 @@ export default class Game {
     this.titleOverlay.update(dt);
     this.characterOverlay.update(dt);
     this.gameOverOverlay.update(dt);
+    this.settingsOverlay.update(dt);
     this.leaderboardOverlay.update(dt);
 
     if (this.player.dead) {
@@ -225,11 +244,5 @@ export default class Game {
     this.map.reset();
     this.player.reset();
     this.hud.reset();
-
-    // Overlays
-    this.titleOverlay.hide();
-    this.characterOverlay.hide();
-    this.gameOverOverlay.hide();
-    this.leaderboardOverlay.hide();
   }
 }

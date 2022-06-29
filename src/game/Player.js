@@ -52,6 +52,7 @@ export default class Player {
 
   // Properties
   #character;
+  #name;
   force = new Point(0, 0);
   velocity = new Point(0, 0);
   lastVelocity = new Point(0, 0);
@@ -84,6 +85,18 @@ export default class Player {
     this.reset();
   }
 
+  get name() {
+    return this.#name;
+  }
+
+  set name(value) {
+    if (this.#name === value) {
+      return;
+    }
+    this.#name = value;
+    this.game.hud.updateName();
+  }
+
   get character() {
     return this.#character;
   }
@@ -93,7 +106,8 @@ export default class Player {
       return;
     }
     this.container.removeChildren();
-    if (this.#character) {
+    if (this.#character !== undefined) {
+      this.addPosition(null, this.idleSprite.height - this.SPRITES[value].idleSprite.height, true); // TODO: Check current sprite instead of idle
       this.walkSprite.stop();
       this.runSprite.stop();
     }

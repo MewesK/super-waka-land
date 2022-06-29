@@ -3,12 +3,11 @@ import Stats from 'stats.js';
 import '@pixi/sound';
 import { getGPUTier } from 'detect-gpu';
 
-import { DEBUG } from './game/Utilities';
+import { CONTAINER, DEBUG } from './game/Utilities';
 import Game from './game/Game';
 
 // Debug
-if (DEBUG !== 'log') {
-  console.log = () => {};
+if (!DEBUG) {
   console.debug = () => {};
 }
 
@@ -21,7 +20,7 @@ getGPUTier().then((tier) => {
 
   settings.SCALE_MODE = SCALE_MODES.NEAREST;
   settings.ROUND_PIXELS = false;
-  settings.RESOLUTION = { 1: 1, 2: 5, 3: 10 }[tier.tier];
+  settings.RESOLUTION = { 1: 1, 2: 2, 3: 4 }[tier.tier];
 
   console.debug(`Detected a tier ${tier.tier} GPU. Setting resolution to ${settings.RESOLUTION}.`);
 
@@ -32,20 +31,14 @@ getGPUTier().then((tier) => {
     backgroundColor: BACKGROUND_COLOR,
     antialias: false,
   });
-  document.getElementById('app').appendChild(app.view);
-
-  // Create leaderboard overlay
-  const htmlOverlay = document.createElement('div');
-  htmlOverlay.id = 'html-overlay';
-  htmlOverlay.style.display = 'none';
-  document.getElementById('app').appendChild(htmlOverlay);
+  CONTAINER.appendChild(app.view);
 
   if (DEBUG) {
     // Create FPS counter
     app.stats = new Stats();
     app.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     app.stats.dom.id = 'stats';
-    document.getElementById('app').appendChild(app.stats.dom);
+    CONTAINER.appendChild(app.stats.dom);
   }
 
   // Load resources
@@ -71,4 +64,3 @@ getGPUTier().then((tier) => {
       app.renderer.render(app.stage);
     });
 });
-

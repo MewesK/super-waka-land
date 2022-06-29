@@ -3,6 +3,7 @@ use Dotenv\Dotenv;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Exception\HttpBadRequestException;
+use Slim\Exception\HttpInternalServerErrorException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 
@@ -16,7 +17,7 @@ $app = AppFactory::create();
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
-$dotenv->required(['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS'])->notEmpty();
+$dotenv->required(['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'DB_TABLE'])->notEmpty();
 
 //
 // Middleware
@@ -48,7 +49,7 @@ function getDatabase() {
 function getLeaderboard(string $version = '1.0', int $limit = 100) {
   $dbh = getDatabase();
 
-  $stmt = $dbh->prepare("SELECT * FROM `highscore` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit");
+  $stmt = $dbh->prepare("SELECT * FROM `${$_ENV['DB_TABLE']}` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit");
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
   $stmt->execute();
@@ -72,14 +73,23 @@ function getLeaderboard(string $version = '1.0', int $limit = 100) {
 function addScore(string $version = '1.0', string $name, int $score) {
   $dbh = getDatabase();
 
-  $stmt = $dbh->prepare("INSERT INTO `highscore` (`id`, `name`, `score`, `version`, `created`) VALUES (NULL, :name, :score, :version, CURRENT_TIMESTAMP)");
+  $stmt = $dbh->prepare("INSERT INTO `${$_ENV['DB_TABLE']}` (`id`, `name`, `score`, `version`, `created`) VALUES (NULL, :name, :score, :version, CURRENT_TIMESTAMP)");
   $stmt->bindParam('name', $name, PDO::PARAM_STR);
   $stmt->bindParam('score', $score, PDO::PARAM_INT);
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->execute();
+  $id = (int) $dbh->lastInsertId();
+
+  $stmt = $dbh->prepare("SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `${$_ENV['DB_TABLE']}` WHERE `version` = :version) temp WHERE `id` = :id");
+  $stmt->bindParam('version', $version, PDO::PARAM_STR);
+  $stmt->bindParam('id', $id, PDO::PARAM_INT);
+  $stmt->execute();
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
   $stmt = null;
   $dbh = null;
+
+  return $row;
 }
 
 //
@@ -114,11 +124,12 @@ $app->post('/highscore/{version}', function (Request $request, Response $respons
     throw new HttpBadRequestException($request, 'Invalid body');
   }
 
-  addScore($version, $data['name'], (int) $data['score']);
+  $ranking = addScore($version, $data['name'], (int) $data['score']);
+  if (!$ranking) {
+    throw new HttpInternalServerErrorException($request, 'Database error');
+  }
 
-  $leaderboard = getLeaderboard($version);
-
-  $response->getBody()->write(json_encode($leaderboard));
+  $response->getBody()->write(json_encode($ranking));
   return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
 });
 

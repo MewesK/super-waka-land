@@ -1,85 +1,39 @@
-import { Timer } from 'eventemitter3-timer';
-import { BitmapText, Container, filters, Rectangle, Sprite } from 'pixi.js';
+import { BitmapText, Sprite } from 'pixi.js';
+import Overlay from './Overlay';
 
-export default class TitleOverlay {
-  BRIGHTNESS = 0.15;
-
-  game;
-  container = new Container();
-
-  showing = false;
+export default class TitleOverlay extends Overlay {
+  FADE_IN_STEPS = 0;
+  FADE_OUT_STEPS = 0;
 
   logoSprite;
   subtitleText;
   tutorialText;
 
   constructor(game) {
-    this.game = game;
+    super(game);
 
+    this.createContainer();
+  }
+
+  createContainer() {
+    // Create logo
     this.logoSprite = Sprite.from('logo');
     this.container.addChild(this.logoSprite);
-    this.logoSprite.x = this.game.app.screen.width / 2 - this.logoSprite.width / 2;
+    this.logoSprite.x = Math.round(this.game.app.screen.width / 2 - this.logoSprite.width / 2);
     this.logoSprite.y = 0;
 
-    this.subtitleText = new BitmapText('Help rat to start his\ncollege fund!', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      align: 'center',
-    });
+    // Create text
+    this.subtitleText = new BitmapText('Help rat to start his\ncollege fund!', this.DEFAULT_FONT);
     this.container.addChild(this.subtitleText);
-    this.subtitleText.x = this.game.app.screen.width / 2 - this.subtitleText.width / 2;
+    this.subtitleText.x = Math.round(this.game.app.screen.width / 2 - this.subtitleText.width / 2);
     this.subtitleText.y = 80;
 
-    this.tutorialText = new BitmapText(
-      'Tap to jump\nSwipe up for boost\nCollect stuff\nCoin $10 * Coke $50 * Boost $50',
-      {
-        fontName: 'Edit Undo',
-        fontSize: 10,
-        align: 'center',
-        tint: 0xa0a0a0,
-      }
-    );
+    this.tutorialText = new BitmapText('Click to start', this.INFO_FONT);
     this.container.addChild(this.tutorialText);
-    this.tutorialText.x = this.game.app.screen.width / 2 - this.tutorialText.width / 2;
-    this.tutorialText.y = 150;
+    this.tutorialText.x = Math.round(this.game.app.screen.width / 2 - this.tutorialText.width / 2);
+    this.tutorialText.y = 172;
 
-    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2;
-  }
-
-  update() {
-  }
-
-  show() {
-    if (this.showing) {
-      return;
-    }
-
-    this.showing = true;
-    this.container.alpha = 1;
-    this.game.hud.container.alpha = 0;
-
-    const filter = new filters.ColorMatrixFilter();
-    filter.brightness(this.BRIGHTNESS);
-
-    this.game.container.filterArea = new Rectangle(
-      0,
-      0,
-      this.game.app.screen.width,
-      this.game.app.screen.height
-    );
-
-    this.game.container.filters = [filter];
-
-    this.game.app.stage.addChild(this.container);
-  }
-
-  hide() {
-    if (!this.showing) {
-      return;
-    }
-
-    this.showing = false;
-
-    this.game.app.stage.removeChild(this.container);
+    // Align container
+    this.container.y = Math.round(this.game.app.screen.height / 2 - this.container.height / 2);
   }
 }

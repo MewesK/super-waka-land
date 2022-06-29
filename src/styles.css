@@ -1,4 +1,5 @@
 @import 'npm:@picocss/pico/css/pico.min.css';
+@import './overlay.css';
 
 @font-face {
   font-family: 'Edit Undo';
@@ -9,36 +10,37 @@
 }
 
 :root {
-  --border-radius: 0.1rem;
+  --border-radius: 0.2rem;
 }
 
-main {
+#app {
+  max-width: 100vmin;
+  max-height: 100vmin;
   padding: 0rem !important;
   margin-bottom: 2rem !important;
   position: relative;
   text-align: center;
 }
 
-main canvas {
+#app canvas {
   width: 100%;
   height: 100%;
-  max-width: 100vh;
-  max-height: 100vh;
   image-rendering: pixelated;
   box-shadow: var(--card-box-shadow);
 }
 
-main #stats {
+#app #stats {
   position: absolute !important;
   left: inherit !important;
-  top: var(--spacing) !important;
-  right: var(--spacing) !important;
+  top: 0 !important;
+  right: 0 !important;
 }
 
 #manual {
   color: var(--muted-color);
   text-align: center;
   line-height: 2;
+  font-size: medium;
 }
 
 #manual kbd {
@@ -47,6 +49,7 @@ main #stats {
 
 footer {
   text-align: center;
+  padding: 2rem 0 !important;
 }
 
 footer p {
@@ -59,158 +62,5 @@ footer a {
 }
 
 footer .github {
-  margin-top: 3em;
-}
-
-/*
- * HTML Overlay
- */
-
-main #html-overlay {
-  position: absolute;
-  width: 90%;
-  height: 70%;
-  max-width: 90vh;
-  max-height: 70vh;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  font-smooth: never !important;
-  -webkit-font-smoothing: none;
-}
-
-main #html-overlay * {
-  color: #ffffff !important;
-  font-family: 'Edit Undo';
-  font-size: 2.5vw !important;
-}
-
-main #html-overlay[aria-busy='true']::before {
-  width: 2vw;
-  height: 2vw;
-}
-
-main #html-overlay label {
-  display: none;
-}
-
-main #html-overlay button {
-  bottom: 0;
-  border-radius: 0;
-  background-color: rgba(128, 128, 128, 0.4);
-}
-
-main #html-overlay button:hover {
-  background-color: rgba(128, 128, 128, 0.8);
-}
-
-main #html-overlay input {
-  bottom: 15%;
-  border-radius: 0;
-  background-color: rgba(32, 32, 32, 0.4);
-  padding-left: 1vw !important;
-}
-
-main #html-overlay button,
-main #html-overlay input {
-  position: absolute;
-  width: 96%;
-  height: 12%;
-  left: 50%;
-  transform: translate(-50%, 0%);
-  border: 5px solid #ffffff;
-  pointer-events: auto;
-  padding: 0;
-}
-
-/*
- * Leaderboard
- */
-
-main #html-overlay h3 {
-  font-size: 8vw !important;
-  margin-top: 5%;
-}
-
-main #html-overlay h4,
-main #html-overlay h4 * {
-  font-size: 5vw !important;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-}
-
-main #html-overlay #rank {
-  color: #ff0000 !important;
-}
-
-/*
- * Leaderboard Table
- */
-
-main #html-overlay table {
-  width: 96%;
-  margin: auto;
-  margin-top: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-main #html-overlay thead {
-  border-bottom: 4px solid #ffffff;
-}
-
-main #html-overlay thead,
-main #html-overlay tr {
-  display: table;
-  width: 100%;
-}
-
-main #html-overlay tr#you {
-  background-color: #ff0000;
-}
-
-main #html-overlay tbody {
-  display: block;
-  max-height: 42vw !important;
-  overflow-y: scroll;
-  pointer-events: auto;
-}
-
-main #html-overlay th,
-main #html-overlay td {
-  border: none;
-}
-
-main #html-overlay th:nth-of-type(1) {
-  width: 10%;
-}
-main #html-overlay th:nth-of-type(2),
-main #html-overlay td:nth-of-type(1) {
-  width: 20%;
-}
-main #html-overlay th:nth-of-type(3),
-main #html-overlay td:nth-of-type(2) {
-  width: 60%;
-}
-
-@media (min-width: 992px) {
-  main {
-    padding: 1rem !important;
-  }
-
-  main #html-overlay * {
-    font-size: 1.6rem !important;
-  }
-  main #html-overlay h3 {
-    font-size: 4.5rem !important;
-  }
-
-  main #html-overlay h4,
-  main #html-overlay h4 * {
-    font-size: 2.8rem !important;
-  }
-
-  main #html-overlay tbody {
-    max-height: 23rem !important;
-  }
+  margin-top: 3rem;
 }

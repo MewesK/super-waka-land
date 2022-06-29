@@ -1,93 +1,83 @@
-import { Timer } from 'eventemitter3-timer';
-import { BitmapText, Container, filters, Rectangle, Sprite } from 'pixi.js';
+import { BitmapText } from 'pixi.js';
+import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
+import Overlay from './Overlay';
 
-export default class GameOverOverlay {
-  BRIGHTNESS = 0.15;
-
-  game;
-  container = new Container();
-  skipTimer;
-
-  showing = false;
-  skippable = false;
+export default class GameOverOverlay extends Overlay {
+  FADE_IN_STEPS = 0;
+  FADE_OUT_STEPS = 0;
 
   deadSprite;
   titleText;
-  scoreText;
 
   constructor(game) {
-    this.game = game;
+    super(game);
 
-    this.titleText = new BitmapText('Game Over', {
-      fontName: 'Stop Bullying',
-      fontSize: 36,
-      letterSpacing: -1,
-    });
+    this.createContainer();
+    this.createOverlay();
+  }
+
+  createContainer() {
+    this.titleText = new BitmapText('Game Over', this.TITLE_FONT);
     this.container.addChild(this.titleText);
-    this.titleText.x = this.game.app.screen.width / 2 - this.titleText.width / 2;
+    this.titleText.x = Math.round(this.game.app.screen.width / 2 - this.titleText.width / 2);
     this.titleText.y = 0;
 
-    this.scoreText = new BitmapText('Rats College Fund:\n$0', {
-      fontName: 'Edit Undo',
-      fontSize: 16,
-      align: 'center',
+    this.deadSprite = this.game.player.deadSprite;
+    this.container.addChild(this.deadSprite);
+    this.deadSprite.x = Math.round(this.game.app.screen.width / 2 - this.deadSprite.width / 2);
+    this.deadSprite.y = 40;
+
+    // Align container
+    this.container.y = 15;
+  }
+
+  createOverlay() {
+    this.overlayElement = document
+      .querySelector('#gameover-template')
+      .content.cloneNode(true).firstElementChild;
+
+    // Submit button
+    this.overlayElement.querySelector('#leaderboard-button').addEventListener('click', async () => {
+      await this.hide();
+      this.game.leaderboardOverlay.show();
     });
-    this.container.addChild(this.scoreText);
-    this.scoreText.x = this.game.app.screen.width / 2 - this.scoreText.width / 2;
-    this.scoreText.y = 130;
 
-    this.container.y = this.game.app.screen.height / 2 - this.container.height / 2;
+    CONTAINER.appendChild(this.overlayElement);
   }
 
-  update() {
-    this.skipTimer?.update(this.game.app.ticker.elapsedMS);
-  }
-
-  show() {
+  async show() {
     if (this.showing) {
       return;
     }
 
-    this.skippable = false;
-    this.skipTimer = new Timer(500);
-    this.skipTimer.on('end', () => {
-      this.skippable = true;
-    });
-    this.skipTimer.start();
+    super.show();
+    this.isBusy(true);
 
-    this.showing = true;
-    this.container.alpha = 1;
-    this.scoreText.text = 'Rats College Fund:\n$' + this.game.score;
-
-    const filter = new filters.ColorMatrixFilter();
-    filter.brightness(this.BRIGHTNESS);
-
-    this.game.container.filterArea = new Rectangle(
-      0,
-      0,
-      this.game.app.screen.width,
-      this.game.app.screen.height
-    );
-
-    this.game.container.filters = [filter];
-
-    this.deadSprite = this.game.player.deadSprite;
-    this.container.addChild(this.deadSprite);
-    this.deadSprite.x = this.game.app.screen.width / 2 - this.deadSprite.width / 2;
-    this.deadSprite.y = 50;
-
-    this.game.app.stage.addChild(this.container);
-  }
-
-  hide() {
-    if (!this.showing) {
-      return;
+    try {
+      const ranking = await this.postScore(this.game.player.name, this.game.score);
+      this.overlayElement.querySelector('#score').textContent = `$${this.game.score}`;
+      this.overlayElement.querySelector('#rank').textContent = `#${ranking.rank}`;
+      this.game.player.lastRanking = ranking;
+    } catch (error) {
+      console.error(error);
+      this.isError(true);
     }
 
-    this.showing = false;
-    this.skippable = false;
+    this.isBusy(false);
+  }
 
-    this.game.app.stage.removeChild(this.container);
-    this.container.removeChild(this.deadSprite);
+  async postScore(name, score) {
+    const response = await fetch(`${API_URL}/highscore/${API_VERSION}`, {
+      method: 'POST',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        score,
+      }),
+    });
+    return response.json();
   }
 }

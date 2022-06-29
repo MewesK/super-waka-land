@@ -1,0 +1,197 @@
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 82%;
+  transform: translate(0%, -100%);
+
+  padding: 4vmin;
+
+  pointer-events: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.overlay,
+.overlay * {
+  color: #ffffff;
+  font-family: 'Edit Undo';
+  font-weight: normal;
+  font-size: 3.5vmin;
+}
+
+.overlay[aria-busy='true']::before {
+  align-self: center;
+  border-width: 3vmin;
+  border-radius: 10vmin;
+  width: 20vmin;
+  height: 20vmin;
+  opacity: 0.5;
+}
+
+.overlay[aria-busy='true'] * {
+  display: none !important;
+}
+
+.overlay[aria-hidden='true'] {
+  display: none !important;
+}
+
+.overlay main {
+  flex-grow: 1;
+}
+
+#character-overlay main {
+  padding-top: 0%;
+}
+
+#gameover-overlay main {
+  padding-top: 30%;
+}
+
+.overlay footer {
+  padding: 0 !important;
+}
+
+/*
+ * Text
+ */
+
+.overlay h1,
+.overlay h1 *,
+.overlay h2,
+.overlay h2 *,
+.overlay h3,
+.overlay h3 * {
+  margin: 0;
+  filter: url(#crispify);
+}
+
+.overlay h1 *,
+.overlay h2 *,
+.overlay h3 * {
+  font-size: inherit !important;
+}
+
+.overlay h1 {
+  font-size: 7vmin;
+}
+
+.overlay h2 {
+  font-size: 4.5vmin;
+}
+
+.overlay h3 {
+  font-size: 4.5vmin;
+  color: #a0a0a0 !important;
+}
+
+.overlay #rank {
+  color: #c20c0c !important;
+}
+
+/*
+ * Form
+ */
+
+.overlay form {
+  margin: 0;
+}
+
+.overlay label {
+  display: none;
+}
+
+.overlay button,
+.overlay input {
+  height: fit-content !important;
+  margin: 0;
+  padding: 1vmin !important;
+  border: 0.4vmin solid #ffffff;
+  border-radius: 0;
+  pointer-events: auto;
+}
+
+.overlay button {
+  background-color: rgba(128, 128, 128, 0.4);
+}
+
+.overlay input {
+  background-color: rgba(32, 32, 32, 0.4);
+  margin-bottom: 2vmin !important;
+  padding-left: 1.5vmin !important;
+}
+
+/*
+ * Leaderboard
+ */
+
+.overlay .leaderboard {
+  margin-bottom: 0;
+}
+
+.overlay .leaderboard thead {
+  border-bottom: 0.4vmin solid #ffffff;
+}
+
+.overlay .leaderboard thead,
+.overlay .leaderboard tr {
+  display: table;
+  width: 100%;
+}
+
+.overlay .leaderboard tbody {
+  display: block;
+  max-height: 46.5vmin !important;
+  overflow-y: scroll;
+  pointer-events: auto;
+}
+
+.overlay .leaderboard tr#you {
+  background-color: #c20c0c;
+}
+
+.overlay .leaderboard th,
+.overlay .leaderboard td {
+  border: none;
+  padding: 0.2vmin;
+}
+
+.overlay .leaderboard th:nth-of-type(1) {
+  width: 10%;
+}
+.overlay .leaderboard th:nth-of-type(2),
+.overlay .leaderboard td:nth-of-type(1) {
+  width: 20%;
+}
+.overlay .leaderboard th:nth-of-type(3),
+.overlay .leaderboard td:nth-of-type(2) {
+  width: 60%;
+}
+
+/*
+ * Effects
+ */
+
+.bounce {
+  position: relative;
+}
+.bounce:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff0a;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition-duration: 0.3s;
+}
+.bounce:hover:before,
+.bounce:focus:before,
+.bounce:active:before {
+  transform: scaleX(1);
+  transition-timing-function: cubic-bezier(0.52, 1.64, 0.37, 0.66);
+}

@@ -6,6 +6,7 @@ export default class HUD {
 
   boostText;
   scoreText;
+  nameText;
 
   constructor(game) {
     this.game = game;
@@ -13,7 +14,7 @@ export default class HUD {
     // Score text
     this.scoreText = new BitmapText('Score: $0', {
       fontName: 'Edit Undo',
-      fontSize: 16,
+      fontSize: 14,
       tint: 0x935e53,
     });
     this.scoreText.x = 4;
@@ -23,12 +24,27 @@ export default class HUD {
     // Boost text
     this.boostText = new BitmapText('Boost: ', {
       fontName: 'Edit Undo',
-      fontSize: 16,
+      fontSize: 14,
       tint: 0x935e53,
     });
     this.boostText.x = 4;
     this.boostText.y = 15;
     this.container.addChild(this.boostText);
+
+    // Name text
+    this.nameText = new BitmapText('', {
+      fontName: 'Edit Undo',
+      fontSize: 14,
+      align: 'right',
+      tint: 0xc20c0c,
+    });
+    this.nameText.x = 4;
+    this.nameText.y = 28;
+    this.container.addChild(this.nameText);
+  }
+
+  updateName() {
+    this.nameText.text = this.game.player.name;
   }
 
   updateBoost() {
@@ -40,6 +56,7 @@ export default class HUD {
   }
 
   reset() {
+    this.updateName();
     this.updateBoost();
     this.updateScore();
   }

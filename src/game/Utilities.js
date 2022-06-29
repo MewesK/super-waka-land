@@ -2,5 +2,7 @@ export function random(min = 0, max = 1) {
   return min + Math.floor(Math.random() * (max - min));
 }
 
-const searchParams = new URLSearchParams(window.location.search);
-export const DEBUG = searchParams.get('DEBUG') || searchParams.has('DEBUG');
+export const API_URL = 'http://localhost:8888';
+export const API_VERSION = '1.0';
+export const CONTAINER = document.getElementById('app');
+export const DEBUG = new URLSearchParams(window.location.search).has('DEBUG');
