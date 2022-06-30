@@ -30,7 +30,6 @@ export default class LeaderboardOverlay extends Overlay {
 
     this.overlayElement.querySelector('#retry-button').addEventListener('click', async () => {
       await this.hide();
-      this.game.reset();
     });
 
     CONTAINER.appendChild(this.overlayElement);
@@ -69,6 +68,11 @@ export default class LeaderboardOverlay extends Overlay {
     }
 
     this.isBusy(false);
+  }
+
+  async hide() {
+    await super.hide();
+    this.game.reset();
   }
 
   async fetchLeaderboard() {

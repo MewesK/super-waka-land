@@ -5,6 +5,8 @@ import Overlay from './Overlay';
 export default class CharacterOverlay extends Overlay {
   FADE_IN_STEPS = 0;
 
+  DEFAULT_NAME = localStorage.getItem('NAME') || '';
+
   characters;
   selected;
 
@@ -86,7 +88,8 @@ export default class CharacterOverlay extends Overlay {
       .content.cloneNode(true).firstElementChild;
 
     // Input validation
-    this.overlayElement.querySelector('#name-input').addEventListener('input', (event) => {
+    this.overlayElement.querySelector('#name-text').value = this.DEFAULT_NAME;
+    this.overlayElement.querySelector('#name-text').addEventListener('input', (event) => {
       console.log(event.target.value);
       event.target.setAttribute(
         'aria-invalid',
@@ -98,6 +101,7 @@ export default class CharacterOverlay extends Overlay {
     this.overlayElement.querySelector('form').addEventListener('submit', (event) => {
       event.preventDefault();
       this.game.player.name = new FormData(event.target).get('name');
+      localStorage.setItem('NAME', this.game.player.name);
       this.hide();
     });
 

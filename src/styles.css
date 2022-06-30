@@ -52,9 +52,15 @@ footer {
   padding: 2rem 0 !important;
 }
 
-footer p {
+footer ul {
+  padding-left: 0;
+}
+
+footer li {
   color: var(--muted-color);
   font-size: small;
+  list-style: none !important;
+  margin-bottom: 0.25rem;
 }
 
 footer a {

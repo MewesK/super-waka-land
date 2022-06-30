@@ -109,7 +109,7 @@
   color: #a0a0a0 !important;
 }
 
-.overlay label + input[type='text'] {
+.overlay label[for$='-text'] {
   display: none;
 }
 

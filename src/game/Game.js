@@ -14,6 +14,10 @@ import LeaderboardOverlay from './overlays/LeaderboardOverlay';
 import SettingsOverlay from './overlays/SettingsOverlay';
 
 export default class Game {
+  DEFAULT_DIFFICULTY = localStorage.getItem('DIFFICULTY') || 1;
+  DEFAULT_MUSIC_VOLUME = localStorage.getItem('MUSIC_VOLUME') || 0.3;
+  DEFAULT_EFFECTS_VOLUME = localStorage.getItem('EFFECTS_VOLUME') || 0.7;
+
   app;
   container;
   inputManager;
@@ -27,6 +31,7 @@ export default class Game {
 
   // Properties
   paused = true;
+  difficulty = this.DEFAULT_DIFFICULTY;
   score = 0;
   boosts = 0;
 
@@ -50,16 +55,16 @@ export default class Game {
     // Prepare sounds
     this.bgMusic = Loader.shared.resources.bgMusic.sound;
     this.bgMusic.loop = true;
-    this.bgMusic.volume = 0.1;
+    this.bgMusic.volume = this.DEFAULT_MUSIC_VOLUME;
     this.bgMusic.play();
     this.boostSound = Loader.shared.resources.boostSound.sound;
-    this.boostSound.volume = 0.15;
+    this.boostSound.volume = this.DEFAULT_EFFECTS_VOLUME;
     this.coinSound = Loader.shared.resources.coinSound.sound;
-    this.coinSound.volume = 0.15;
+    this.coinSound.volume = this.DEFAULT_EFFECTS_VOLUME;
     this.jumpSound = Loader.shared.resources.jumpSound.sound;
-    this.jumpSound.volume = 0.15;
+    this.jumpSound.volume = this.DEFAULT_EFFECTS_VOLUME;
     this.powerupSound = Loader.shared.resources.powerupSound.sound;
-    this.powerupSound.volume = 0.15;
+    this.powerupSound.volume = this.DEFAULT_EFFECTS_VOLUME;
 
     // Create container
     this.container = new Container();
@@ -139,6 +144,12 @@ export default class Game {
         this.increaseScore(50);
         this.increaseBoost(-1);
         this.player.startBoost();
+      }
+    });
+    this.inputManager.on('settings', ['Escape'], () => {
+      if (!this.paused && !this.player.dead && !this.settingsOverlay.showing) {
+        this.player.dead = true;
+        this.settingsOverlay.show();
       }
     });
 

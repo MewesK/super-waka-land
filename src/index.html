@@ -32,12 +32,18 @@
   </p>
 
   <footer>
-    <p>
-      Made with <span style="color: #e25555;">&hearts;</span> by <a href="https://github.com/MewesK"
-        target="_blank"><strong>mewk</strong></a><br>
-      Character concept by <a href="https://stacyandtan.carrd.co/" target="_blank"><strong>wakalaka4eva</strong></a><br>
-      Additional graphics by <a href="https://twitter.com/siderealpibe" target="_blank"><strong>pibe</strong></a>
-    </p>
+    <ul>
+      <li>
+        Made with <span style="color: #e25555;">&hearts;</span> by <a href="https://github.com/MewesK"
+          target="_blank"><strong>mewk</strong></a>
+      </li>
+      <li>
+        Character concept by <a href="https://stacyandtan.carrd.co/" target="_blank"><strong>wakalaka4eva</strong></a>
+      <li>
+        Additional graphics by <a href="https://twitter.com/siderealpibe"
+          target="_blank"><strong>siderealpibe</strong></a>
+      </li>
+    </ul>
     <a href="https://github.com/MewesK/super-waka-land" class="github" target="_blank">
       <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"
         height="32px">
@@ -52,12 +58,11 @@
 
   <template id="character-template">
     <div id="character-overlay" class="overlay" aria-busy="false" aria-hidden="true">
-      <main>
-      </main>
+      <main></main>
       <footer>
         <form>
-          <label for="name-input" aria-hidden="true">Your Name</label>
-          <input type="text" id="name-input" name="name" placeholder="Your Name" maxlength="32" spellcheck="false"
+          <label for="name-text" aria-hidden="true">Your Name</label>
+          <input type="text" id="name-text" name="name" placeholder="Your Name" maxlength="32" spellcheck="false"
             aria-invalid="true" required>
           <button id="confirm-button" type="submit" class="outline bounce">Confirm</button>
         </form>
@@ -112,18 +117,18 @@
   <template id="settings-template">
     <div id="settings-overlay" class="overlay" aria-busy="false" aria-hidden="true">
       <main>
-        <fieldset>
+        <fieldset style="display: none;">
           <legend>Difficulty</legend>
           <label for="easy-radio">
-            <input type="radio" id="easy-radio" name="size" value="easy" checked>
+            <input type="radio" id="easy-radio" name="difficulty-radio" value="0">
             Easy
           </label>
           <label for="medium-radio">
-            <input type="radio" id="medium-radio" name="size" value="medium">
+            <input type="radio" id="medium-radio" name="difficulty-radio" value="1">
             Medium
           </label>
           <label for="hard-radio">
-            <input type="radio" id="hard-radio" name="size" value="hard">
+            <input type="radio" id="hard-radio" name="difficulty-radio" value="2">
             Hard
           </label>
         </fieldset>
@@ -131,11 +136,11 @@
           <legend>Volume</legend>
           <label for="music-range">
             Music
-            <input type="range" min="0" max="100" value="50" id="music-range" name="music">
+            <input type="range" min="0" max="1" step="0.1" value="0.5" id="music-range" name="music">
           </label>
           <label for="effects-range">
             Effects
-            <input type="range" min="0" max="100" value="50" id="effects-range" name="effects">
+            <input type="range" min="0" max="1" step="0.1" value="0.5" id="effects-range" name="effects">
           </label>
         </fieldset>
       </main>
@@ -146,6 +151,8 @@
       </footer>
     </div>
   </template>
+
+  <!-- Filters -->
 
   <svg width="0" height="0" xmlns="http://www.w3.org/2000/svg">
     <defs>
