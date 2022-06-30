@@ -1,5 +1,5 @@
 import { BitmapText } from 'pixi.js';
-import { CONTAINER, DEBUG } from '../Utilities';
+import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class SettingsOverlay extends Overlay {
@@ -71,11 +71,15 @@ export default class SettingsOverlay extends Overlay {
   }
 
   async show() {
+    this.changedDifficulty = false;
+
+    // Set form values
     this.overlayElement.querySelectorAll('input[name="difficulty-radio"]')[
       this.game.difficulty
     ].checked = true;
     this.overlayElement.querySelector('#music-range').value = this.game.bgMusic.volume;
     this.overlayElement.querySelector('#effects-range').value = this.game.powerupSound.volume;
+
     await super.show();
   }
 }
