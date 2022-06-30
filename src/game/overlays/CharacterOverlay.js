@@ -85,6 +85,15 @@ export default class CharacterOverlay extends Overlay {
       .querySelector('template#character-template')
       .content.cloneNode(true).firstElementChild;
 
+    // Input validation
+    this.overlayElement.querySelector('#name-input').addEventListener('input', (event) => {
+      console.log(event.target.value);
+      event.target.setAttribute(
+        'aria-invalid',
+        event.target.value?.length < 3 || event.target.value?.length > 32
+      );
+    });
+
     // Confirm button
     this.overlayElement.querySelector('form').addEventListener('submit', (event) => {
       event.preventDefault();
