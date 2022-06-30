@@ -57,8 +57,8 @@
       <footer>
         <form>
           <label for="name-input" aria-hidden="true">Your Name</label>
-          <input type="text" id="name-input" name="name" placeholder="Your Name" required maxlength="32"
-            spellcheck="false">
+          <input type="text" id="name-input" name="name" placeholder="Your Name" maxlength="32" spellcheck="false"
+            aria-invalid="true" required>
           <button id="confirm-button" type="submit" class="outline bounce">Confirm</button>
         </form>
       </footer>
@@ -112,7 +112,32 @@
   <template id="settings-template">
     <div id="settings-overlay" class="overlay" aria-busy="false" aria-hidden="true">
       <main>
-        ...
+        <fieldset>
+          <legend>Difficulty</legend>
+          <label for="easy-radio">
+            <input type="radio" id="easy-radio" name="size" value="easy" checked>
+            Easy
+          </label>
+          <label for="medium-radio">
+            <input type="radio" id="medium-radio" name="size" value="medium">
+            Medium
+          </label>
+          <label for="hard-radio">
+            <input type="radio" id="hard-radio" name="size" value="hard">
+            Hard
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Volume</legend>
+          <label for="music-range">
+            Music
+            <input type="range" min="0" max="100" value="50" id="music-range" name="music">
+          </label>
+          <label for="effects-range">
+            Effects
+            <input type="range" min="0" max="100" value="50" id="effects-range" name="effects">
+          </label>
+        </fieldset>
       </main>
       <footer>
         <button id="continue-button" class="outline  bounce">
@@ -128,13 +153,6 @@
         <feComponentTransfer>
           <feFuncA type="discrete" tableValues="0 1" />
         </feComponentTransfer>
-      </filter>
-      <filter id="pixelate" x="0" y="0">
-        <feFlood x="4" y="4" height="2" width="2" />
-        <feComposite width="10" height="10" />
-        <feTile result="a" />
-        <feComposite in="SourceGraphic" in2="a" operator="in" />
-        <feMorphology operator="dilate" radius="5" />
       </filter>
     </defs>
   </svg>

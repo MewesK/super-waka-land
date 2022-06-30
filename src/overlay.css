@@ -99,16 +99,29 @@
   margin: 0;
 }
 
-.overlay label {
+.overlay fieldset {
+  text-align: left;
+  margin-bottom: 5vmin !important;
+}
+
+.overlay legend {
+  font-size: 4.5vmin;
+  color: #a0a0a0 !important;
+}
+
+.overlay label + input[type='text'] {
   display: none;
+}
+
+.overlay label[for$='-radio'] {
+  display: inline-block;
+  width: 32%;
 }
 
 .overlay button,
 .overlay input {
-  height: fit-content !important;
-  margin: 0;
-  padding: 1vmin !important;
-  border: 0.4vmin solid #ffffff;
+  background-color: rgba(32, 32, 32, 0.4);
+  border: 0.5vmin solid #ffffff;
   border-radius: 0;
   pointer-events: auto;
 }
@@ -117,10 +130,69 @@
   background-color: rgba(128, 128, 128, 0.4);
 }
 
-.overlay input {
-  background-color: rgba(32, 32, 32, 0.4);
+.overlay button,
+.overlay input[type='text'] {
+  height: fit-content !important;
+  margin: 0;
+  padding: 1vmin !important;
+}
+
+.overlay input[type='text'] {
+  background-size: 5vmin !important;
   margin-bottom: 2vmin !important;
   padding-left: 1.5vmin !important;
+}
+
+.overlay input[type=radio]:checked,
+.overlay input[type=radio]:checked:active,
+.overlay input[type=radio]:checked:focus {
+  background-color: #ffffff;
+}
+
+.overlay input[type='range'] {
+  --range-thumb-color: #ffffff;
+  border: 0.5vmin solid #ffffff64;
+  height: 2vmin;
+}
+
+.overlay input[type='range']:focus {
+  border: 0.5vmin solid #ffffffbb;
+}
+
+.overlay input[type='range']::-moz-range-track {
+  background-color: transparent;
+}
+
+.overlay input[type='range']::-webkit-slider-runnable-track {
+  background-color: transparent;
+}
+
+.overlay input[type='range']::-ms-track {
+  background-color: transparent;
+}
+
+.overlay input[type='range']::-moz-range-thumb {
+  border: 0.5vmin solid;
+  border-radius: 0;
+  width: 4.2vmin;
+  height: 4.2vmin;
+  margin-top: -1.9vmin;
+}
+
+.overlay input[type='range']::-webkit-slider-thumb {
+  border: 0.4vmin solid;
+  border-radius: 0;
+  width: 4.2vmin;
+  height: 4.2vmin;
+  margin-top: -1.9vmin;
+}
+
+.overlay input[type='range']::-ms-thumb {
+  border: 0.4vmin solid;
+  border-radius: 0;
+  width: 4.2vmin;
+  height: 4.2vmin;
+  margin-top: -1.9vmin;
 }
 
 /*
