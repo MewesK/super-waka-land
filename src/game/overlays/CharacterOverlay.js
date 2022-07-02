@@ -139,6 +139,5 @@ export default class CharacterOverlay extends Overlay {
     });
 
     this.game.player.character = this.selected;
-    this.game.background.character = this.selected;
   }
 }
