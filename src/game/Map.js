@@ -85,42 +85,29 @@ export default class Map {
   }
 
   checkCollision(collectCoinCallback, collectCokeCallback, intersectFloorCallback, finishCallback) {
-    // Calculate the tile indices around the player
-    const tilemapXMin = Math.max(
-      0,
-      Math.floor(
-        (this.tilemap.position.x + this.game.player.container.position.x) / this.TILE_WIDTH
-      ) - 3
-    );
-    const tilemapXMax = Math.min(
-      this.mapFullWidth - 1,
-      Math.ceil(tilemapXMin + this.game.player.width / this.TILE_WIDTH + 3)
-    );
-    const tilemapYMin = Math.max(
-      0,
-      Math.floor(
-        (this.tilemap.position.y + this.game.player.container.position.y) / this.TILE_HEIGHT
-      ) - 3
-    );
-    const tilemapYMax = Math.min(
-      this.mapHeight - 1,
-      Math.ceil(tilemapYMin + this.game.player.height / this.TILE_HEIGHT + 3)
-    );
+    const player = this.game.player.container;
 
     // Create player rectangle with screen coordinates
-    const playerRectangle = new Rectangle(
-      this.game.player.container.x,
-      this.game.player.container.y,
-      this.game.player.container.width,
-      this.game.player.container.height
+    const playerRectangle = new Rectangle(player.x, player.y, player.width, player.height);
+
+    // Calculate the tile indices around the player
+    const xMin = Math.max(0, Math.floor((player.x - this.tilemap.x) / this.TILE_WIDTH) - 1);
+    const xMax = Math.min(
+      this.mapFullWidth - 1,
+      Math.ceil(xMin + player.width / this.TILE_WIDTH + 2)
+    );
+    const yMin = Math.max(0, Math.floor((this.tilemap.y + player.y) / this.TILE_HEIGHT) - 1);
+    const yMax = Math.min(
+      this.mapHeight - 1,
+      Math.ceil(yMin + player.height / this.TILE_HEIGHT + 2)
     );
 
     // Check for collisions
     let intersecting = false;
     let touching = false;
     let collecting = false;
-    for (let y = 0; y < this.mapHeight; y++) {
-      for (let x = 0; x < this.mapFullWidth; x++) {
+    for (let y = yMin; y < yMax; y++) {
+      for (let x = xMin; x < xMax; x++) {
         const tile = this.map[y][x];
         // Check only non-void tiles
         if (tile.value !== TileType.VOID) {
