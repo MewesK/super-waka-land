@@ -11,8 +11,8 @@ import SoundManager, { MusicType, SoundType } from './managers/SoundManager';
 
 export default class Game {
   DEFAULT_DIFFICULTY = localStorage.getItem('DIFFICULTY') || 1;
-  DEFAULT_MUSIC_VOLUME = localStorage.getItem('MUSIC_VOLUME') || 0.3;
-  DEFAULT_EFFECTS_VOLUME = localStorage.getItem('EFFECTS_VOLUME') || 0.7;
+  DEFAULT_MUSIC_VOLUME = localStorage.getItem('MUSIC_VOLUME') || 50;
+  DEFAULT_EFFECTS_VOLUME = localStorage.getItem('EFFECTS_VOLUME') || 60;
 
   app;
   container;
