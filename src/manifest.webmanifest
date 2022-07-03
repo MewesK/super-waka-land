@@ -27,7 +27,7 @@
   "description": "A fun simple platform game featuring the best rat in the universe!",
   "screenshots": [
     {
-      "src": "/images/screenshot.png",
+      "src": "/images/banner.png",
       "type": "image/png",
       "sizes": "720x960"
     }
