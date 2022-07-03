@@ -71,7 +71,7 @@ export default class Overlay {
     this.game.container.filters = [filter];
 
     // Show overlay
-    this.showOverlayElement();
+    this.hidden = false;
 
     // Skippable
     if (this.SKIP_TIME > 0) {
@@ -120,7 +120,7 @@ export default class Overlay {
     this.removeEventListeners();
 
     // Hide overlay
-    this.hideOverlayElement();
+    this.hidden = true;
 
     // Fade-Out
     if (fade && this.FADE_OUT_STEPS > 0) {
@@ -183,7 +183,7 @@ export default class Overlay {
     this.container.alpha = 1;
 
     // Show overlay
-    this.showOverlayElement();
+    this.hidden = false;
 
     return true;
   }
@@ -202,7 +202,7 @@ export default class Overlay {
     this.container.alpha = 0;
 
     // Hide overlay
-    this.hideOverlayElement();
+    this.hidden = true;
 
     return true;
   }
@@ -237,19 +237,12 @@ export default class Overlay {
     }
   }
 
-  showOverlayElement(loading = false) {
-    if (this.overlayElement) {
-      this.overlayElement.setAttribute('aria-hidden', false);
-      this.overlayElement.setAttribute('aria-error', false);
-      this.overlayElement.setAttribute('aria-busy', false);
-    }
+  get hidden() {
+    return this.overlayElement?.getAttribute('aria-hidden') === 'true';
   }
-
-  hideOverlayElement() {
+  set hidden(value) {
     if (this.overlayElement) {
-      this.overlayElement.setAttribute('aria-hidden', true);
-      this.overlayElement.setAttribute('aria-error', false);
-      this.overlayElement.setAttribute('aria-busy', false);
+      this.overlayElement.setAttribute('aria-hidden', value);
     }
   }
 }

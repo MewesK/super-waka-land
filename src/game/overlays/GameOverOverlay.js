@@ -44,21 +44,25 @@ export default class GameOverOverlay extends Overlay {
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  async afterOpen() {
+  async beforeOpen() {
     this.busy = true;
 
-    try {
-      this.overlayElement.querySelector('#score').textContent = `$${this.game.score}`;
+    this.overlayElement.querySelector('#score').textContent = `$${this.game.score}`;
+    this.overlayElement.querySelector('h2').style.display = 'none';
+    this.game.player.lastRanking = null;
 
+    return true;
+  }
+
+  async afterOpen() {
+    try {
       if (this.game.score > 0) {
-        this.overlayElement.querySelector('h2').style.display = 'inherit';
         const ranking = await this.postScore(this.game.player.name, this.game.score);
+        this.overlayElement.querySelector('h2').style.display = 'inherit';
         this.overlayElement.querySelector('#rank').textContent = `#${ranking.rank}`;
         this.game.player.lastRanking = ranking;
-      } else {
-        this.overlayElement.querySelector('h2').style.display = 'none';
-        this.game.player.lastRanking = null;
       }
+      this.error = false;
     } catch (error) {
       console.error(error);
       this.error = true;

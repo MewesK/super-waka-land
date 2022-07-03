@@ -55,6 +55,7 @@ export default class LeaderboardOverlay extends Overlay {
         td[1].textContent = entry.name;
         tbody.appendChild(row);
       }
+      this.error = false;
     } catch (error) {
       console.error(error);
       this.error = true;
