@@ -61,6 +61,7 @@ export default class HUD {
 
   updateName() {
     this.nameText.text = this.game.player.name;
+    this.nameText.x = Math.round(this.game.app.screen.width / 2 - this.nameText.width / 2);
   }
 
   updateBoost() {
