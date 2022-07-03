@@ -5,7 +5,14 @@ export default class Background {
     [
       { sprites: [Sprite.from('bg1')], offset: 224, speed: 0 },
       {
-        sprites: [Sprite.from('bg2a'), Sprite.from('bg2b'), Sprite.from('bg2c')],
+        sprites: [
+          Sprite.from('bg2b'),
+          Sprite.from('bg2a'),
+          Sprite.from('bg2b'),
+          Sprite.from('bg2c'),
+          Sprite.from('bg2b'),
+          Sprite.from('bg2a'),
+        ],
         offset: 96,
         speed: 0.6,
       },
