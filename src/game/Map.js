@@ -91,15 +91,15 @@ export default class Map {
     const playerRectangle = new Rectangle(player.x, player.y, player.width, player.height);
 
     // Calculate the tile indices around the player
-    const xMin = Math.max(0, Math.floor((player.x - this.tilemap.x) / this.TILE_WIDTH) - 1);
+    const xMin = Math.max(0, Math.floor((player.x - this.tilemap.x) / this.TILE_WIDTH) - 2);
     const xMax = Math.min(
       this.mapFullWidth - 1,
-      Math.ceil(xMin + player.width / this.TILE_WIDTH + 2)
+      Math.ceil(xMin + player.width / this.TILE_WIDTH + 4)
     );
-    const yMin = Math.max(0, Math.floor((this.tilemap.y + player.y) / this.TILE_HEIGHT) - 1);
+    const yMin = Math.max(0, Math.floor((this.tilemap.y + player.y) / this.TILE_HEIGHT) - 2);
     const yMax = Math.min(
       this.mapHeight - 1,
-      Math.ceil(yMin + player.height / this.TILE_HEIGHT + 2)
+      Math.ceil(yMin + player.height / this.TILE_HEIGHT + 4)
     );
 
     // Check for collisions
