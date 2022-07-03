@@ -280,7 +280,7 @@ export default class Map {
       }
     }
 
-    if (this.game.paused) {
+    if (!this.game.started) {
       // Generate new tiles for the title screen level
       for (let x = this.mapWidth; x <= this.mapFullWidth; x++) {
         this.setTile(x, this.FLOOR_Y, TileType.PLATFORM, random(0, 3));

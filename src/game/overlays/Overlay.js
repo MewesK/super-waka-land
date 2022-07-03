@@ -28,7 +28,8 @@ export default class Overlay {
   game;
   container;
 
-  showing = false;
+  opened = false;
+  visible = false;
   skippable = false;
 
   fadeTimer;
@@ -42,25 +43,32 @@ export default class Overlay {
   }
 
   update() {
-    this.fadeTimer?.update(this.game?.app.ticker.elapsedMS);
-    this.skipTimer?.update(this.game?.app.ticker.elapsedMS);
+    if (this.fadeTimer) {
+      this.fadeTimer.update(this.game?.app.ticker.elapsedMS);
+    }
+    if (this.skipTimer) {
+      this.skipTimer.update(this.game?.app.ticker.elapsedMS);
+    }
   }
 
-  async show() {
-    if (this.showing) {
-      return;
+  async open(fade = true) {
+    if (this.opened) {
+      return false;
     }
 
-    this.showing = true;
+    this.opened = true;
+    this.visible = true;
     this.skippable = false;
 
-    // Add filter to parent
-    const filter = new filters.ColorMatrixFilter();
-    filter.brightness(this.BRIGHTNESS);
-    this.game.container.filters = [filter];
+    // Register event listeners
+    this.addEventListeners();
 
     // Add container to parent
     this.game.app.stage.addChild(this.container);
+
+    // Add filter to parent
+    const filter = new filters.ColorMatrixFilter();
+    this.game.container.filters = [filter];
 
     // Show overlay
     this.showOverlayElement();
@@ -68,8 +76,9 @@ export default class Overlay {
     // Skippable
     if (this.SKIP_TIME > 0) {
       // Create skip timer
-      this.skipTimer = new Timer(500);
+      this.skipTimer = new Timer(this.SKIP_TIME);
       this.skipTimer.on('end', () => {
+        this.skipTimer = null;
         this.skippable = true;
       });
       this.skipTimer.start();
@@ -78,7 +87,7 @@ export default class Overlay {
     }
 
     // Fade-In
-    if (this.FADE_IN_STEPS > 0) {
+    if (fade && this.FADE_IN_STEPS > 0) {
       await new Promise((resolve) => {
         // Create fade timer
         this.fadeTimer = new Timer(20);
@@ -86,10 +95,7 @@ export default class Overlay {
         this.fadeTimer.on('repeat', (elapsedTime, repeat) => {
           // Fade out character overlay
           this.container.alpha = (1 / this.FADE_IN_STEPS) * repeat;
-          this.game.container.filters[0].brightness(
-            this.BRIGHTNESS + repeat * (this.BRIGHTNESS / this.FADE_IN_STEPS),
-            false
-          );
+          filter.brightness(1 - ((1 - this.BRIGHTNESS) / this.FADE_OUT_STEPS) * repeat, false);
         });
         this.fadeTimer.on('end', () => {
           this.fadeTimer = null;
@@ -97,21 +103,27 @@ export default class Overlay {
         });
         this.fadeTimer.start();
       });
-    } else {
-      this.container.alpha = 1;
     }
+
+    filter.brightness(this.BRIGHTNESS);
+    this.container.alpha = 1;
+
+    return true;
   }
 
-  async hide() {
-    if (!this.showing) {
-      return;
+  async close(fade = true) {
+    if (!this.opened || !this.skippable || !this.visible) {
+      return false;
     }
 
-    this.showing = false;
+    // Unregister event listeners
+    this.removeEventListeners();
+
+    // Hide overlay
     this.hideOverlayElement();
 
     // Fade-Out
-    if (this.FADE_OUT_STEPS > 0) {
+    if (fade && this.FADE_OUT_STEPS > 0) {
       // Create fade timer
       await new Promise((resolve) => {
         this.fadeTimer = new Timer(20);
@@ -132,18 +144,94 @@ export default class Overlay {
       });
     }
 
+    this.game.container.filters[0].brightness(1, false);
     this.container.alpha = 0;
-    this.game.container.filters = null;
     this.game.app.stage.removeChild(this.container);
+
+    this.opened = false;
+    this.visible = false;
+
+    return true;
   }
 
-  isBusy(value) {
+  afterOpen() {
+    // NOP
+  }
+  beforeOpen() {
+    // NOP
+    return true;
+  }
+  afterClose() {
+    // NOP
+  }
+  beforeClose() {
+    // NOP
+    return true;
+  }
+
+  show() {
+    if (!this.opened || this.visible) {
+      return false;
+    }
+
+    this.visible = true;
+
+    // Enable filter
+    this.game.container.filters[0].brightness(this.BRIGHTNESS);
+
+    // Show container
+    this.container.alpha = 1;
+
+    // Show overlay
+    this.showOverlayElement();
+
+    return true;
+  }
+
+  hide() {
+    if (!this.opened || !this.visible || !this.skippable) {
+      return false;
+    }
+
+    this.visible = false;
+
+    // Disable filter
+    this.game.container.filters[0].brightness(1);
+
+    // Hide container
+    this.container.alpha = 0;
+
+    // Hide overlay
+    this.hideOverlayElement();
+
+    return true;
+  }
+
+  addEventListeners() {
+    this.game.inputManager.on({
+      name: 'skip',
+      keys: ['s', ' ', 'Enter'],
+      onDown: () => this.game.overlayManager.close(),
+    });
+  }
+
+  removeEventListeners() {
+    this.game.inputManager.off('skip');
+  }
+
+  get busy() {
+    return this.overlayElement?.getAttribute('aria-busy') === 'true';
+  }
+  set busy(value) {
     if (this.overlayElement) {
       this.overlayElement.setAttribute('aria-busy', value);
     }
   }
 
-  isError(value) {
+  get error() {
+    return this.overlayElement?.getAttribute('aria-error') === 'true';
+  }
+  set error(value) {
     if (this.overlayElement) {
       this.overlayElement.setAttribute('aria-error', value);
     }

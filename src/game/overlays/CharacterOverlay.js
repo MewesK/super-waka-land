@@ -3,8 +3,6 @@ import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class CharacterOverlay extends Overlay {
-  FADE_IN_STEPS = 0;
-
   DEFAULT_NAME = localStorage.getItem('NAME') || '';
 
   characters;
@@ -90,7 +88,6 @@ export default class CharacterOverlay extends Overlay {
     // Input validation
     this.overlayElement.querySelector('#name-text').value = this.DEFAULT_NAME;
     this.overlayElement.querySelector('#name-text').addEventListener('input', (event) => {
-      console.log(event.target.value);
       event.target.setAttribute(
         'aria-invalid',
         event.target.value?.length < 3 || event.target.value?.length > 32
@@ -102,25 +99,49 @@ export default class CharacterOverlay extends Overlay {
       event.preventDefault();
       this.game.player.name = new FormData(event.target).get('name');
       localStorage.setItem('NAME', this.game.player.name);
-      this.hide();
+      this.game.overlayManager.close();
     });
 
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  async hide() {
+  afterOpen() {
+    this.select(0);
+  }
+
+  beforeClose(f) {
+    // Submit form if necessary
     if (!this.game.player.name) {
       this.overlayElement.querySelector('#confirm-button').click();
-      return;
+      return false;
     }
+    return true;
+  }
 
-    await super.hide();
-
-    this.game.paused = false;
+  afterClose() {
+    this.game.overlayManager.current = null;
     this.game.reset();
   }
 
+  addEventListeners() {
+    super.addEventListeners();
+    this.game.inputManager.on({
+      name: 'select',
+      keys: ['ArrowLeft', 'ArrowRight'],
+      onDown: () => this.select(this.selected + 1),
+    });
+  }
+
+  removeEventListeners() {
+    super.removeEventListeners();
+    this.game.inputManager.off('select');
+  }
+
   select(index) {
+    if (!this.opened || !this.visible) {
+      return false;
+    }
+
     this.selected = index;
     if (this.selected >= this.characters.length) {
       this.selected = 0;

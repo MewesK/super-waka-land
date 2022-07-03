@@ -1,10 +1,8 @@
 import { BitmapText } from 'pixi.js';
-import { API_URL, API_VERSION, CONTAINER, DEBUG } from '../Utilities';
+import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class LeaderboardOverlay extends Overlay {
-  FADE_IN_STEPS = 0;
-
   titleText;
 
   constructor(game) {
@@ -28,20 +26,15 @@ export default class LeaderboardOverlay extends Overlay {
       .querySelector('#leaderboard-template')
       .content.cloneNode(true).firstElementChild;
 
-    this.overlayElement.querySelector('#retry-button').addEventListener('click', async () => {
-      await this.hide();
-    });
+    this.overlayElement
+      .querySelector('#retry-button')
+      .addEventListener('click', () => this.game.overlayManager.close());
 
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  async show() {
-    if (this.showing) {
-      return;
-    }
-
-    await super.show();
-    this.isBusy(true);
+  async afterOpen() {
+    this.busy = true;
 
     try {
       const data = await this.fetchLeaderboard(this.game.player.lastRanking?.rank);
@@ -64,14 +57,14 @@ export default class LeaderboardOverlay extends Overlay {
       }
     } catch (error) {
       console.error(error);
-      this.isError(true);
+      this.error = true;
     }
 
-    this.isBusy(false);
+    this.busy = false;
   }
 
-  async hide() {
-    await super.hide();
+  afterClose() {
+    this.game.overlayManager.current = null;
     this.game.reset();
   }
 

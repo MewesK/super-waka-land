@@ -1,10 +1,8 @@
 import { BitmapText, Sprite } from 'pixi.js';
+import { OverlayType } from '../managers/OverlayManager';
 import Overlay from './Overlay';
 
 export default class TitleOverlay extends Overlay {
-  FADE_IN_STEPS = 0;
-  FADE_OUT_STEPS = 0;
-
   logoSprite;
   subtitleText;
   infoText;
@@ -35,5 +33,23 @@ export default class TitleOverlay extends Overlay {
 
     // Align container
     this.container.y = Math.round(this.game.app.screen.height / 2 - this.container.height / 2);
+  }
+
+  afterClose() {
+    this.game.overlayManager.open(OverlayType.CHARACTER_SELECT, false);
+  }
+
+  addEventListeners() {
+    super.addEventListeners();
+    this.game.inputManager.on({
+      name: 'skip_pointer',
+      keys: ['pointer'],
+      onDown: () => this.game.overlayManager.close(false),
+    });
+  }
+
+  removeEventListeners() {
+    super.removeEventListeners();
+    this.game.inputManager.off('skip_pointer');
   }
 }

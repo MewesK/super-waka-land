@@ -1,11 +1,9 @@
 import { BitmapText } from 'pixi.js';
+import { OverlayType } from '../managers/OverlayManager';
 import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class GameOverOverlay extends Overlay {
-  FADE_IN_STEPS = 0;
-  FADE_OUT_STEPS = 0;
-
   deadSprite;
   titleText;
 
@@ -40,32 +38,37 @@ export default class GameOverOverlay extends Overlay {
 
     // Submit button
     this.overlayElement.querySelector('#leaderboard-button').addEventListener('click', async () => {
-      await this.hide();
-      this.game.leaderboardOverlay.show();
+      await this.game.overlayManager.close(false);
     });
 
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  async show() {
-    if (this.showing) {
-      return;
-    }
-
-    super.show();
-    this.isBusy(true);
+  async afterOpen() {
+    this.busy = true;
 
     try {
-      const ranking = await this.postScore(this.game.player.name, this.game.score);
       this.overlayElement.querySelector('#score').textContent = `$${this.game.score}`;
-      this.overlayElement.querySelector('#rank').textContent = `#${ranking.rank}`;
-      this.game.player.lastRanking = ranking;
+
+      if (this.game.score > 0) {
+        this.overlayElement.querySelector('h2').style.display = 'inherit';
+        const ranking = await this.postScore(this.game.player.name, this.game.score);
+        this.overlayElement.querySelector('#rank').textContent = `#${ranking.rank}`;
+        this.game.player.lastRanking = ranking;
+      } else {
+        this.overlayElement.querySelector('h2').style.display = 'none';
+        this.game.player.lastRanking = null;
+      }
     } catch (error) {
       console.error(error);
-      this.isError(true);
+      this.error = true;
     }
 
-    this.isBusy(false);
+    this.busy = false;
+  }
+
+  afterClose() {
+    this.game.overlayManager.open(OverlayType.LEADERBOARD, false);
   }
 
   async postScore(name, score) {

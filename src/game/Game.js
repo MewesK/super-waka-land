@@ -5,13 +5,9 @@ import Background from './Background';
 import Player from './Player';
 import Map from './Map';
 import HUD from './HUD';
-import InputManager from './InputManager';
-
-import TitleOverlay from './overlays/TitleOverlay';
-import CharacterOverlay from './overlays/CharacterOverlay';
-import GameOverOverlay from './overlays/GameOverOverlay';
-import LeaderboardOverlay from './overlays/LeaderboardOverlay';
-import SettingsOverlay from './overlays/SettingsOverlay';
+import InputManager from './managers/InputManager';
+import OverlayManager, { OverlayType } from './managers/OverlayManager';
+import SoundManager, { MusicType, SoundType } from './managers/SoundManager';
 
 export default class Game {
   DEFAULT_DIFFICULTY = localStorage.getItem('DIFFICULTY') || 1;
@@ -20,141 +16,100 @@ export default class Game {
 
   app;
   container;
-  inputManager;
 
-  // Sound
-  bgMusic;
-  boostSound;
-  coinSound;
-  jumpSound;
-  powerupSound;
-
-  // Properties
-  paused = true;
-  difficulty = this.DEFAULT_DIFFICULTY;
-  score = 0;
-  boosts = 0;
-
-  // Objects
+  // Rendering layers
   background;
   map;
   player;
   hud;
 
-  // Overlays
-  characterOverlay;
-  gameOverOverlay;
-  leaderboardOverlay;
-  settingsOverlay;
-  titleOverlay;
+  // Managers
+  inputManager;
+  overlayManager;
+  soundManager;
+
+  // Properties
+  started = false;
+  paused = false;
+  difficulty = this.DEFAULT_DIFFICULTY;
+
+  score = 0;
+  boosts = 0;
 
   constructor(app) {
     this.app = app;
-    this.inputManager = new InputManager(this);
 
-    // Prepare sounds
-    this.bgMusic = Loader.shared.resources.bgMusic.sound;
-    this.bgMusic.loop = true;
-    this.bgMusic.volume = this.DEFAULT_MUSIC_VOLUME;
-    this.bgMusic.play();
-    this.boostSound = Loader.shared.resources.boostSound.sound;
-    this.boostSound.volume = this.DEFAULT_EFFECTS_VOLUME;
-    this.coinSound = Loader.shared.resources.coinSound.sound;
-    this.coinSound.volume = this.DEFAULT_EFFECTS_VOLUME;
-    this.jumpSound = Loader.shared.resources.jumpSound.sound;
-    this.jumpSound.volume = this.DEFAULT_EFFECTS_VOLUME;
-    this.powerupSound = Loader.shared.resources.powerupSound.sound;
-    this.powerupSound.volume = this.DEFAULT_EFFECTS_VOLUME;
+    // Rendering layers
+    this.background = new Background(this);
+    this.map = new Map(this);
+    this.player = new Player(this);
+    this.hud = new HUD(this);
+
+    // Managers
+    this.overlayManager = new OverlayManager(this);
+    this.inputManager = new InputManager(this);
+    this.soundManager = new SoundManager(this);
 
     // Create container
     this.container = new Container();
     this.container.filterArea = new Rectangle(0, 0, this.app.screen.width, this.app.screen.height);
     this.app.stage.addChild(this.container);
-
-    // Create layers
-    this.background = new Background(this);
     this.container.addChild(this.background.container);
-
-    this.map = new Map(this);
     this.container.addChild(this.map.container);
-
-    this.player = new Player(this);
     this.container.addChild(this.player.container);
-
-    this.hud = new HUD(this);
     this.container.addChild(this.hud.container);
 
-    // Create overlays
-    this.characterOverlay = new CharacterOverlay(this);
-    this.gameOverOverlay = new GameOverOverlay(this);
-    this.leaderboardOverlay = new LeaderboardOverlay(this);
-    this.settingsOverlay = new SettingsOverlay(this);
-    this.titleOverlay = new TitleOverlay(this);
-
     // Register event listeners
-    this.inputManager.on('reset', ['r'], (event) => {
-      this.reset();
-    });
-    this.inputManager.on('select', ['ArrowLeft', 'ArrowRight'], (event) => {
-      if (this.paused && this.characterOverlay.showing) {
-        this.characterOverlay.select(this.characterOverlay.selected + 1);
-      }
-    });
-    this.inputManager.on('skip', ['s', 'pointer', ' ', 'Enter'], async (event) => {
-      if (this.paused) {
-        if (this.titleOverlay.showing && this.titleOverlay.skippable) {
-          await this.titleOverlay.hide();
-          this.characterOverlay.show();
-        } else if (
-          this.characterOverlay.showing &&
-          this.characterOverlay.skippable &&
-          event.type !== 'pointerdown'
-        ) {
-          this.characterOverlay.hide();
-        }
-      } else if (this.player.dead) {
-        if (
-          this.gameOverOverlay.showing &&
-          this.gameOverOverlay.skippable &&
-          event.type !== 'pointerdown'
-        ) {
-          await this.gameOverOverlay.hide();
-          this.leaderboardOverlay.show();
-        } else if (this.leaderboardOverlay.showing && this.leaderboardOverlay.skippable) {
-          this.leaderboardOverlay.hide();
-        }
-      } else if (this.settingsOverlay.showing && this.settingsOverlay.skippable) {
-        this.settingsOverlay.hide();
-      }
-    });
-    this.inputManager.on(
-      'jump',
-      ['s', 'pointer', ' '],
-      () => {
-        if (!this.paused && !this.player.dead && !this.player.airborne) {
+    this.inputManager.on({
+      name: 'jump',
+      keys: ['s', 'pointer', ' '],
+      onDown: () => {
+        if (this.started && !this.paused && !this.player.dead && !this.player.airborne) {
           this.player.startJump();
         }
       },
-      () => {
-        this.player.endJump();
-      }
-    );
-    this.inputManager.on('boost', ['d', 'swipeup', 'Shift'], () => {
-      if (this.boosts > 0) {
-        this.increaseScore(50);
-        this.increaseBoost(-1);
-        this.player.startBoost();
-      }
+      onUp: () => {
+        if (this.started && !this.paused && !this.player.dead && this.player.airborne) {
+          this.player.endJump();
+        }
+      },
     });
-    this.inputManager.on('settings', ['Escape'], () => {
-      if (!this.paused && !this.player.dead && !this.settingsOverlay.showing) {
-        this.player.dead = true;
-        this.settingsOverlay.show();
-      }
+    this.inputManager.on({
+      name: 'boost',
+      keys: ['d', 'swipeup', 'Shift'],
+      onDown: () => {
+        if (this.started && !this.paused && !this.player.dead && this.boosts > 0) {
+          this.increaseScore(50);
+          this.increaseBoost(-1);
+          this.player.startBoost();
+        }
+      },
+    });
+    this.inputManager.on({
+      name: 'reset',
+      keys: ['r'],
+      onUp: () => this.reset(),
+    });
+    this.inputManager.on({
+      name: 'settings',
+      keys: ['Escape'],
+      onUp: () => {
+        if (OverlayType.SETTINGS.opened && OverlayType.SETTINGS.skippable) {
+          this.overlayManager.close();
+        } else if (
+          !OverlayType.SETTINGS.opened &&
+          (!this.overlayManager.current || !this.overlayManager.current.busy)
+        ) {
+          this.overlayManager.open(OverlayType.SETTINGS);
+        }
+      },
     });
 
-    // Show title overlay
-    this.titleOverlay.show();
+    // Start background music
+    this.soundManager.playMusic(MusicType.WAKALAKA);
+
+    // Open title overlay
+    this.overlayManager.open(OverlayType.TITLE);
 
     // Start game loop
     console.debug('Starting game loop');
@@ -165,7 +120,7 @@ export default class Game {
     // Check for death
     if (this.player.position.y > this.app.screen.height) {
       this.player.dead = true;
-      this.gameOverOverlay.show();
+      this.overlayManager.open(OverlayType.GAME_OVER);
     }
   }
 
@@ -180,13 +135,9 @@ export default class Game {
   }
 
   update(dt) {
-    this.titleOverlay.update(dt);
-    this.characterOverlay.update(dt);
-    this.gameOverOverlay.update(dt);
-    this.settingsOverlay.update(dt);
-    this.leaderboardOverlay.update(dt);
+    this.overlayManager.update(dt);
 
-    if (this.player.dead) {
+    if (this.player.dead || this.paused) {
       return;
     }
 
@@ -203,12 +154,12 @@ export default class Game {
     this.map.checkCollision(
       // collectCoinCallback
       () => {
-        this.coinSound.play();
+        this.soundManager.playSound(SoundType.COIN);
         this.increaseScore(10);
       },
       // collectCokeCallback
       () => {
-        this.powerupSound.play();
+        this.soundManager.playSound(SoundType.POWER_UP);
         this.increaseScore(50);
         this.increaseBoost(1);
       },
@@ -229,7 +180,7 @@ export default class Game {
         this.player.airborne = !intersecting && !touching;
 
         // Start jumping if just landed but still holding key
-        if (landing && this.inputManager.pressed['jump']) {
+        if (landing && this.inputManager.isActive('jump')) {
           console.debug('Early jump');
           this.player.startJump();
         }
@@ -244,9 +195,8 @@ export default class Game {
   }
 
   reset() {
-    this.inputManager.reset();
-
     // Properties
+    this.started = true;
     this.score = 0;
     this.boosts = 0;
 
@@ -255,5 +205,10 @@ export default class Game {
     this.map.reset();
     this.player.reset();
     this.hud.reset();
+
+    // Managers
+    this.inputManager.reset();
+    this.overlayManager.reset();
+    this.soundManager.reset();
   }
 }

@@ -1,0 +1,65 @@
+import TitleOverlay from '../overlays/TitleOverlay';
+import CharacterOverlay from '../overlays/CharacterOverlay';
+import GameOverOverlay from '../overlays/GameOverOverlay';
+import LeaderboardOverlay from '../overlays/LeaderboardOverlay';
+import SettingsOverlay from '../overlays/SettingsOverlay';
+
+export let OverlayType = {
+  CHARACTER_SELECT: undefined,
+  GAME_OVER: undefined,
+  LEADERBOARD: undefined,
+  SETTINGS: undefined,
+  TITLE: undefined,
+};
+
+export default class OverlayManager {
+  game;
+  current = null;
+  previous = null;
+
+  constructor(game) {
+    this.game = game;
+
+    OverlayType.CHARACTER_SELECT = new CharacterOverlay(game);
+    OverlayType.GAME_OVER = new GameOverOverlay(game);
+    OverlayType.LEADERBOARD = new LeaderboardOverlay(game);
+    OverlayType.SETTINGS = new SettingsOverlay(game);
+    OverlayType.TITLE = new TitleOverlay(game);
+  }
+
+  async open(overlay, fade = true) {
+    if (this.current === overlay) {
+      return;
+    }
+    this.previous = this.current?.opened ? this.current : null;
+    this.current = overlay;
+    if (this.current && !this.current.opened) {
+      if (this.current.beforeOpen()) {
+        await this.current.open(fade);
+        this.current.afterOpen();
+      }
+    }
+  }
+
+  async close(fade = true) {
+    if (!this.current) {
+      return;
+    }
+    if (this.current && this.current.opened) {
+      if (this.current.beforeClose()) {
+        await this.current.close(fade);
+        this.current.afterClose();
+      }
+    }
+  }
+
+  update(dt) {
+    if (this.current) {
+      this.current.update(dt);
+    }
+  }
+
+  reset() {
+    this.close(false);
+  }
+}

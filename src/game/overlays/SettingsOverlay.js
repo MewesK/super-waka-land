@@ -1,12 +1,11 @@
 import { BitmapText } from 'pixi.js';
+import { SoundType } from '../managers/SoundManager';
 import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class SettingsOverlay extends Overlay {
-  FADE_IN_STEPS = 0;
-  FADE_OUT_STEPS = 0;
-
   changedDifficulty = false;
+  previousOverlay = null;
 
   titleText;
 
@@ -44,42 +43,72 @@ export default class SettingsOverlay extends Overlay {
 
     // Volume
     this.overlayElement.querySelector('#music-range').addEventListener('input', async (event) => {
-      this.game.bgMusic.volume = event.target.value;
+      this.game.soundManager.setMusicVolume(event.target.value);
       localStorage.setItem('MUSIC_VOLUME', event.target.value);
     });
     this.overlayElement
       .querySelector('#effects-range')
       .addEventListener('change', async (event) => {
-        this.game.boostSound.volume = event.target.value;
-        this.game.coinSound.volume = event.target.value;
-        this.game.jumpSound.volume = event.target.value;
-        this.game.powerupSound.volume = event.target.value;
-        this.game.powerupSound.play();
+        this.game.soundManager.setSoundVolume(event.target.value);
+        this.game.soundManager.playSound(SoundType.POWER_UP);
         localStorage.setItem('EFFECTS_VOLUME', event.target.value);
       });
 
     // Continue button
-    this.overlayElement.querySelector('#continue-button').addEventListener('click', async () => {
-      await this.hide();
-      this.game.player.dead = false;
-      if (this.changedDifficulty) {
-        this.game.reset();
-      }
-    });
+    this.overlayElement
+      .querySelector('#continue-button')
+      .addEventListener('click', () => this.game.overlayManager.close());
 
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  async show() {
+  open() {
+    return super.open(!this.game.overlayManager.previous);
+  }
+
+  close() {
+    return super.close(!this.game.overlayManager.previous);
+  }
+
+  beforeOpen() {
+    // Pause
+    this.game.paused = true;
+
+    // Hide previous overlay if available
+    if (this.game.overlayManager.previous) {
+      this.game.overlayManager.previous.hide();
+    }
+
+    // Reset
     this.changedDifficulty = false;
 
     // Set form values
     this.overlayElement.querySelectorAll('input[name="difficulty-radio"]')[
       this.game.difficulty
     ].checked = true;
-    this.overlayElement.querySelector('#music-range').value = this.game.bgMusic.volume;
-    this.overlayElement.querySelector('#effects-range').value = this.game.powerupSound.volume;
+    this.overlayElement.querySelector('#music-range').value =
+      this.game.soundManager.getMusicVolume();
+    this.overlayElement.querySelector('#effects-range').value =
+      this.game.soundManager.getSoundVolume();
 
-    await super.show();
+    return true;
+  }
+
+  afterClose() {
+    // Show previous overlay if available
+    if (this.game.overlayManager.previous) {
+      this.game.overlayManager.current = this.game.overlayManager.previous;
+      this.game.overlayManager.previous.show();
+    } else {
+      this.game.overlayManager.current = null;
+    }
+
+    // Reset game with new difficulty (only during game)
+    if (this.changedDifficulty) {
+      this.game.reset();
+    }
+
+    // Unpause
+    this.game.paused = false;
   }
 }
