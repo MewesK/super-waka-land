@@ -49,7 +49,7 @@ function getDatabase() {
 function getLeaderboard(string $version = '1.0', int $limit = 100) {
   $dbh = getDatabase();
 
-  $stmt = $dbh->prepare("SELECT * FROM `${$_ENV['DB_TABLE']}` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit");
+  $stmt = $dbh->prepare('SELECT * FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit');
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
   $stmt->execute();
@@ -73,14 +73,14 @@ function getLeaderboard(string $version = '1.0', int $limit = 100) {
 function addScore(string $version = '1.0', string $name, int $score) {
   $dbh = getDatabase();
 
-  $stmt = $dbh->prepare("INSERT INTO `${$_ENV['DB_TABLE']}` (`id`, `name`, `score`, `version`, `created`) VALUES (NULL, :name, :score, :version, CURRENT_TIMESTAMP)");
+  $stmt = $dbh->prepare('INSERT INTO `'.$_ENV['DB_TABLE'].'` (`id`, `name`, `score`, `version`, `created`) VALUES (NULL, :name, :score, :version, CURRENT_TIMESTAMP)');
   $stmt->bindParam('name', $name, PDO::PARAM_STR);
   $stmt->bindParam('score', $score, PDO::PARAM_INT);
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->execute();
   $id = (int) $dbh->lastInsertId();
 
-  $stmt = $dbh->prepare("SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `${$_ENV['DB_TABLE']}` WHERE `version` = :version) temp WHERE `id` = :id");
+  $stmt = $dbh->prepare('SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version) temp WHERE `id` = :id');
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('id', $id, PDO::PARAM_INT);
   $stmt->execute();
