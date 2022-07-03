@@ -19,7 +19,7 @@ getGPUTier().then((tier) => {
   const BACKGROUND_COLOR = 0xffffde;
 
   settings.SCALE_MODE = SCALE_MODES.NEAREST;
-  settings.ROUND_PIXELS = false;
+  settings.ROUND_PIXELS = tier.tier === 1;
   settings.RESOLUTION = { 1: 1, 2: 2, 3: 4 }[tier.tier];
 
   console.debug(`Detected a tier ${tier.tier} GPU. Setting internal resolution to ${settings.RESOLUTION}.`);
