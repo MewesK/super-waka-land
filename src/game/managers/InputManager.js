@@ -11,7 +11,7 @@ export default class InputManager {
   constructor(game) {
     this.game = game;
 
-    this.keyboardManager = new EventManager(document.getElementsByTagName('body')[0]);
+    this.keyboardManager = new EventManager(document.querySelector('body'));
     this.keyboardManager.on({
       keydown: (event) => this.onDown(event, event.key),
       keyup: (event) => this.onUp(event, event.key),
@@ -30,6 +30,7 @@ export default class InputManager {
       .filter((_event) => _event.keys.includes(key))
       .forEach((_event, index) => {
         if (setKeyActive && index === 0) {
+          event.preventDefault();
           this.activeKeys[key] = true;
         }
         if (_event.onDown) {

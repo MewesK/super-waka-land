@@ -47,10 +47,6 @@
   padding: 0 !important;
 }
 
-#character-overlay main {
-  padding-top: 0%;
-}
-
 #gameover-overlay main {
   padding-top: 50%;
 }

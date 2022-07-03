@@ -1,4 +1,5 @@
 import { BitmapText } from 'pixi.js';
+import { OverlayType } from '../managers/OverlayManager';
 import { SoundType } from '../managers/SoundManager';
 import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
@@ -71,6 +72,13 @@ export default class SettingsOverlay extends Overlay {
   }
 
   beforeOpen() {
+    if (
+      this.opened ||
+      (this.game.overlayManager.current && this.game.overlayManager.current.busy)
+    ) {
+      return false;
+    }
+
     // Pause
     this.game.paused = true;
 
@@ -91,6 +99,13 @@ export default class SettingsOverlay extends Overlay {
     this.overlayElement.querySelector('#effects-range').value =
       this.game.soundManager.getSoundVolume();
 
+    return true;
+  }
+
+  beforeClose() {
+    if (!OverlayType.SETTINGS.opened || !OverlayType.SETTINGS.skippable) {
+      return false;
+    }
     return true;
   }
 

@@ -94,13 +94,10 @@ export default class Game {
       name: 'settings',
       keys: ['Escape'],
       onUp: () => {
-        if (OverlayType.SETTINGS.opened && OverlayType.SETTINGS.skippable) {
-          this.overlayManager.close();
-        } else if (
-          !OverlayType.SETTINGS.opened &&
-          (!this.overlayManager.current || !this.overlayManager.current.busy)
-        ) {
+        if (!OverlayType.SETTINGS.opened) {
           this.overlayManager.open(OverlayType.SETTINGS);
+        } else {
+          this.overlayManager.close();
         }
       },
     });
