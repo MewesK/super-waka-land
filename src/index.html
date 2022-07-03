@@ -23,13 +23,24 @@
   <main id="app" class="container">
   </main>
 
-  <p id="manual">
-    <strong>Controls</strong><br>
-    Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump. The longer you press down the higher you'll jump.<br>
-    Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. The boost works in the air too, so you can save
-    yourself from the abyss.<br>
-    Press <kbd>R</kbd> to reset the game quickly.
-  </p>
+  <div id="manual">
+    <h4>Controls</h4>
+    <ul>
+      <li>
+        Press <kbd>Space</kbd>, <kbd>S</kbd> or tap to jump. The longer you press down the higher you'll jump.
+      </li>
+      <li>
+        Press <kbd>Shift</kbd>, <kbd>D</kbd> or swipe up for a boost. The boost works in the air too, so you can save
+        yourself from the abyss.
+      </li>
+      <li>
+        Press <kbd>R</kbd> to reset the game quickly.
+      </li>
+      <li>
+        Press <kbd>Escape</kbd> to enter settings.
+      </li>
+    </ul>
+  </div>
 
   <footer>
     <ul>
@@ -62,8 +73,7 @@
       <footer>
         <form>
           <label for="name-text" aria-hidden="true">Your Name</label>
-          <input type="text" id="name-text" name="name" placeholder="Your Name" maxlength="32" spellcheck="false"
-            aria-invalid="true" required>
+          <input type="text" id="name-text" name="name" placeholder="Your Name" maxlength="32" spellcheck="false" required>
           <button id="confirm-button" type="submit" class="outline bounce">Confirm</button>
         </form>
       </footer>
@@ -74,7 +84,7 @@
     <div id="gameover-overlay" class="overlay" aria-busy="true" aria-hidden="true">
       <main>
         <h1>Rats College Fund: <em id="score"></em></h1>
-        <h2>You rank <em id="rank"></em> on the leaderboard</h2>
+        <h2 style="display: none;">You rank <em id="rank"></em> on the leaderboard</h2>
       </main>
       <footer>
         <button id="leaderboard-button" class="outline bounce">

@@ -39,8 +39,24 @@
 #manual {
   color: var(--muted-color);
   text-align: center;
-  line-height: 2;
+}
+
+#manual h4 {
+  font-size: 1rem;
+  color: var(--muted-color);
+  margin-bottom: 1rem;
+}
+
+#manual ul {
+  padding-left: 0;
+}
+
+#manual li {
+  color: var(--muted-color);
   font-size: medium;
+  line-height: 2;
+  list-style: none !important;
+  margin-bottom: 0.25rem;
 }
 
 #manual kbd {
