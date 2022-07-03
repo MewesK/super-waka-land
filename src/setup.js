@@ -22,7 +22,7 @@ getGPUTier().then((tier) => {
   settings.ROUND_PIXELS = false;
   settings.RESOLUTION = { 1: 1, 2: 2, 3: 4 }[tier.tier];
 
-  console.debug(`Detected a tier ${tier.tier} GPU. Setting resolution to ${settings.RESOLUTION}.`);
+  console.debug(`Detected a tier ${tier.tier} GPU. Setting internal resolution to ${settings.RESOLUTION}.`);
 
   // Create Pixi application
   const app = new Application({
