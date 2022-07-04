@@ -136,15 +136,15 @@ export default class Game {
   }
 
   update(dt) {
+    // Start performance measurement
+    if (DEBUG) {
+      this.app.stats.begin();
+    }
+
     this.overlayManager.update(dt);
 
     if (this.player.dead || this.paused) {
       return;
-    }
-
-    // Start performance measurement
-    if (DEBUG) {
-      this.app.stats.begin();
     }
 
     this.player.update(dt);
