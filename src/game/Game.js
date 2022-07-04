@@ -88,7 +88,11 @@ export default class Game {
     this.inputManager.on({
       name: 'reset',
       keys: ['r'],
-      onUp: () => this.reset(),
+      onUp: () => {
+        if (!OverlayType.TITLE.opened && !OverlayType.CHARACTER_SELECT.opened) {
+          this.reset();
+        }
+      },
     });
     this.inputManager.on({
       name: 'settings',

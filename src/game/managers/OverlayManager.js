@@ -41,14 +41,16 @@ export default class OverlayManager {
     }
   }
 
-  async close(fade = true) {
+  async close(fade = true, force = false) {
     if (!this.current) {
       return;
     }
     if (this.current && this.current.opened) {
-      if (this.current.beforeClose()) {
+      if (force || this.current.beforeClose()) {
         await this.current.close(fade);
-        this.current.afterClose();
+        if (!force) {
+          this.current.afterClose();
+        }
       }
     }
   }
@@ -60,6 +62,6 @@ export default class OverlayManager {
   }
 
   reset() {
-    this.close(false);
+    this.close(false, true);
   }
 }
