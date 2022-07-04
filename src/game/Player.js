@@ -37,6 +37,36 @@ export default class Player {
       jumpSprite: Sprite.from('orange_jump'),
       deadSprite: Sprite.from('orange_dead'),
     },
+    {
+      idleSprite: Sprite.from('racoon_idle'),
+      walkSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_walk']);
+        sprite.animationSpeed = 0.1;
+        return sprite;
+      })(),
+      runSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_run']);
+        sprite.animationSpeed = 0.15;
+        return sprite;
+      })(),
+      jumpSprite: Sprite.from('racoon_jump'),
+      deadSprite: Sprite.from('rat_dead'),
+    },
+    {
+      idleSprite: Sprite.from('tutel_idle'),
+      walkSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_walk']);
+        sprite.animationSpeed = 0.1;
+        return sprite;
+      })(),
+      runSprite: (() => {
+        const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_run']);
+        sprite.animationSpeed = 0.15;
+        return sprite;
+      })(),
+      jumpSprite: Sprite.from('tutel_jump'),
+      deadSprite: Sprite.from('rat_dead'),
+    },
   ];
   POWER = 1.5;
   MASS = 1.0;

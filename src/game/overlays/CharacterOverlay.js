@@ -4,8 +4,29 @@ import Overlay from './Overlay';
 
 export default class CharacterOverlay extends Overlay {
   DEFAULT_NAME = localStorage.getItem('NAME') || '';
+  CHARACTERS = [
+    {
+      text: new BitmapText('Rat', this.DEFAULT_FONT),
+      sprite: Sprite.from('rat_idle'),
+      color: '#0000ff',
+    },
+    {
+      text: new BitmapText('Orange', this.DEFAULT_FONT),
+      sprite: Sprite.from('orange_idle'),
+      color: '#00ff00',
+    },
+    {
+      text: new BitmapText('Raccoon', this.DEFAULT_FONT),
+      sprite: Sprite.from('racoon_idle'),
+      color: '#ff0000',
+    },
+    {
+      text: new BitmapText('Tutel', this.DEFAULT_FONT),
+      sprite: Sprite.from('tutel_idle'),
+      color: '#ffff00',
+    },
+  ];
 
-  characters;
   selected;
 
   titleText;
@@ -20,50 +41,25 @@ export default class CharacterOverlay extends Overlay {
   }
 
   createContainer() {
-    // Create rat sprite
-    const ratSprite = Sprite.from('rat_idle');
-    this.container.addChild(ratSprite);
-    ratSprite.x = Math.round(this.game.app.screen.width / 2 - ratSprite.width / 2 - 40);
-    ratSprite.y = 80;
-    ratSprite.interactive = true;
-    ratSprite.on('pointerdown', (event) => {
-      event.stopPropagation();
-      this.select(0);
+    // Register characters
+    this.CHARACTERS.forEach((character, index) => {
+      this.container.addChild(character.sprite);
+      character.sprite.x = Math.round(
+        this.game.app.screen.width / 2 -
+          character.sprite.width / 2 +
+          (this.CHARACTERS.length / -2 + index + 0.5) * (character.sprite.width + 40)
+      );
+      character.sprite.y = 80;
+      character.sprite.interactive = true;
+      character.sprite.on('pointerdown', (event) => {
+        event.stopPropagation();
+        this.select(index);
+      });
+
+      this.container.addChild(character.text);
+      character.text.x = Math.round(character.sprite.x + character.sprite.width / 2) - character.text.width / 2;
+      character.text.y = 120;
     });
-
-    const ratName = new BitmapText('Rat', this.DEFAULT_FONT);
-    this.container.addChild(ratName);
-    ratName.x = Math.round(this.game.app.screen.width / 2 - ratName.width / 2 - 40);
-    ratName.y = 120;
-
-    // Create orange sprite
-    const orangeSprite = Sprite.from('orange_idle');
-    this.container.addChild(orangeSprite);
-    orangeSprite.x = Math.round(this.game.app.screen.width / 2 - ratSprite.width / 2 + 40);
-    orangeSprite.y = 86;
-    orangeSprite.interactive = true;
-    orangeSprite.on('pointerdown', (event) => {
-      event.stopPropagation();
-      this.select(1);
-    });
-
-    const orangeName = new BitmapText('Orange', this.DEFAULT_FONT);
-    this.container.addChild(orangeName);
-    orangeName.x = Math.round(this.game.app.screen.width / 2 - orangeName.width / 2 + 40);
-    orangeName.y = 120;
-
-    this.characters = [
-      {
-        text: ratName,
-        sprite: ratSprite,
-        color: '#0000ff',
-      },
-      {
-        text: orangeName,
-        sprite: orangeSprite,
-        color: '#00ff00',
-      },
-    ];
 
     // Create text
     this.titleText = new BitmapText('Characters', this.TITLE_FONT);
@@ -143,7 +139,7 @@ export default class CharacterOverlay extends Overlay {
     }
 
     this.selected = index;
-    if (this.selected >= this.characters.length) {
+    if (this.selected >= this.CHARACTERS.length) {
       this.selected = 0;
     }
 
@@ -151,7 +147,7 @@ export default class CharacterOverlay extends Overlay {
 
     const filter = new filters.ColorMatrixFilter();
     filter.brightness(this.BRIGHTNESS);
-    this.characters.forEach((character, index) => {
+    this.CHARACTERS.forEach((character, index) => {
       if (index !== this.selected) {
         character.sprite.filters = [filter];
       } else {
