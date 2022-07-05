@@ -50,7 +50,7 @@ export default class Player {
         return sprite;
       })(),
       jumpSprite: Sprite.from('racoon_jump'),
-      deadSprite: Sprite.from('rat_dead'),
+      deadSprite: Sprite.from('racoon_dead'),
     },
     {
       idleSprite: Sprite.from('tutel_idle'),
@@ -65,7 +65,7 @@ export default class Player {
         return sprite;
       })(),
       jumpSprite: Sprite.from('tutel_jump'),
-      deadSprite: Sprite.from('rat_dead'),
+      deadSprite: Sprite.from('tutel_dead'),
     },
   ];
   POWER = 1.5;
