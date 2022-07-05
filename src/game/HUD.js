@@ -53,8 +53,10 @@ export default class HUD {
     this.settingsSprite.interactive = true;
     this.settingsSprite.buttonMode = true;
     this.settingsSprite.on('pointerdown', (event) => {
-      event.stopPropagation();
-      this.game.overlayManager.open(OverlayType.SETTINGS);
+      if (!this.game.overlayManager.current) {
+        event.stopPropagation();
+        this.game.overlayManager.open(OverlayType.SETTINGS);
+      }
     });
     this.container.addChild(this.settingsSprite);
   }

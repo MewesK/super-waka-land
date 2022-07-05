@@ -38,6 +38,9 @@ export default class OverlayManager {
         await this.current.open(fade);
         this.current.afterOpen();
       }
+      if (this.current.opened) {
+        this.game.hide();
+      }
     }
   }
 
@@ -50,6 +53,9 @@ export default class OverlayManager {
         await this.current.close(fade);
         if (!force) {
           this.current.afterClose();
+        }
+        if (!this.current?.opened) {
+          this.game.show();
         }
       }
     }

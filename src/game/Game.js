@@ -60,6 +60,21 @@ export default class Game {
     this.container.addChild(this.hud.container);
 
     // Register event listeners
+    this.registerEventHandlers();
+
+    // Start background music
+    this.soundManager.playMusic(MusicType.WAKALAKA);
+
+    // Open title overlay
+    this.overlayManager.open(OverlayType.TITLE);
+
+    // Start game loop
+    console.debug('Starting game loop');
+    this.app.ticker.add(this.update, this, UPDATE_PRIORITY.HIGH);
+  }
+
+  registerEventHandlers() {
+    // Jump
     this.inputManager.on({
       name: 'jump',
       keys: ['s', 'pointer', ' '],
@@ -74,6 +89,8 @@ export default class Game {
         }
       },
     });
+
+    // Boost
     this.inputManager.on({
       name: 'boost',
       keys: ['d', 'swipeup', 'Shift'],
@@ -85,6 +102,8 @@ export default class Game {
         }
       },
     });
+
+    // Reset
     this.inputManager.on({
       name: 'reset',
       keys: ['r'],
@@ -94,6 +113,8 @@ export default class Game {
         }
       },
     });
+
+    // Settings/Pause
     this.inputManager.on({
       name: 'settings',
       keys: ['Escape'],
@@ -105,16 +126,6 @@ export default class Game {
         }
       },
     });
-
-    // Start background music
-    this.soundManager.playMusic(MusicType.WAKALAKA);
-
-    // Open title overlay
-    this.overlayManager.open(OverlayType.TITLE);
-
-    // Start game loop
-    console.debug('Starting game loop');
-    this.app.ticker.add(this.update, this, UPDATE_PRIORITY.HIGH);
   }
 
   checkGameOver() {
@@ -195,6 +206,14 @@ export default class Game {
     }
   }
 
+  show() {
+    this.hud.settingsSprite.interactive = true;
+  }
+
+  hide() {
+    this.hud.settingsSprite.interactive = false;
+  }
+
   reset() {
     // Properties
     this.started = true;
@@ -211,5 +230,7 @@ export default class Game {
     this.inputManager.reset();
     this.overlayManager.reset();
     this.soundManager.reset();
+
+    this.show();
   }
 }
