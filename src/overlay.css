@@ -21,13 +21,23 @@
   font-size: 3.5vmin;
 }
 
-.overlay[aria-busy='true']::before {
+.overlay[aria-busy='true']::before,
+.overlay tbody[aria-busy='true']::before {
   align-self: center;
   border-width: 3vmin;
   border-radius: 10vmin;
   width: 20vmin;
   height: 20vmin;
   opacity: 0.5;
+}
+.overlay tbody[aria-busy='true']::before {
+  position: absolute;
+  display: block;
+  margin-top: 10vmin;
+  left: calc(50% - 10vmin);
+}
+.overlay tbody[aria-busy='true'] tr {
+  opacity: 0.3;
 }
 
 .overlay[aria-busy='true'] * {

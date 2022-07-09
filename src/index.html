@@ -97,7 +97,7 @@
   </template>
 
   <template id="leaderboard-template">
-    <div id="leaderboard-overlay" class="overlay" aria-busy="true" aria-hidden="true">
+    <div id="leaderboard-overlay" class="overlay" aria-busy="false" aria-hidden="true">
       <main>
         <div class="button-group">
           <button id="personal-button" class="outline bounce active">
@@ -115,7 +115,7 @@
               <th scope="col">Name</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody aria-busy="true">
             <template id="leaderboard-row-template">
               <tr>
                 <th scope="row"></th>

@@ -3,9 +3,13 @@ import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
 export default class LeaderboardOverlay extends Overlay {
-  PAGE_SIZE = 20;
+  PAGE_SIZE = 100;
 
   titleText;
+
+  mode = 'personal';
+  page = null;
+  last = false;
 
   constructor(game) {
     super(game);
@@ -28,24 +32,24 @@ export default class LeaderboardOverlay extends Overlay {
       .querySelector('#leaderboard-template')
       .content.cloneNode(true).firstElementChild;
 
-    this.overlayElement
-      .querySelector('#personal-button')
-      .addEventListener('click', () => {
-        this.overlayElement.querySelector('#global-button').classList.remove('active');
-        this.overlayElement.querySelector('#personal-button').classList.add('active');
-        this.displayLeaderboardByRank(
-          this.game.player.name,
-          this.game.player.lastPersonalRank || null
-        )
-      });
+    this.overlayElement.querySelector('tbody').addEventListener('scroll', (e) => {
+      // Check if the bottom is reached
+      if (!this.busy && !this.last && e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight) {
+        this.displayLeaderboard(this.mode, this.page + 1);
+      }
+    });
 
-    this.overlayElement
-      .querySelector('#global-button')
-      .addEventListener('click', () => {
-        this.overlayElement.querySelector('#global-button').classList.add('active');
-        this.overlayElement.querySelector('#personal-button').classList.remove('active');
-        this.displayLeaderboardByRank(null, this.game.player.lastGlobalRank || null);
-      });
+    this.overlayElement.querySelector('#personal-button').addEventListener('click', () => {
+      this.overlayElement.querySelector('#global-button').classList.remove('active');
+      this.overlayElement.querySelector('#personal-button').classList.add('active');
+      this.displayLeaderboard('personal', 0);
+    });
+
+    this.overlayElement.querySelector('#global-button').addEventListener('click', () => {
+      this.overlayElement.querySelector('#global-button').classList.add('active');
+      this.overlayElement.querySelector('#personal-button').classList.remove('active');
+      this.displayLeaderboard('global', 0);
+    });
 
     this.overlayElement
       .querySelector('#retry-button')
@@ -55,7 +59,7 @@ export default class LeaderboardOverlay extends Overlay {
   }
 
   async afterOpen() {
-    this.displayLeaderboardByRank(this.game.player.name, this.game.player.lastPersonalRank || null);
+    this.displayLeaderboard('personal', 0);
   }
 
   afterClose() {
@@ -63,40 +67,59 @@ export default class LeaderboardOverlay extends Overlay {
     this.game.reset();
   }
 
-  async displayLeaderboardByRank(name = null, rank = null) {
-    if (rank === null) {
-      this.displayLeaderboard(name, 0, null);
-    } else {
-      const offset = rank - (rank % this.PAGE_SIZE);
-      const page = offset / this.PAGE_SIZE;
-      this.displayLeaderboard(name, page, rank);
+  async displayLeaderboard(mode, page = 0) {
+    console.debug(`Loading page ${page + 1} of the "${mode}" leaderboard`);
+
+    // Reset last page flag
+    if (page === 0) {
+      this.last = false;
     }
-  }
 
-  async displayLeaderboard(name, page = 0, rank = null) {
-    const offset = rank ? rank - (rank % this.PAGE_SIZE) : page * this.PAGE_SIZE;
-    const data = await this.fetchLeaderboard(name, offset);
+    // Check last page flag
+    if (this.last) {
+      console.debug('Already on the last page of leaderboard');
+      return;
+    }
 
-    const rowTemplate = document.querySelector('#leaderboard-row-template');
+    // Fetch leaderboard
+    const data = await this.fetchLeaderboard(
+      mode === 'personal' ? this.game.player.name : null,
+      page * this.PAGE_SIZE
+    );
+
+    // Update last page flag
+    if (data.length === 0) {
+      console.debug('Last page of leaderboard reached');
+      this.last = true;
+      return;
+    }
+
+    // Set state
+    this.mode = mode;
+    this.page = page;
+
+    // Table body
     const tbody = this.overlayElement.querySelector('tbody');
-    tbody.querySelectorAll('tr').forEach((element) => element.remove());
+    if (page === 0) {
+      tbody.scrollTop = 0;
+      tbody.querySelectorAll('tr').forEach((element) => element.remove());
+    }
 
-    let rankElement = null;
+    // Table rows
+    const rank =
+      mode === 'personal' ? this.game.player.lastPersonalRank : this.game.player.lastGlobalRank;
+    const rowTemplate = document.querySelector('#leaderboard-row-template');
     for (const entry of data) {
       const row = rowTemplate.content.cloneNode(true);
       if (rank && entry.rank === rank) {
-        rankElement = row.querySelector('tr');
-        rankElement.className = 'rank';
+        row.querySelector('tr').className = 'rank';
       }
       const th = row.querySelectorAll('th');
       th[0].textContent = entry.rank;
       const td = row.querySelectorAll('td');
       td[0].textContent = entry.score;
       td[1].textContent = entry.name;
-      tbody.appendChild(row);
-    }
-    if (rankElement) {
-      tbody.scrollTop = rankElement.offsetTop - rankElement.offsetHeight;
+      tbody.append(row);
     }
   }
 
@@ -127,5 +150,14 @@ export default class LeaderboardOverlay extends Overlay {
     this.busy = false;
 
     return response?.json();
+  }
+
+  get busy() {
+    return this.overlayElement?.querySelector('tbody').getAttribute('aria-busy') === 'true';
+  }
+  set busy(value) {
+    if (this.overlayElement) {
+      this.overlayElement.querySelector('tbody').setAttribute('aria-busy', value);
+    }
   }
 }
