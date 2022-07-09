@@ -12,7 +12,10 @@ export let EffectType = {
 };
 
 export let VoiceType = {
-  BOOST: undefined,
+  RAT1: undefined,
+  RAT2: undefined,
+  ORANGE1: undefined,
+  ORANGE2: undefined,
 };
 
 export default class SoundManager {
@@ -30,14 +33,17 @@ export default class SoundManager {
     this.setMusicVolume(game.DEFAULT_MUSIC_VOLUME);
 
     // Effect
-    EffectType.BOOST = Loader.shared.resources.boostSound.sound;
-    EffectType.COIN = Loader.shared.resources.coinSound.sound;
-    EffectType.JUMP = Loader.shared.resources.jumpSound.sound;
-    EffectType.POWER_UP = Loader.shared.resources.powerupSound.sound;
+    EffectType.BOOST = Loader.shared.resources.boostEffect.sound;
+    EffectType.COIN = Loader.shared.resources.coinEffect.sound;
+    EffectType.JUMP = Loader.shared.resources.jumpEffect.sound;
+    EffectType.POWER_UP = Loader.shared.resources.powerupEffect.sound;
     this.setEffectVolume(game.DEFAULT_EFFECTS_VOLUME);
 
     // Voice
-    VoiceType.BOOST = Loader.shared.resources.boostSound.sound;
+    VoiceType.ORANGE1 = Loader.shared.resources.orange1Voice.sound;
+    VoiceType.ORANGE2 = Loader.shared.resources.orange2Voice.sound;
+    VoiceType.RAT1 = Loader.shared.resources.rat1Voice.sound;
+    VoiceType.RAT2 = Loader.shared.resources.rat2Voice.sound;
     this.setEffectVolume(game.DEFAULT_VOICE_VOLUME);
   }
 
@@ -107,10 +113,13 @@ export default class SoundManager {
   }
 
   getVoiceVolume() {
-    return this.volumeToPercentage(VoiceType.BOOST.volume);
+    return this.volumeToPercentage(VoiceType.ORANGE1.volume);
   }
 
   setVoiceVolume(value) {
-    VoiceType.BOOST.volume = this.percentageToVolume(value);
+    VoiceType.ORANGE1.volume = this.percentageToVolume(value);
+    VoiceType.ORANGE2.volume = VoiceType.ORANGE1.volume;
+    VoiceType.RAT1.volume = VoiceType.ORANGE1.volume;
+    VoiceType.RAT2.volume = VoiceType.ORANGE1.volume;
   }
 }

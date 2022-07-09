@@ -56,7 +56,7 @@ export default class SettingsOverlay extends Overlay {
       });
     this.overlayElement.querySelector('#voice-range').addEventListener('change', async (event) => {
       this.game.soundManager.setVoiceVolume(event.target.value);
-      this.game.soundManager.playVoice(VoiceType.BOOST);
+      this.game.soundManager.playVoice(VoiceType.RAT2);
       localStorage.setItem('VOICE_VOLUME', event.target.value);
     });
 

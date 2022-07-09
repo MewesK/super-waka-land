@@ -51,10 +51,14 @@ getGPUTier().then((tier) => {
     .add('editUndoFont', './fonts/edit-undo.fnt')
     .add('stopBullyingFont', './fonts/stop-bullying-outlined.fnt')
     .add('bgMusic', './sounds/bg-music1.mp3')
-    .add('boostSound', './sounds/boost.wav')
-    .add('coinSound', './sounds/coin.wav')
-    .add('jumpSound', './sounds/jump.wav')
-    .add('powerupSound', './sounds/powerup.wav')
+    .add('boostEffect', './sounds/boost.wav')
+    .add('coinEffect', './sounds/coin.wav')
+    .add('jumpEffect', './sounds/jump.wav')
+    .add('powerupEffect', './sounds/powerup.wav')
+    .add('rat1Voice', './sounds/rat1.mp3')
+    .add('rat2Voice', './sounds/rat2.mp3')
+    .add('orange1Voice', './sounds/orange1.mp3')
+    .add('orange2Voice', './sounds/orange2.mp3')
     .load(() => {
       console.debug('All files loaded');
 
