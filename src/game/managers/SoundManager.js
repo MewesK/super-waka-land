@@ -4,14 +4,20 @@ export let MusicType = {
   WAKALAKA: undefined,
 };
 
-export let SoundType = {
+export let EffectType = {
   BOOST: undefined,
   COIN: undefined,
   JUMP: undefined,
   POWER_UP: undefined,
 };
 
+export let VoiceType = {
+  BOOST: undefined,
+};
+
 export default class SoundManager {
+  CONSTANT = 0.025;
+
   game;
 
   #currentMusic = null;
@@ -23,13 +29,29 @@ export default class SoundManager {
     MusicType.WAKALAKA = Loader.shared.resources.bgMusic.sound;
     this.setMusicVolume(game.DEFAULT_MUSIC_VOLUME);
 
-    // Sound
-    SoundType.BOOST = Loader.shared.resources.boostSound.sound;
-    SoundType.COIN = Loader.shared.resources.coinSound.sound;
-    SoundType.JUMP = Loader.shared.resources.jumpSound.sound;
-    SoundType.POWER_UP = Loader.shared.resources.powerupSound.sound;
-    this.setSoundVolume(game.DEFAULT_EFFECTS_VOLUME);
+    // Effect
+    EffectType.BOOST = Loader.shared.resources.boostSound.sound;
+    EffectType.COIN = Loader.shared.resources.coinSound.sound;
+    EffectType.JUMP = Loader.shared.resources.jumpSound.sound;
+    EffectType.POWER_UP = Loader.shared.resources.powerupSound.sound;
+    this.setEffectVolume(game.DEFAULT_EFFECTS_VOLUME);
+
+    // Voice
+    VoiceType.BOOST = Loader.shared.resources.boostSound.sound;
+    this.setEffectVolume(game.DEFAULT_VOICE_VOLUME);
   }
+
+  percentageToVolume(value) {
+    return value !== 0 ? Math.pow(10, this.CONSTANT * (value - 100)) : 0;
+  }
+
+  volumeToPercentage(value) {
+    return value !== 0 ? Math.log(value) / Math.log(10) / this.CONSTANT + 100 : 0;
+  }
+
+  //
+  // Music
+  //
 
   playMusic(value = null) {
     if (value === this.#currentMusic) {
@@ -46,35 +68,49 @@ export default class SoundManager {
   }
 
   getMusicVolume() {
-    return MusicType.WAKALAKA.volume !== 0
-      ? Math.log(MusicType.WAKALAKA.volume) / Math.log(10) / 0.025 + 100
-      : 0;
+    return this.volumeToPercentage(MusicType.WAKALAKA.volume);
   }
 
   setMusicVolume(value) {
-    MusicType.WAKALAKA.volume = value !== 0 ? Math.pow(10, 0.025 * (value - 100)) : 0;
+    MusicType.WAKALAKA.volume = this.percentageToVolume(value);
   }
 
-  playSound(value) {
+  //
+  // Effect
+  //
+
+  playEffect(value) {
     if (value) {
       value.play();
     }
   }
 
-  getSoundVolume() {
-    return SoundType.POWER_UP.volume !== 0
-      ? Math.log(SoundType.POWER_UP.volume) / Math.log(10) / 0.025 + 100
-      : 0;
+  getEffectVolume() {
+    return this.volumeToPercentage(EffectType.POWER_UP.volume);
   }
 
-  setSoundVolume(value) {
-    SoundType.BOOST.volume = value !== 0 ? Math.pow(10, 0.025 * (value - 100)) : 0;
-    SoundType.COIN.volume = SoundType.BOOST.volume;
-    SoundType.JUMP.volume = SoundType.BOOST.volume;
-    SoundType.POWER_UP.volume = SoundType.BOOST.volume;
+  setEffectVolume(value) {
+    EffectType.BOOST.volume = this.percentageToVolume(value);
+    EffectType.COIN.volume = EffectType.BOOST.volume;
+    EffectType.JUMP.volume = EffectType.BOOST.volume;
+    EffectType.POWER_UP.volume = EffectType.BOOST.volume;
   }
 
-  reset() {
-    this.playSound(null);
+  //
+  // Voice
+  //
+
+  playVoice(value) {
+    if (value) {
+      value.play();
+    }
+  }
+
+  getVoiceVolume() {
+    return this.volumeToPercentage(VoiceType.BOOST.volume);
+  }
+
+  setVoiceVolume(value) {
+    VoiceType.BOOST.volume = this.percentageToVolume(value);
   }
 }

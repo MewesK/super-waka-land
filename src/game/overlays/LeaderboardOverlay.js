@@ -101,7 +101,7 @@ export default class LeaderboardOverlay extends Overlay {
     // Table body
     const tbody = this.overlayElement.querySelector('tbody');
     if (page === 0) {
-      tbody.scrollTop = 0;
+      tbody.scrollTop = 1; // Firefox has a bug with 0
       tbody.querySelectorAll('tr').forEach((element) => element.remove());
     }
 

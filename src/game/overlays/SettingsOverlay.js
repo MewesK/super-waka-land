@@ -1,6 +1,6 @@
 import { BitmapText } from 'pixi.js';
 import { OverlayType } from '../managers/OverlayManager';
-import { SoundType } from '../managers/SoundManager';
+import { EffectType, VoiceType } from '../managers/SoundManager';
 import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
@@ -48,12 +48,17 @@ export default class SettingsOverlay extends Overlay {
       localStorage.setItem('MUSIC_VOLUME', event.target.value);
     });
     this.overlayElement
-      .querySelector('#effects-range')
+      .querySelector('#effect-range')
       .addEventListener('change', async (event) => {
-        this.game.soundManager.setSoundVolume(event.target.value);
-        this.game.soundManager.playSound(SoundType.POWER_UP);
-        localStorage.setItem('EFFECTS_VOLUME', event.target.value);
+        this.game.soundManager.setEffectVolume(event.target.value);
+        this.game.soundManager.playEffect(EffectType.POWER_UP);
+        localStorage.setItem('EFFECT_VOLUME', event.target.value);
       });
+    this.overlayElement.querySelector('#voice-range').addEventListener('change', async (event) => {
+      this.game.soundManager.setVoiceVolume(event.target.value);
+      this.game.soundManager.playVoice(VoiceType.BOOST);
+      localStorage.setItem('VOICE_VOLUME', event.target.value);
+    });
 
     // Continue button
     this.overlayElement
@@ -96,8 +101,10 @@ export default class SettingsOverlay extends Overlay {
     ].checked = true;
     this.overlayElement.querySelector('#music-range').value =
       this.game.soundManager.getMusicVolume();
-    this.overlayElement.querySelector('#effects-range').value =
-      this.game.soundManager.getSoundVolume();
+    this.overlayElement.querySelector('#effect-range').value =
+      this.game.soundManager.getEffectVolume();
+    this.overlayElement.querySelector('#voice-range').value =
+      this.game.soundManager.getVoiceVolume();
 
     return true;
   }

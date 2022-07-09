@@ -73,6 +73,4 @@ export default class Background {
       });
     });
   }
-
-  reset() {}
 }

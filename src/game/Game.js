@@ -1,4 +1,4 @@
-import { Container, Loader, Rectangle, UPDATE_PRIORITY } from 'pixi.js';
+import { Container, Rectangle, UPDATE_PRIORITY } from 'pixi.js';
 
 import { DEBUG } from './Utilities';
 import Background from './Background';
@@ -7,12 +7,13 @@ import Map from './Map';
 import HUD from './HUD';
 import InputManager from './managers/InputManager';
 import OverlayManager, { OverlayType } from './managers/OverlayManager';
-import SoundManager, { MusicType, SoundType } from './managers/SoundManager';
+import SoundManager, { MusicType, EffectType } from './managers/SoundManager';
 
 export default class Game {
   DEFAULT_DIFFICULTY = localStorage.getItem('DIFFICULTY') || 1;
   DEFAULT_MUSIC_VOLUME = localStorage.getItem('MUSIC_VOLUME') || 50;
-  DEFAULT_EFFECTS_VOLUME = localStorage.getItem('EFFECTS_VOLUME') || 60;
+  DEFAULT_EFFECT_VOLUME = localStorage.getItem('EFFECT_VOLUME') || 60;
+  DEFAULT_VOICE_VOLUME = localStorage.getItem('VOICE_VOLUME') || 60;
 
   app;
   container;
@@ -166,12 +167,12 @@ export default class Game {
     this.map.checkCollision(
       // collectCoinCallback
       () => {
-        this.soundManager.playSound(SoundType.COIN);
+        this.soundManager.playEffect(EffectType.COIN);
         this.increaseScore(10);
       },
       // collectCokeCallback
       () => {
-        this.soundManager.playSound(SoundType.POWER_UP);
+        this.soundManager.playEffect(EffectType.POWER_UP);
         this.increaseScore(50);
         this.increaseBoost(1);
       },
@@ -221,7 +222,6 @@ export default class Game {
     this.boosts = 0;
 
     // Objects
-    this.background.reset();
     this.map.reset();
     this.player.reset();
     this.hud.reset();
@@ -229,7 +229,6 @@ export default class Game {
     // Managers
     this.inputManager.reset();
     this.overlayManager.reset();
-    this.soundManager.reset();
 
     this.show();
   }

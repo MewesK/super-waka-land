@@ -3,7 +3,7 @@ import { AnimatedSprite, Point, Sprite, Container } from 'pixi.js';
 
 import { DEBUG } from './Utilities';
 import BoostEffect from './effects/BoostEffect';
-import { SoundType } from './managers/SoundManager';
+import { EffectType } from './managers/SoundManager';
 
 export default class Player {
   SPRITES = [
@@ -360,7 +360,7 @@ export default class Player {
     }
 
     console.debug('Start jump');
-    this.game.soundManager.playSound(SoundType.JUMP);
+    this.game.soundManager.playEffect(EffectType.JUMP);
 
     this.setVelocity(null, this.POWER * this.JUMP_MULTIPLIER.y);
     this.airborne = true;
@@ -397,7 +397,7 @@ export default class Player {
     }
 
     console.debug('Start boost');
-    this.game.soundManager.playSound(SoundType.BOOST);
+    this.game.soundManager.playEffect(EffectType.BOOST);
 
     this.preBoostVelocity = this.velocity.clone();
     this.setVelocity(
