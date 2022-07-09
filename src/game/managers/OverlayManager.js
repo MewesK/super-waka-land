@@ -45,7 +45,7 @@ export default class OverlayManager {
   }
 
   async close(fade = true, force = false) {
-    if (!this.current) {
+    if (!this.current || !this.current.skippable) {
       return;
     }
     if (this.current && this.current.opened) {
