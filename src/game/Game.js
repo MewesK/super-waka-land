@@ -110,6 +110,7 @@ export default class Game {
       keys: ['r'],
       onUp: () => {
         if (!OverlayType.TITLE.opened && !OverlayType.CHARACTER_SELECT.opened) {
+          this.overlayManager.close(false, true);
           this.reset();
         }
       },

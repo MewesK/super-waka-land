@@ -28,7 +28,10 @@ export default class OverlayManager {
   }
 
   async open(overlay, fade = true) {
-    if (this.current === overlay || (this.current && !this.current.skippable)) {
+    if (
+      (this.current === overlay && this.current.opened) ||
+      (this.current && !this.current.skippable)
+    ) {
       return;
     }
     this.previous = this.current?.opened ? this.current : null;
@@ -45,7 +48,7 @@ export default class OverlayManager {
   }
 
   async close(fade = true, force = false) {
-    if (!this.current || !this.current.skippable) {
+    if (!this.current || (!this.current.skippable && !force)) {
       return;
     }
     if (this.current && this.current.opened) {
