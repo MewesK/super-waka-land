@@ -46,21 +46,29 @@ function getDatabase() {
   return new PDO('mysql:host='.$_ENV['DB_HOST'].';dbname='.$_ENV['DB_NAME'].';charset=utf8', $_ENV['DB_USER'], $_ENV['DB_PASS']);
 }
 
-function getLeaderboard(string $version = '1.0', int $limit = 100) {
+function getLeaderboard($name, string $version = '1.0', int $offset = 0, int $limit = 20) {
   $dbh = getDatabase();
 
-  $stmt = $dbh->prepare('SELECT * FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit');
+  $stmt = null;
+  if ($name) {
+    $stmt =$dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version AND `name` = :name ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
+    $stmt->bindParam('name', $name, PDO::PARAM_STR);
+  } else {
+    $stmt =$dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
+  }
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
+  $stmt->bindParam('offset', $offset, PDO::PARAM_INT);
   $stmt->execute();
 
   $leaderboard = [];
-  foreach ($stmt as $row) {
+  foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     $leaderboard[] = [
-      "name" => $row['name'],
-      "score" => $row['score'],
-      "version" => $row['version'],
-      "created" => $row['created']
+      'rank' => $row['rank'],
+      'name' => $row['name'],
+      'score' => $row['score'],
+      'version' => $row['version'],
+      'created' => $row['created']
     ];
   }
 
@@ -80,16 +88,28 @@ function addScore(string $version = '1.0', string $name, int $score) {
   $stmt->execute();
   $id = (int) $dbh->lastInsertId();
 
-  $stmt = $dbh->prepare('SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version) temp WHERE `id` = :id');
+  $stmt = $dbh->prepare('SELECT `rank` FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version) temp WHERE `id` = :id');
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('id', $id, PDO::PARAM_INT);
   $stmt->execute();
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $globalRank = $row ? $row['rank'] : null;
+
+  $stmt = $dbh->prepare('SELECT `rank` FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version AND `name` = :name) temp WHERE `id` = :id');
+  $stmt->bindParam('version', $version, PDO::PARAM_STR);
+  $stmt->bindParam('name', $name, PDO::PARAM_STR);
+  $stmt->bindParam('id', $id, PDO::PARAM_INT);
+  $stmt->execute();
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $personalRank = $row ? $row['rank'] : null;
 
   $stmt = null;
   $dbh = null;
 
-  return $row;
+  return [
+    'personalRank'  => $personalRank,
+    'globalRank'  => $globalRank,
+  ];
 }
 
 //
@@ -100,25 +120,30 @@ $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response;
 });
 
-$app->get('/highscore/{version}', function (Request $request, Response $response, $args) {
+$app->get('/highscore', function (Request $request, Response $response) {
   if (!strstr($request->getHeaderLine('Content-Type'), 'application/json')) {
     throw new HttpBadRequestException($request, 'Invalid content-type');
   }
 
-  $version = isset($args['version']) ? $args['version'] : '1.0';
+  $params = $request->getQueryParams();
+  $name = isset($params['name']) ? $params['name'] : null;
+  $version = isset($params['version']) ? $params['version'] : '1.0';
+  $offset = isset($params['offset']) ? (int) $params['offset'] : 0;
 
-  $leaderboard = getLeaderboard($version);
+  $leaderboard = getLeaderboard($name, $version, $offset);
 
   $response->getBody()->write(json_encode($leaderboard));
   return $response->withHeader('Content-Type', 'application/json');
 });
 
-$app->post('/highscore/{version}', function (Request $request, Response $response, $args) {
+$app->post('/highscore', function (Request $request, Response $response) {
   if (!strstr($request->getHeaderLine('Content-Type'), 'application/json')) {
     throw new HttpBadRequestException($request, 'Invalid content-type');
   }
 
-  $version = isset($args['version']) ? $args['version'] : '1.0';
+  $params = $request->getQueryParams();
+  $version = isset($params['version']) ? $params['version'] : '1.0';
+
   $data = $request->getParsedBody();
   if (!isset($data['name']) || !isset($data['score']) || strlen($data['name']) > 32) {
     throw new HttpBadRequestException($request, 'Invalid body');
