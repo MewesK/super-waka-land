@@ -3,7 +3,7 @@ import { AnimatedSprite, Point, Sprite, Container } from 'pixi.js';
 
 import { DEBUG } from './Utilities';
 import BoostEffect from './effects/BoostEffect';
-import { EffectType } from './managers/SoundManager';
+import { EffectType, VoiceType } from './managers/SoundManager';
 
 export default class Player {
   SPRITES = [
@@ -398,6 +398,14 @@ export default class Player {
 
     console.debug('Start boost');
     this.game.soundManager.playEffect(EffectType.BOOST);
+    switch (this.character) {
+      case 0:
+        this.game.soundManager.playVoice(VoiceType.RAT2);
+        break;
+      case 1:
+        this.game.soundManager.playVoice(VoiceType.ORANGE2);
+        break;
+    }
 
     this.preBoostVelocity = this.velocity.clone();
     this.setVelocity(

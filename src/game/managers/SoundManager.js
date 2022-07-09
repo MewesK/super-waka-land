@@ -37,14 +37,14 @@ export default class SoundManager {
     EffectType.COIN = Loader.shared.resources.coinEffect.sound;
     EffectType.JUMP = Loader.shared.resources.jumpEffect.sound;
     EffectType.POWER_UP = Loader.shared.resources.powerupEffect.sound;
-    this.setEffectVolume(game.DEFAULT_EFFECTS_VOLUME);
+    this.setEffectVolume(game.DEFAULT_EFFECT_VOLUME);
 
     // Voice
     VoiceType.ORANGE1 = Loader.shared.resources.orange1Voice.sound;
     VoiceType.ORANGE2 = Loader.shared.resources.orange2Voice.sound;
     VoiceType.RAT1 = Loader.shared.resources.rat1Voice.sound;
     VoiceType.RAT2 = Loader.shared.resources.rat2Voice.sound;
-    this.setEffectVolume(game.DEFAULT_VOICE_VOLUME);
+    this.setVoiceVolume(game.DEFAULT_VOICE_VOLUME);
   }
 
   percentageToVolume(value) {

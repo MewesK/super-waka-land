@@ -1,4 +1,5 @@
 import { BitmapText, filters, Sprite } from 'pixi.js';
+import { VoiceType } from '../managers/SoundManager';
 import { CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
@@ -57,7 +58,8 @@ export default class CharacterOverlay extends Overlay {
       });
 
       this.container.addChild(character.text);
-      character.text.x = Math.round(character.sprite.x + character.sprite.width / 2) - character.text.width / 2;
+      character.text.x =
+        Math.round(character.sprite.x + character.sprite.width / 2) - character.text.width / 2;
       character.text.y = 120;
     });
 
@@ -156,5 +158,15 @@ export default class CharacterOverlay extends Overlay {
     });
 
     this.game.player.character = this.selected;
+
+    // Play voice
+    switch (this.selected) {
+      case 0:
+        this.game.soundManager.playVoice(VoiceType.RAT1);
+        break;
+      case 1:
+        this.game.soundManager.playVoice(VoiceType.ORANGE1);
+        break;
+    }
   }
 }
