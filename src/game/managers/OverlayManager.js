@@ -28,7 +28,7 @@ export default class OverlayManager {
   }
 
   async open(overlay, fade = true) {
-    if (this.current === overlay) {
+    if (this.current === overlay || (this.current && !this.current.skippable)) {
       return;
     }
     this.previous = this.current?.opened ? this.current : null;
