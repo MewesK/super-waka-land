@@ -48,8 +48,11 @@ export default class GameOverOverlay extends Overlay {
     this.busy = true;
 
     this.overlayElement.querySelector('#score').textContent = `$${this.game.score}`;
-    this.overlayElement.querySelector('h2').style.display = 'none';
-    this.game.player.lastRanking = null;
+    this.overlayElement
+      .querySelectorAll('h2')
+      .forEach((element) => (element.style.display = 'none'));
+    this.game.player.lastGlobalRanking = null;
+    this.game.player.lastPersonalRanking = null;
 
     return true;
   }
@@ -58,9 +61,16 @@ export default class GameOverOverlay extends Overlay {
     try {
       if (this.game.score > 0) {
         const ranking = await this.postScore(this.game.player.name, this.game.score);
-        this.overlayElement.querySelector('h2').style.display = 'inherit';
-        this.overlayElement.querySelector('#rank').textContent = `#${ranking.rank}`;
-        this.game.player.lastRanking = ranking;
+        this.game.player.lastGlobalRank = ranking.globalRank;
+        this.game.player.lastPersonalRank = ranking.personalRank;
+
+        this.overlayElement
+          .querySelectorAll('h2')
+          .forEach((element) => (element.style.display = 'inherit'));
+        this.overlayElement.querySelector('#rank-global').textContent = `#${ranking.globalRank}`;
+        this.overlayElement.querySelector(
+          '#rank-personal'
+        ).textContent = `#${ranking.personalRank}`;
       }
       this.error = false;
     } catch (error) {
@@ -76,7 +86,10 @@ export default class GameOverOverlay extends Overlay {
   }
 
   async postScore(name, score) {
-    const response = await fetch(`${API_URL}/highscore/${API_VERSION}`, {
+    const url = new URL(`${API_URL}/highscore`);
+    url.searchParams.append('version', API_VERSION);
+
+    const response = await fetch(url.href, {
       method: 'POST',
       cache: 'no-cache',
       headers: {

@@ -76,15 +76,12 @@
 }
 
 .overlay h2 {
-  font-size: 4.5vmin;
-}
-
-.overlay h3 {
-  font-size: 4.5vmin;
+  font-size: 3.5vmin;
   color: #a0a0a0 !important;
 }
 
-.overlay #rank {
+.overlay #rank-global,
+.overlay #rank-personal {
   color: #c20c0c !important;
 }
 
@@ -127,6 +124,10 @@
   background-color: rgba(128, 128, 128, 0.4);
 }
 
+.overlay button.active {
+  background-color: rgba(128, 128, 128);
+}
+
 .overlay button,
 .overlay input[type='text'] {
   height: fit-content !important;
@@ -140,9 +141,9 @@
   padding-left: 1.5vmin !important;
 }
 
-.overlay input[type=radio]:checked,
-.overlay input[type=radio]:checked:active,
-.overlay input[type=radio]:checked:focus {
+.overlay input[type='radio']:checked,
+.overlay input[type='radio']:checked:active,
+.overlay input[type='radio']:checked:focus {
   background-color: #ffffff;
 }
 
@@ -196,6 +197,15 @@
  * Leaderboard
  */
 
+.overlay .button-group {
+  display: flex;
+  gap: 0.5vmin;
+}
+
+.overlay .button-group button {
+  font-size: 2.5vmin;
+}
+
 .overlay .leaderboard {
   margin-bottom: 0;
 }
@@ -212,12 +222,12 @@
 
 .overlay .leaderboard tbody {
   display: block;
-  max-height: 46.5vmin !important;
+  max-height: 40.9vmin !important;
   overflow-y: scroll;
   pointer-events: auto;
 }
 
-.overlay .leaderboard tr#you {
+.overlay .leaderboard tr.rank {
   background-color: #c20c0c;
 }
 
