@@ -47,13 +47,11 @@ export default class SettingsOverlay extends Overlay {
       this.game.soundManager.setMusicVolume(event.target.value);
       localStorage.setItem('MUSIC_VOLUME', event.target.value);
     });
-    this.overlayElement
-      .querySelector('#effect-range')
-      .addEventListener('change', async (event) => {
-        this.game.soundManager.setEffectVolume(event.target.value);
-        this.game.soundManager.playEffect(EffectType.POWER_UP);
-        localStorage.setItem('EFFECT_VOLUME', event.target.value);
-      });
+    this.overlayElement.querySelector('#effect-range').addEventListener('change', async (event) => {
+      this.game.soundManager.setEffectVolume(event.target.value);
+      this.game.soundManager.playEffect(EffectType.POWER_UP);
+      localStorage.setItem('EFFECT_VOLUME', event.target.value);
+    });
     this.overlayElement.querySelector('#voice-range').addEventListener('change', async (event) => {
       this.game.soundManager.setVoiceVolume(event.target.value);
       this.game.soundManager.playVoice(VoiceType.RAT2);
@@ -68,32 +66,9 @@ export default class SettingsOverlay extends Overlay {
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  open() {
-    return super.open(!this.game.overlayManager.previous);
-  }
-
-  close() {
-    return super.close(!this.game.overlayManager.previous);
-  }
-
   beforeOpen() {
-    if (
-      this.opened ||
-      (this.game.overlayManager.current && this.game.overlayManager.current.busy)
-    ) {
-      return false;
-    }
-
     // Pause
     this.game.paused = true;
-
-    // Hide previous overlay if available
-    if (this.game.overlayManager.previous) {
-      this.game.overlayManager.previous.hide();
-    }
-
-    // Reset
-    this.changedDifficulty = false;
 
     // Set form values
     this.overlayElement.querySelectorAll('input[name="difficulty-radio"]')[
@@ -109,28 +84,15 @@ export default class SettingsOverlay extends Overlay {
     return true;
   }
 
-  beforeClose() {
-    if (!OverlayType.SETTINGS.opened || !OverlayType.SETTINGS.skippable) {
-      return false;
-    }
-    return true;
-  }
-
   afterClose() {
-    // Show previous overlay if available
-    if (this.game.overlayManager.previous) {
-      this.game.overlayManager.current = this.game.overlayManager.previous;
-      this.game.overlayManager.previous.show();
-    } else {
-      this.game.overlayManager.current = null;
-    }
-
     // Reset game with new difficulty (only during game)
     if (this.changedDifficulty) {
+      this.changedDifficulty = false;
       this.game.reset();
     }
 
     // Unpause
     this.game.paused = false;
+    return null;
   }
 }

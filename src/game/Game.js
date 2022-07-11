@@ -110,7 +110,6 @@ export default class Game {
       keys: ['r'],
       onUp: () => {
         if (!OverlayType.TITLE.opened && !OverlayType.CHARACTER_SELECT.opened) {
-          this.overlayManager.close(false, true);
           this.reset();
         }
       },
@@ -218,6 +217,7 @@ export default class Game {
 
   reset() {
     // Properties
+    this.paused = false;
     this.started = true;
     this.score = 0;
     this.boosts = 0;

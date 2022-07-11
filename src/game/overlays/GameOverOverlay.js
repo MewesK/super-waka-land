@@ -72,7 +72,6 @@ export default class GameOverOverlay extends Overlay {
           '#rank-personal'
         ).textContent = `#${ranking.personalRank}`;
       }
-      this.error = false;
     } catch (error) {
       console.error(error);
       this.error = true;
@@ -82,7 +81,7 @@ export default class GameOverOverlay extends Overlay {
   }
 
   afterClose() {
-    this.game.overlayManager.open(OverlayType.LEADERBOARD, false);
+    return OverlayType.LEADERBOARD;
   }
 
   async postScore(name, score) {

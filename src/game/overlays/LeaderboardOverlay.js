@@ -1,4 +1,5 @@
 import { BitmapText } from 'pixi.js';
+import { OverlayType } from '../managers/OverlayManager';
 import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
@@ -10,6 +11,8 @@ export default class LeaderboardOverlay extends Overlay {
   mode = 'personal';
   page = null;
   last = false;
+
+  selectCharacter = false;
 
   constructor(game) {
     super(game);
@@ -34,7 +37,11 @@ export default class LeaderboardOverlay extends Overlay {
 
     this.overlayElement.querySelector('tbody').addEventListener('scroll', (e) => {
       // Check if the bottom is reached
-      if (!this.busy && !this.last && e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight) {
+      if (
+        !this.busy &&
+        !this.last &&
+        e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight
+      ) {
         this.displayLeaderboard(this.mode, this.page + 1);
       }
     });
@@ -51,9 +58,16 @@ export default class LeaderboardOverlay extends Overlay {
       this.displayLeaderboard('global', 0);
     });
 
+    // Retry button
     this.overlayElement
       .querySelector('#retry-button')
       .addEventListener('click', () => this.game.overlayManager.close());
+
+    // Select character button
+    this.overlayElement.querySelector('#select-character-button').addEventListener('click', () => {
+      this.selectCharacter = true;
+      this.game.overlayManager.close(false);
+    });
 
     CONTAINER.appendChild(this.overlayElement);
   }
@@ -63,8 +77,13 @@ export default class LeaderboardOverlay extends Overlay {
   }
 
   afterClose() {
-    this.game.overlayManager.current = null;
-    this.game.reset();
+    if (this.selectCharacter) {
+      this.game.overlayManager.open(OverlayType.CHARACTER_SELECT, false);
+    } else {
+      this.game.reset();
+    }
+    this.selectCharacter = false;
+    return null;
   }
 
   async displayLeaderboard(mode, page = 0) {
@@ -82,10 +101,11 @@ export default class LeaderboardOverlay extends Overlay {
     }
 
     // Fetch leaderboard
-    const data = await this.fetchLeaderboard(
+    let data = await this.fetchLeaderboard(
       mode === 'personal' ? this.game.player.name : null,
       page * this.PAGE_SIZE
     );
+    data = data.sort((a, b) => (a.rank - b.rank));
 
     // Update last page flag
     if (data.length === 0) {

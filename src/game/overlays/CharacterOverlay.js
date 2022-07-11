@@ -117,8 +117,8 @@ export default class CharacterOverlay extends Overlay {
   }
 
   afterClose() {
-    this.game.overlayManager.current = null;
     this.game.reset();
+    return null;
   }
 
   addEventListeners() {

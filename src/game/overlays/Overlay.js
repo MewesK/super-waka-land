@@ -51,6 +51,10 @@ export default class Overlay {
     }
   }
 
+  beforeOpen() {
+    return true;
+  }
+
   async open(fade = true) {
     if (this.opened) {
       return false;
@@ -59,6 +63,7 @@ export default class Overlay {
     this.opened = true;
     this.visible = true;
     this.skippable = false;
+    this.error = false;
 
     // Register event listeners
     this.addEventListeners();
@@ -111,6 +116,13 @@ export default class Overlay {
     return true;
   }
 
+  afterOpen() {
+  }
+
+  beforeClose() {
+    return true;
+  }
+
   async close(fade = true) {
     if (!this.opened || !this.skippable || !this.visible) {
       return false;
@@ -154,19 +166,9 @@ export default class Overlay {
     return true;
   }
 
-  afterOpen() {
-    // NOP
-  }
-  beforeOpen() {
-    // NOP
-    return true;
-  }
   afterClose() {
-    // NOP
-  }
-  beforeClose() {
-    // NOP
-    return true;
+    // Return next overlay to open
+    return null;
   }
 
   show() {

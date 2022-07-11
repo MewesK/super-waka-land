@@ -36,7 +36,7 @@ export default class TitleOverlay extends Overlay {
   }
 
   afterClose() {
-    this.game.overlayManager.open(OverlayType.CHARACTER_SELECT, false);
+    return OverlayType.CHARACTER_SELECT;
   }
 
   addEventListeners() {

@@ -28,40 +28,60 @@ export default class OverlayManager {
   }
 
   async open(overlay, fade = true) {
-    if (
-      (this.current === overlay && this.current.opened) ||
-      (this.current && !this.current.skippable)
-    ) {
+    if (overlay.opened || (this.current && (!this.current.skippable || this.current.busy))) {
       return;
     }
-    this.previous = this.current?.opened ? this.current : null;
-    this.current = overlay;
-    if (this.current && !this.current.opened) {
-      if (this.current.beforeOpen()) {
-        await this.current.open(fade);
-        this.current.afterOpen();
+    if (overlay.beforeOpen()) {
+      if (this.previous) {
+        this.forceClose();
       }
-      if (this.current.opened) {
-        this.game.hide();
+      if (this.current) {
+        this.previous = this.current;
+        this.previous.hide();
+      }
+      this.current = overlay;
+
+      await this.current.open(fade && !this.previous);
+      this.current.afterOpen();
+      this.game.hide();
+    }
+  }
+
+  async close(fade = true) {
+    if (!this.current || !this.current.opened || !this.current.skippable) {
+      return;
+    }
+    if (this.current.beforeClose()) {
+      await this.current.close(fade && !this.previous);
+
+      const current = this.current;
+
+      if (this.previous) {
+        this.current = this.previous;
+        this.previous.show();
+        this.previous = null;
+      } else {
+        this.current = null;
+        this.previous = null;
+      }
+
+      const next = current.afterClose();
+      if (next) {
+        this.open(next);
+      } else {
+        this.game.show();
       }
     }
   }
 
-  async close(fade = true, force = false) {
-    if (!this.current || (!this.current.skippable && !force)) {
+  async forceClose() {
+    if (!this.current) {
       return;
     }
-    if (this.current && this.current.opened) {
-      if (force || this.current.beforeClose()) {
-        await this.current.close(fade);
-        if (!force) {
-          this.current.afterClose();
-        }
-        if (!this.current?.opened) {
-          this.game.show();
-        }
-      }
-    }
+    await this.current.close(false);
+    this.current = null;
+    this.previous = null;
+    this.game.show();
   }
 
   update(dt) {
@@ -71,6 +91,6 @@ export default class OverlayManager {
   }
 
   reset() {
-    this.close(false, true);
+    this.forceClose();
   }
 }
