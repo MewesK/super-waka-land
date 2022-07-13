@@ -95,6 +95,8 @@ export default class Player {
   #airborne;
   #dead;
 
+  lastRankId;
+
   // Timers
   jumpTimer;
   boostTimer;
@@ -442,6 +444,8 @@ export default class Player {
     // State
     this.airborne = true;
     this.dead = false;
+
+    this.lastRankId = null;
 
     // Timers
     this.jumpTimer = null;

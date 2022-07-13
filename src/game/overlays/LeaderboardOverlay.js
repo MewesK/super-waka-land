@@ -11,6 +11,7 @@ export default class LeaderboardOverlay extends Overlay {
   mode = 'personal';
   page = null;
   last = false;
+  date = null;
 
   selectCharacter = false;
 
@@ -49,12 +50,14 @@ export default class LeaderboardOverlay extends Overlay {
     this.overlayElement.querySelector('#personal-button').addEventListener('click', () => {
       this.overlayElement.querySelector('#global-button').classList.remove('active');
       this.overlayElement.querySelector('#personal-button').classList.add('active');
+      this.date = Math.floor(Date.now() / 1000);
       this.displayLeaderboard('personal', 0);
     });
 
     this.overlayElement.querySelector('#global-button').addEventListener('click', () => {
       this.overlayElement.querySelector('#global-button').classList.add('active');
       this.overlayElement.querySelector('#personal-button').classList.remove('active');
+      this.date = Math.floor(Date.now() / 1000);
       this.displayLeaderboard('global', 0);
     });
 
@@ -73,6 +76,7 @@ export default class LeaderboardOverlay extends Overlay {
   }
 
   async afterOpen() {
+    this.date = Math.floor(Date.now() / 1000);
     this.displayLeaderboard('personal', 0);
   }
 
@@ -82,7 +86,11 @@ export default class LeaderboardOverlay extends Overlay {
     } else {
       this.game.reset();
     }
+
     this.selectCharacter = false;
+    this.date = null;
+    this.game.player.lastRankId = null;
+
     return null;
   }
 
@@ -105,13 +113,15 @@ export default class LeaderboardOverlay extends Overlay {
       mode === 'personal' ? this.game.player.name : null,
       page * this.PAGE_SIZE
     );
-    data = data.sort((a, b) => (a.rank - b.rank));
+    data = data.sort((a, b) => a.rank - b.rank);
 
     // Update last page flag
-    if (data.length === 0) {
+    if (data.length < this.PAGE_SIZE) {
       console.debug('Last page of leaderboard reached');
       this.last = true;
-      return;
+      if (data.length === 0) {
+        return;
+      }
     }
 
     // Set state
@@ -151,8 +161,8 @@ export default class LeaderboardOverlay extends Overlay {
         url.searchParams.append('name', name);
       }
       url.searchParams.append('offset', offset);
+      url.searchParams.append('date', this.game.player.lastRankDate);
       url.searchParams.append('version', API_VERSION);
-
       response = await fetch(url.href, {
         method: 'GET',
         cache: 'no-cache',

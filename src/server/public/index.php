@@ -46,15 +46,18 @@ function getDatabase() {
   return new PDO('mysql:host='.$_ENV['DB_HOST'].';dbname='.$_ENV['DB_NAME'].';charset=utf8', $_ENV['DB_USER'], $_ENV['DB_PASS']);
 }
 
-function getLeaderboard($name, string $version = '1.0', int $offset = 0, int $limit = 100) {
+function getLeaderboard($name, string $version = '1.0', $date = null, int $offset = 0, int $limit = 100) {
   $dbh = getDatabase();
 
   $stmt = null;
   if ($name) {
-    $stmt =$dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version AND `name` = :name ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
+    $stmt = $dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version '.($date ? 'AND `created` <= :date ' : '').'AND `name` = :name ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
     $stmt->bindParam('name', $name, PDO::PARAM_STR);
   } else {
-    $stmt =$dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
+    $stmt = $dbh->prepare('SELECT *, ROW_NUMBER() OVER (ORDER BY `score` DESC)  AS `rank` FROM `'.$_ENV['DB_TABLE'].'` WHERE `version` = :version '.($date ? 'AND `created` <= :date ' : '').' ORDER BY `score` DESC LIMIT :limit OFFSET :offset');
+  }
+  if ($date) {
+    $stmt->bindParam('date', $date->format('Y-m-d H:i:s'), PDO::PARAM_STR);
   }
   $stmt->bindParam('version', $version, PDO::PARAM_STR);
   $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
@@ -131,8 +134,9 @@ $app->get('/highscore', function (Request $request, Response $response) {
   $name = isset($params['name']) ? $params['name'] : null;
   $version = isset($params['version']) ? $params['version'] : '1.0';
   $offset = isset($params['offset']) ? (int) $params['offset'] : 0;
+  $date = isset($params['date']) ? DateTime::createFromFormat('U', $params['date'])  : new DateTime();
 
-  $leaderboard = getLeaderboard($name, $version, $offset);
+  $leaderboard = getLeaderboard($name, $version, $date, $offset);
 
   $response->getBody()->write(json_encode($leaderboard));
   return $response->withHeader('Content-Type', 'application/json');
