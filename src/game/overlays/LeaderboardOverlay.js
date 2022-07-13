@@ -126,12 +126,10 @@ export default class LeaderboardOverlay extends Overlay {
     }
 
     // Table rows
-    const rank =
-      mode === 'personal' ? this.game.player.lastPersonalRank : this.game.player.lastGlobalRank;
     const rowTemplate = document.querySelector('#leaderboard-row-template');
     for (const entry of data) {
       const row = rowTemplate.content.cloneNode(true);
-      if (rank && entry.rank === rank) {
+      if (this.game.player.lastRankId && entry.id == this.game.player.lastRankId) {
         row.querySelector('tr').className = 'rank';
       }
       const th = row.querySelectorAll('th');

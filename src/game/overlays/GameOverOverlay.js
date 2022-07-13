@@ -51,8 +51,7 @@ export default class GameOverOverlay extends Overlay {
     this.overlayElement
       .querySelectorAll('h2')
       .forEach((element) => (element.style.display = 'none'));
-    this.game.player.lastGlobalRanking = null;
-    this.game.player.lastPersonalRanking = null;
+    this.game.player.lastRankId = null;
 
     return true;
   }
@@ -61,8 +60,7 @@ export default class GameOverOverlay extends Overlay {
     try {
       if (this.game.score > 0) {
         const ranking = await this.postScore(this.game.player.name, this.game.score);
-        this.game.player.lastGlobalRank = ranking.globalRank;
-        this.game.player.lastPersonalRank = ranking.personalRank;
+        this.game.player.lastRankId = ranking.id;
 
         this.overlayElement
           .querySelectorAll('h2')

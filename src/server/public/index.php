@@ -64,6 +64,7 @@ function getLeaderboard($name, string $version = '1.0', int $offset = 0, int $li
   $leaderboard = [];
   foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     $leaderboard[] = [
+      'id' => $row['id'],
       'rank' => $row['rank'],
       'name' => $row['name'],
       'score' => $row['score'],
@@ -107,6 +108,7 @@ function addScore(string $version = '1.0', string $name, int $score) {
   $dbh = null;
 
   return [
+    'id' => $id,
     'personalRank'  => $personalRank,
     'globalRank'  => $globalRank,
   ];
