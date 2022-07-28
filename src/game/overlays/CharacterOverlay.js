@@ -103,10 +103,6 @@ export default class CharacterOverlay extends Overlay {
     CONTAINER.appendChild(this.overlayElement);
   }
 
-  afterOpen() {
-    this.select(0);
-  }
-
   beforeClose(f) {
     // Submit form if necessary
     if (!this.game.player.name) {
@@ -136,12 +132,11 @@ export default class CharacterOverlay extends Overlay {
   }
 
   select(index) {
-    if (!this.opened || !this.visible) {
-      return false;
-    }
-
     this.selected = index;
     if (this.selected >= this.CHARACTERS.length) {
+      this.selected = 0;
+    }
+    if (this.selected < 0) {
       this.selected = 0;
     }
 
@@ -160,13 +155,15 @@ export default class CharacterOverlay extends Overlay {
     this.game.player.character = this.selected;
 
     // Play voice
-    switch (this.selected) {
-      case 0:
-        this.game.soundManager.playVoice(VoiceType.RAT1);
-        break;
-      case 1:
-        this.game.soundManager.playVoice(VoiceType.ORANGE1);
-        break;
+    if (this.opened && this.visible) {
+      switch (this.selected) {
+        case 0:
+          this.game.soundManager.playVoice(VoiceType.RAT1);
+          break;
+        case 1:
+          this.game.soundManager.playVoice(VoiceType.ORANGE1);
+          break;
+      }
     }
   }
 }
