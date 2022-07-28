@@ -98,7 +98,7 @@ export default class Overlay {
         this.fadeTimer = new Timer(20);
         this.fadeTimer.repeat = this.FADE_IN_STEPS;
         this.fadeTimer.on('repeat', (elapsedTime, repeat) => {
-          // Fade out character overlay
+          // Fade out overlay
           this.container.alpha = (1 / this.FADE_IN_STEPS) * repeat;
           filter.brightness(1 - ((1 - this.BRIGHTNESS) / this.FADE_OUT_STEPS) * repeat, false);
         });
