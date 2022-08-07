@@ -12,10 +12,14 @@ export let EffectType = {
 };
 
 export let VoiceType = {
-  RAT1: undefined,
-  RAT2: undefined,
-  ORANGE1: undefined,
-  ORANGE2: undefined,
+  MAMA: undefined,
+  WAO: undefined,
+  SCENE_CHARACTER: undefined,
+  SCENE_GAME_OVER: undefined,
+  SELECT_ORANGE: undefined,
+  SELECT_RACCOON: undefined,
+  SELECT_TUTEL: undefined,
+  SELECT_RAT: undefined,
 };
 
 export default class SoundManager {
@@ -40,10 +44,14 @@ export default class SoundManager {
     this.setEffectVolume(game.DEFAULT_EFFECT_VOLUME);
 
     // Voice
-    VoiceType.ORANGE1 = Loader.shared.resources.orange1Voice.sound;
-    VoiceType.ORANGE2 = Loader.shared.resources.orange2Voice.sound;
-    VoiceType.RAT1 = Loader.shared.resources.rat1Voice.sound;
-    VoiceType.RAT2 = Loader.shared.resources.rat2Voice.sound;
+    VoiceType.MAMA = Loader.shared.resources.voiceMama.sound;
+    VoiceType.WAO = Loader.shared.resources.voiceWao.sound;
+    VoiceType.SCENE_CHARACTER = Loader.shared.resources.sceneCharacter.sound;
+    VoiceType.SCENE_GAME_OVER = Loader.shared.resources.sceneGameOver.sound;
+    VoiceType.SELECT_ORANGE = Loader.shared.resources.voiceSelectOrange.sound;
+    VoiceType.SELECT_RACCOON = Loader.shared.resources.voiceSelectRaccoon.sound;
+    VoiceType.SELECT_TUTEL = Loader.shared.resources.voiceSelectTutel.sound;
+    VoiceType.SELECT_RAT = Loader.shared.resources.voiceSelectRat.sound;
     this.setVoiceVolume(game.DEFAULT_VOICE_VOLUME);
   }
 
@@ -113,13 +121,17 @@ export default class SoundManager {
   }
 
   getVoiceVolume() {
-    return this.volumeToPercentage(VoiceType.ORANGE1.volume);
+    return this.volumeToPercentage(VoiceType.ORANGE_SELECT.volume);
   }
 
   setVoiceVolume(value) {
-    VoiceType.ORANGE1.volume = this.percentageToVolume(value);
-    VoiceType.ORANGE2.volume = VoiceType.ORANGE1.volume;
-    VoiceType.RAT1.volume = VoiceType.ORANGE1.volume;
-    VoiceType.RAT2.volume = VoiceType.ORANGE1.volume;
+    VoiceType.MAMA.volume = this.percentageToVolume(value);
+    VoiceType.WAO.volume = VoiceType.MAMA.volume;
+    VoiceType.SCENE_CHARACTER.volume = VoiceType.MAMA.volume;
+    VoiceType.SCENE_GAME_OVER.volume = VoiceType.MAMA.volume;
+    VoiceType.SELECT_ORANGE.volume = VoiceType.MAMA.volume;
+    VoiceType.SELECT_RACCOON.volume = VoiceType.MAMA.volume;
+    VoiceType.SELECT_TUTEL.volume = VoiceType.MAMA.volume;
+    VoiceType.SELECT_RAT.volume = VoiceType.MAMA.volume;
   }
 }

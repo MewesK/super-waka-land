@@ -1,5 +1,6 @@
 import { BitmapText } from 'pixi.js';
 import { OverlayType } from '../managers/OverlayManager';
+import { VoiceType } from '../managers/SoundManager';
 import { API_URL, API_VERSION, CONTAINER } from '../Utilities';
 import Overlay from './Overlay';
 
@@ -58,6 +59,8 @@ export default class GameOverOverlay extends Overlay {
 
   async afterOpen() {
     try {
+      this.game.soundManager.playVoice(VoiceType.SCENE_GAME_OVER);
+
       if (this.game.score > 0) {
         const ranking = await this.postScore(this.game.player.name, this.game.score);
         this.game.player.lastRankId = ranking.id;

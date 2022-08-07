@@ -120,6 +120,9 @@ export default class CharacterOverlay extends Overlay {
 
     CONTAINER.appendChild(this.overlayElement);
   }
+  afterOpen() {
+    this.game.soundManager.playVoice(VoiceType.SCENE_CHARACTER);
+  }
 
   beforeClose(f) {
     // Submit form if necessary
@@ -213,10 +216,16 @@ export default class CharacterOverlay extends Overlay {
     if (this.opened && this.visible) {
       switch (this.characterIndex) {
         case 0:
-          this.game.soundManager.playVoice(VoiceType.RAT1);
+          this.game.soundManager.playVoice(VoiceType.SELECT_RAT);
           break;
         case 1:
-          this.game.soundManager.playVoice(VoiceType.ORANGE1);
+          this.game.soundManager.playVoice(VoiceType.SELECT_ORANGE);
+          break;
+        case 2:
+          this.game.soundManager.playVoice(VoiceType.SELECT_RACCOON);
+          break;
+        case 3:
+          this.game.soundManager.playVoice(VoiceType.SELECT_TUTEL);
           break;
       }
     }

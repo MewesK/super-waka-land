@@ -178,7 +178,6 @@ export default class Player {
     this.walkSprite.play();
     this.runSprite.play();
 
-
     this.updateSprite();
   }
 
@@ -432,12 +431,12 @@ export default class Player {
 
     console.debug('Start boost');
     this.game.soundManager.playEffect(EffectType.BOOST);
-    switch (this.skin) {
+    switch (this.#characterIndex) {
       case 0:
-        this.game.soundManager.playVoice(VoiceType.RAT2);
+        this.game.soundManager.playVoice(VoiceType.WAO);
         break;
       case 1:
-        this.game.soundManager.playVoice(VoiceType.ORANGE2);
+        this.game.soundManager.playVoice(VoiceType.ORANGE_BOOST);
         break;
     }
 

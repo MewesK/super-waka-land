@@ -55,10 +55,14 @@ getGPUTier().then((tier) => {
     .add('coinEffect', './sounds/coin.wav')
     .add('jumpEffect', './sounds/jump.wav')
     .add('powerupEffect', './sounds/powerup.wav')
-    .add('rat1Voice', './sounds/rat1.mp3')
-    .add('rat2Voice', './sounds/rat2.mp3')
-    .add('orange1Voice', './sounds/orange1.mp3')
-    .add('orange2Voice', './sounds/orange2.mp3')
+    .add('sceneCharacter', './sounds/scene_character.mp3')
+    .add('sceneGameOver', './sounds/scene_game_over.mp3')
+    .add('voiceMama', './sounds/voice_mama.mp3')
+    .add('voiceWao', './sounds/voice_wao.mp3')
+    .add('voiceSelectTutel', './sounds/voice_select_tutel.mp3')
+    .add('voiceSelectOrange', './sounds/voice_select_orange.mp3')
+    .add('voiceSelectRaccoon', './sounds/voice_select_raccoon.mp3')
+    .add('voiceSelectRat', './sounds/voice_select_rat.mp3')
     .load(() => {
       console.debug('All files loaded');
 
