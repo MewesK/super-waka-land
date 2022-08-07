@@ -520,7 +520,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
 	"sourceSize": {"w":32,"h":32}
 },
-"orange_dead":
+"burglar_dead":
 {
 	"frame": {"x":192,"y":156,"w":56,"h":56},
 	"rotated": false,
@@ -528,7 +528,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
 	"sourceSize": {"w":56,"h":56}
 },
-"racoon_dead":
+"orange_dead":
 {
 	"frame": {"x":0,"y":212,"w":56,"h":56},
 	"rotated": false,
@@ -536,7 +536,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
 	"sourceSize": {"w":56,"h":56}
 },
-"rat_dead":
+"racoon_dead":
 {
 	"frame": {"x":56,"y":212,"w":56,"h":56},
 	"rotated": false,
@@ -544,9 +544,17 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
 	"sourceSize": {"w":56,"h":56}
 },
-"tutel_dead":
+"rat_dead":
 {
 	"frame": {"x":112,"y":212,"w":56,"h":56},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
+	"sourceSize": {"w":56,"h":56}
+},
+"tutel_dead":
+{
+	"frame": {"x":168,"y":212,"w":56,"h":56},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":56,"h":56},
@@ -607,6 +615,6 @@
 	"format": "RGBA8888",
 	"size": {"w":256,"h":785},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:02360361b3d4f0160d2a35dbe4505b8a:318ecbf0e014d741d129f3a8225cc411:cbce6b53f0f49e0bf15173c25c41f876$"
+	"smartupdate": "$TexturePacker:SmartUpdate:38d16de253747579354a6e7961169a17:80a777e25803869e4d2508474c5e7138:cbce6b53f0f49e0bf15173c25c41f876$"
 }
 }

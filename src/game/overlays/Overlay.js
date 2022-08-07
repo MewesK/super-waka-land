@@ -212,7 +212,7 @@ export default class Overlay {
   addEventListeners() {
     this.game.inputManager.on({
       name: 'skip',
-      keys: ['s', ' ', 'Enter'],
+      keys: [' ', 'Enter'],
       onDown: () => this.game.overlayManager.close(),
     });
   }

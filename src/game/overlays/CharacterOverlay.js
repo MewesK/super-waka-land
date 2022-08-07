@@ -6,29 +6,43 @@ import Overlay from './Overlay';
 export default class CharacterOverlay extends Overlay {
   DEFAULT_NAME = localStorage.getItem('NAME') || '';
   CHARACTERS = [
-    {
-      text: new BitmapText('Rat', this.DEFAULT_FONT),
-      sprite: Sprite.from('rat_idle'),
-      color: '#0000ff',
-    },
-    {
-      text: new BitmapText('Orange', this.DEFAULT_FONT),
-      sprite: Sprite.from('orange_idle'),
-      color: '#00ff00',
-    },
-    {
-      text: new BitmapText('Raccoon', this.DEFAULT_FONT),
-      sprite: Sprite.from('racoon_idle'),
-      color: '#ff0000',
-    },
-    {
-      text: new BitmapText('Tutel', this.DEFAULT_FONT),
-      sprite: Sprite.from('tutel_idle'),
-      color: '#ffff00',
-    },
+    [
+      {
+        text: new BitmapText('Rat', this.DEFAULT_FONT),
+        sprite: Sprite.from('rat_idle'),
+        color: '#0000ff',
+      },
+      {
+        text: new BitmapText('Burglar', this.DEFAULT_FONT),
+        sprite: Sprite.from('burglar_idle'),
+        color: '#0000ff',
+      },
+    ],
+    [
+      {
+        text: new BitmapText('Orange', this.DEFAULT_FONT),
+        sprite: Sprite.from('orange_idle'),
+        color: '#00ff00',
+      },
+    ],
+    [
+      {
+        text: new BitmapText('Raccoon', this.DEFAULT_FONT),
+        sprite: Sprite.from('racoon_idle'),
+        color: '#ff0000',
+      },
+    ],
+    [
+      {
+        text: new BitmapText('Tutel', this.DEFAULT_FONT),
+        sprite: Sprite.from('tutel_idle'),
+        color: '#ffff00',
+      },
+    ],
   ];
 
-  selected;
+  characterIndex;
+  skinIndex;
 
   titleText;
   infoText;
@@ -36,31 +50,35 @@ export default class CharacterOverlay extends Overlay {
   constructor(game) {
     super(game);
 
+    this.skinIndex = this.CHARACTERS.map(() => 0);
+
     this.createContainer();
     this.createOverlay();
-    this.select(0);
+    this.select(0, 0);
   }
 
   createContainer() {
     // Register characters
-    this.CHARACTERS.forEach((character, index) => {
-      this.container.addChild(character.sprite);
-      character.sprite.x = Math.round(
-        this.game.app.screen.width / 2 -
-          character.sprite.width / 2 +
-          (this.CHARACTERS.length / -2 + index + 0.5) * (character.sprite.width + 40)
-      );
-      character.sprite.y = 80;
-      character.sprite.interactive = true;
-      character.sprite.on('pointerdown', (event) => {
-        event.stopPropagation();
-        this.select(index);
-      });
+    this.CHARACTERS.forEach((skins, characterIndex) => {
+      skins.forEach((skin) => {
+        skin.sprite.x = Math.round(
+          this.game.app.screen.width / 2 -
+            skin.sprite.width / 2 +
+            (this.CHARACTERS.length / -2 + characterIndex + 0.5) * (skin.sprite.width + 40)
+        );
+        skin.sprite.y = 80;
+        skin.sprite.interactive = true;
+        skin.sprite.on('pointerdown', (event) => {
+          event.stopPropagation();
+          this.select(characterIndex, null);
+        });
 
-      this.container.addChild(character.text);
-      character.text.x =
-        Math.round(character.sprite.x + character.sprite.width / 2) - character.text.width / 2;
-      character.text.y = 120;
+        skin.text.x = Math.round(skin.sprite.x + skin.sprite.width / 2) - skin.text.width / 2;
+        skin.text.y = 120;
+
+        this.container.addChild(skin.sprite);
+        this.container.addChild(skin.text);
+      });
     });
 
     // Create text
@@ -121,8 +139,22 @@ export default class CharacterOverlay extends Overlay {
     super.addEventListeners();
     this.game.inputManager.on({
       name: 'select',
-      keys: ['ArrowLeft', 'ArrowRight'],
-      onDown: () => this.select(this.selected + 1),
+      keys: ['ArrowLeft', 'ArrowRight', 'a', 'd'],
+      onDown: (event) =>
+        this.select(
+          this.characterIndex + (event.key === 'ArrowRight' || event.key === 'd' ? 1 : -1),
+          null
+        ),
+    });
+    this.game.inputManager.on({
+      name: 'select',
+      keys: ['ArrowUp', 'ArrowDown', 'w', 's'],
+      onDown: (event) =>
+        this.select(
+          null,
+          this.skinIndex[this.characterIndex] +
+            (event.key === 'ArrowUp' || event.key === 'w' ? 1 : -1)
+        ),
     });
   }
 
@@ -131,32 +163,55 @@ export default class CharacterOverlay extends Overlay {
     this.game.inputManager.off('select');
   }
 
-  select(index) {
-    this.selected = index;
-    if (this.selected >= this.CHARACTERS.length) {
-      this.selected = 0;
-    }
-    if (this.selected < 0) {
-      this.selected = 0;
+  select(characterIndex, skinIndex) {
+    if (characterIndex !== null) {
+      this.characterIndex = characterIndex;
+      if (this.characterIndex >= this.CHARACTERS.length) {
+        this.characterIndex = 0;
+      }
+      if (this.characterIndex < 0) {
+        this.characterIndex = this.CHARACTERS.length - 1;
+      }
     }
 
-    console.debug('Selecting ', this.selected);
+    if (skinIndex !== null) {
+      this.skinIndex[this.characterIndex] = skinIndex;
+      if (this.skinIndex[this.characterIndex] >= this.CHARACTERS[this.characterIndex].length) {
+        this.skinIndex[this.characterIndex] = 0;
+      }
+      if (this.skinIndex[this.characterIndex] < 0) {
+        this.skinIndex[this.characterIndex] = this.CHARACTERS[this.characterIndex].length - 1;
+      }
+    }
+
+    console.debug('Selecting ', this.characterIndex, this.skinIndex[this.characterIndex]);
 
     const filter = new filters.ColorMatrixFilter();
     filter.brightness(this.BRIGHTNESS);
-    this.CHARACTERS.forEach((character, index) => {
-      if (index !== this.selected) {
-        character.sprite.filters = [filter];
-      } else {
-        character.sprite.filters = null;
-      }
+    this.CHARACTERS.forEach((skins, characterIndex) => {
+      skins.forEach((skin, skinIndex) => {
+        if (
+          characterIndex !== this.characterIndex ||
+          skinIndex !== this.skinIndex[this.characterIndex]
+        ) {
+          skin.sprite.filters = [filter];
+          if (characterIndex === this.characterIndex) {
+            skin.sprite.alpha = 0;
+            skin.text.alpha = 0;
+          }
+        } else {
+          skin.sprite.filters = null;
+          skin.sprite.alpha = 1;
+          skin.text.alpha = 1;
+        }
+      });
     });
 
-    this.game.player.character = this.selected;
+    this.game.player.skin(this.characterIndex, this.skinIndex[this.characterIndex]);
 
     // Play voice
     if (this.opened && this.visible) {
-      switch (this.selected) {
+      switch (this.characterIndex) {
         case 0:
           this.game.soundManager.playVoice(VoiceType.RAT1);
           break;

@@ -7,66 +7,89 @@ import { EffectType, VoiceType } from './managers/SoundManager';
 
 export default class Player {
   SPRITES = [
-    {
-      idleSprite: Sprite.from('rat_idle'),
-      walkSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_walk']);
-        sprite.animationSpeed = 0.1;
-        return sprite;
-      })(),
-      runSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_run']);
-        sprite.animationSpeed = 0.15;
-        return sprite;
-      })(),
-      jumpSprite: Sprite.from('rat_jump'),
-      deadSprite: Sprite.from('rat_dead'),
-    },
-    {
-      idleSprite: Sprite.from('orange_idle'),
-      walkSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_walk']);
-        sprite.animationSpeed = 0.1;
-        return sprite;
-      })(),
-      runSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_run']);
-        sprite.animationSpeed = 0.15;
-        return sprite;
-      })(),
-      jumpSprite: Sprite.from('orange_jump'),
-      deadSprite: Sprite.from('orange_dead'),
-    },
-    {
-      idleSprite: Sprite.from('racoon_idle'),
-      walkSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_walk']);
-        sprite.animationSpeed = 0.1;
-        return sprite;
-      })(),
-      runSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_run']);
-        sprite.animationSpeed = 0.15;
-        return sprite;
-      })(),
-      jumpSprite: Sprite.from('racoon_jump'),
-      deadSprite: Sprite.from('racoon_dead'),
-    },
-    {
-      idleSprite: Sprite.from('tutel_idle'),
-      walkSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_walk']);
-        sprite.animationSpeed = 0.1;
-        return sprite;
-      })(),
-      runSprite: (() => {
-        const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_run']);
-        sprite.animationSpeed = 0.15;
-        return sprite;
-      })(),
-      jumpSprite: Sprite.from('tutel_jump'),
-      deadSprite: Sprite.from('tutel_dead'),
-    },
+    [
+      {
+        idleSprite: Sprite.from('rat_idle'),
+        walkSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_walk']);
+          sprite.animationSpeed = 0.1;
+          return sprite;
+        })(),
+        runSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['rat_idle', 'rat_run']);
+          sprite.animationSpeed = 0.15;
+          return sprite;
+        })(),
+        jumpSprite: Sprite.from('rat_jump'),
+        deadSprite: Sprite.from('rat_dead'),
+      },
+      {
+        idleSprite: Sprite.from('burglar_idle'),
+        walkSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['burglar_idle', 'burglar_walk']);
+          sprite.animationSpeed = 0.1;
+          return sprite;
+        })(),
+        runSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['burglar_idle', 'burglar_run']);
+          sprite.animationSpeed = 0.15;
+          return sprite;
+        })(),
+        jumpSprite: Sprite.from('burglar_jump'),
+        deadSprite: Sprite.from('burglar_dead'),
+      },
+    ],
+    [
+      {
+        idleSprite: Sprite.from('orange_idle'),
+        walkSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_walk']);
+          sprite.animationSpeed = 0.1;
+          return sprite;
+        })(),
+        runSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['orange_idle', 'orange_run']);
+          sprite.animationSpeed = 0.15;
+          return sprite;
+        })(),
+        jumpSprite: Sprite.from('orange_jump'),
+        deadSprite: Sprite.from('orange_dead'),
+      },
+    ],
+    [
+      {
+        idleSprite: Sprite.from('racoon_idle'),
+        walkSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_walk']);
+          sprite.animationSpeed = 0.1;
+          return sprite;
+        })(),
+        runSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['racoon_idle', 'racoon_run']);
+          sprite.animationSpeed = 0.15;
+          return sprite;
+        })(),
+        jumpSprite: Sprite.from('racoon_jump'),
+        deadSprite: Sprite.from('racoon_dead'),
+      },
+    ],
+    [
+      {
+        idleSprite: Sprite.from('tutel_idle'),
+        walkSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_walk']);
+          sprite.animationSpeed = 0.1;
+          return sprite;
+        })(),
+        runSprite: (() => {
+          const sprite = AnimatedSprite.fromFrames(['tutel_idle', 'tutel_run']);
+          sprite.animationSpeed = 0.15;
+          return sprite;
+        })(),
+        jumpSprite: Sprite.from('tutel_jump'),
+        deadSprite: Sprite.from('tutel_dead'),
+      },
+    ],
   ];
   POWER = 1.5;
   MASS = 1.0;
@@ -82,7 +105,8 @@ export default class Player {
   container = new Container();
 
   // Properties
-  #character;
+  #characterIndex;
+  #skinIndex;
   #name;
   force = new Point(0, 0);
   velocity = new Point(0, 0);
@@ -109,12 +133,9 @@ export default class Player {
 
   constructor(game) {
     this.game = game;
-    this.character = 0;
-
-    // Effects
     this.boostEffect = new BoostEffect(this.game);
 
-    // Reset
+    this.skin(0, 0);
     this.reset();
   }
 
@@ -130,40 +151,51 @@ export default class Player {
     this.game.hud.updateName();
   }
 
-  get character() {
-    return this.#character;
-  }
-
-  set character(value) {
-    if (this.#character === value) {
+  skin(characterIndex, skinIndex) {
+    if (
+      characterIndex === null ||
+      skinIndex === null ||
+      (this.#characterIndex === characterIndex && this.#skinIndex === skinIndex)
+    ) {
       return;
     }
-    this.container.removeChildren();
-    if (this.#character !== undefined) {
-      this.addPosition(null, this.idleSprite.height - this.SPRITES[value].idleSprite.height, true); // TODO: Check current sprite instead of idle
+
+    if (this.#characterIndex >= 0 && this.#skinIndex >= 0) {
+      this.container.removeChildren();
       this.walkSprite.stop();
       this.runSprite.stop();
+
+      // Adjust Y for sprite height
+      this.addPosition(
+        null,
+        this.idleSprite.height - this.SPRITES[characterIndex][skinIndex].idleSprite.height,
+        true
+      );
     }
-    this.#character = value;
+
+    this.#characterIndex = characterIndex;
+    this.#skinIndex = skinIndex;
     this.walkSprite.play();
     this.runSprite.play();
+
+
     this.updateSprite();
   }
 
   get idleSprite() {
-    return this.SPRITES[this.#character].idleSprite;
+    return this.SPRITES[this.#characterIndex][this.#skinIndex].idleSprite;
   }
   get walkSprite() {
-    return this.SPRITES[this.#character].walkSprite;
+    return this.SPRITES[this.#characterIndex][this.#skinIndex].walkSprite;
   }
   get runSprite() {
-    return this.SPRITES[this.#character].runSprite;
+    return this.SPRITES[this.#characterIndex][this.#skinIndex].runSprite;
   }
   get jumpSprite() {
-    return this.SPRITES[this.#character].jumpSprite;
+    return this.SPRITES[this.#characterIndex][this.#skinIndex].jumpSprite;
   }
   get deadSprite() {
-    return this.SPRITES[this.#character].deadSprite;
+    return this.SPRITES[this.#characterIndex][this.#skinIndex].deadSprite;
   }
 
   get width() {
@@ -400,7 +432,7 @@ export default class Player {
 
     console.debug('Start boost');
     this.game.soundManager.playEffect(EffectType.BOOST);
-    switch (this.character) {
+    switch (this.skin) {
       case 0:
         this.game.soundManager.playVoice(VoiceType.RAT2);
         break;
