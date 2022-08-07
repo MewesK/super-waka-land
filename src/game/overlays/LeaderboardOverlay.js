@@ -113,6 +113,9 @@ export default class LeaderboardOverlay extends Overlay {
       mode === 'personal' ? this.game.player.name : null,
       page * this.PAGE_SIZE
     );
+    if (!data) {
+      return;
+    }
     data = data.sort((a, b) => a.rank - b.rank);
 
     // Update last page flag
