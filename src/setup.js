@@ -59,6 +59,7 @@ getGPUTier().then((tier) => {
     .add('sceneGameOver', './sounds/scene_game_over.mp3')
     .add('voiceMama', './sounds/voice_mama.mp3')
     .add('voiceWao', './sounds/voice_wao.mp3')
+    .add('voiceDeath', './sounds/voice_death.mp3')
     .add('voiceSelectTutel', './sounds/voice_select_tutel.mp3')
     .add('voiceSelectOrange', './sounds/voice_select_orange.mp3')
     .add('voiceSelectRaccoon', './sounds/voice_select_raccoon.mp3')

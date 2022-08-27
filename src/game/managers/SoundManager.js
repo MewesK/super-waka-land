@@ -14,6 +14,7 @@ export let EffectType = {
 export let VoiceType = {
   MAMA: undefined,
   WAO: undefined,
+  DEATH: undefined,
   SCENE_CHARACTER: undefined,
   SCENE_GAME_OVER: undefined,
   SELECT_ORANGE: undefined,
@@ -46,6 +47,7 @@ export default class SoundManager {
     // Voice
     VoiceType.MAMA = Loader.shared.resources.voiceMama.sound;
     VoiceType.WAO = Loader.shared.resources.voiceWao.sound;
+    VoiceType.DEATH = Loader.shared.resources.voiceDeath.sound;
     VoiceType.SCENE_CHARACTER = Loader.shared.resources.sceneCharacter.sound;
     VoiceType.SCENE_GAME_OVER = Loader.shared.resources.sceneGameOver.sound;
     VoiceType.SELECT_ORANGE = Loader.shared.resources.voiceSelectOrange.sound;
@@ -127,6 +129,7 @@ export default class SoundManager {
   setVoiceVolume(value) {
     VoiceType.MAMA.volume = this.percentageToVolume(value);
     VoiceType.WAO.volume = VoiceType.MAMA.volume;
+    VoiceType.DEATH.volume = VoiceType.MAMA.volume;
     VoiceType.SCENE_CHARACTER.volume = VoiceType.MAMA.volume;
     VoiceType.SCENE_GAME_OVER.volume = VoiceType.MAMA.volume;
     VoiceType.SELECT_ORANGE.volume = VoiceType.MAMA.volume;

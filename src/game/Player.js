@@ -431,14 +431,7 @@ export default class Player {
 
     console.debug('Start boost');
     this.game.soundManager.playEffect(EffectType.BOOST);
-    switch (this.#characterIndex) {
-      case 0:
-        this.game.soundManager.playVoice(VoiceType.WAO);
-        break;
-      case 1:
-        this.game.soundManager.playVoice(VoiceType.ORANGE_BOOST);
-        break;
-    }
+    this.game.soundManager.playVoice(VoiceType.WAO);
 
     this.preBoostVelocity = this.velocity.clone();
     this.setVelocity(

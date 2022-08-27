@@ -7,7 +7,7 @@ import Map from './Map';
 import HUD from './HUD';
 import InputManager from './managers/InputManager';
 import OverlayManager, { OverlayType } from './managers/OverlayManager';
-import SoundManager, { MusicType, EffectType } from './managers/SoundManager';
+import SoundManager, { MusicType, EffectType, VoiceType } from './managers/SoundManager';
 
 export default class Game {
   DEFAULT_DIFFICULTY = localStorage.getItem('DIFFICULTY') || 1;
@@ -133,6 +133,7 @@ export default class Game {
     // Check for death
     if (this.player.position.y > this.app.screen.height) {
       this.player.dead = true;
+      this.soundManager.playVoice(VoiceType.DEATH);
       this.overlayManager.open(OverlayType.GAME_OVER);
     }
   }
