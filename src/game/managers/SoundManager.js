@@ -58,11 +58,11 @@ export default class SoundManager {
   }
 
   percentageToVolume(value) {
-    return value !== 0 ? Math.pow(10, this.CONSTANT * (value - 100)) : 0;
+    return value > 0 ? Math.pow(10, this.CONSTANT * (value - 100)) : 0;
   }
 
   volumeToPercentage(value) {
-    return value !== 0 ? Math.log(value) / Math.log(10) / this.CONSTANT + 100 : 0;
+    return value > 0 ? Math.log(value) / Math.log(10) / this.CONSTANT + 100 : 0;
   }
 
   //
@@ -88,6 +88,7 @@ export default class SoundManager {
   }
 
   setMusicVolume(value) {
+    console.log(value, this.percentageToVolume(value));
     MusicType.WAKALAKA.volume = this.percentageToVolume(value);
   }
 
@@ -123,7 +124,7 @@ export default class SoundManager {
   }
 
   getVoiceVolume() {
-    return this.volumeToPercentage(VoiceType.ORANGE_SELECT.volume);
+    return this.volumeToPercentage(VoiceType.WAO.volume);
   }
 
   setVoiceVolume(value) {
